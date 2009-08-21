@@ -1,0 +1,96 @@
+18c18,20
+< #include <geekos/malloc.h>
+---
+> #include <geekos/user.h>
+> #include <geekos/synch.h>
+> #include <geekos/bitset.h>
+69a72,74
+> /* A key to index in tlocalData to the list of semaphores ID's for a process */
+> tlocal_key_t semKey;
+> 
+308,317c313,359
+<     /*
+<      * Hints:
+<      * - Call Attach_User_Context() to attach the user context
+<      *   to the Kernel_Thread
+<      * - Set up initial thread stack to make it appear that
+<      *   the thread was interrupted while in user mode
+<      *   just before the entry point instruction was executed
+<      * - The esi register should contain the address of
+<      *   the argument block
+<      */
+---
+>     /* Attach the user context to the Kernel_Thread */
+>     Attach_User_Context(kthread, userContext);
+> 
+>     /* We set up the stack to look like it has just been interrupted: */
+> 
+>     /* Data selector */
+>     Push(kthread, (ulong_t)((*userContext).dsSelector));
+> 
+>     /* Stack pointer (end of data memory) */
+>     Push(kthread, (*userContext).stackPointerAddr); /*(?) Este esp?*/
+> 
+>     /* Eflags. NOTE: The IF bit should be set so interrupts are enabled */
+>     /* Push(kthread, 0UL|EFLAGS_IF);  *//*(?) No se si esto esta bien */
+>     Push(kthread, EFLAGS_IF);
+> 
+>     /* Code selector */
+>     Push(kthread, (ulong_t)((*userContext).csSelector));
+> 
+>     /* Program counter (The entry point address in our case) */
+>     Push(kthread, (*userContext).entryAddr);
+> 
+>     /* Error code */
+>     Push(kthread, 0);
+> 
+>     /* Interrupt number */
+>     Push(kthread, 0);
+> 
+>     /* General purpose registers */
+>     Push(kthread, 0);  /* eax */
+>     Push(kthread, 0);  /* ebx */
+>     Push(kthread, 0);  /* edx */
+>     Push(kthread, 0);  /* edx */
+>         /* NOTE: esi should contain the address of argument block */
+>     Push(kthread, (*userContext).argBlockAddr);
+>     Push(kthread, 0);  /* edi */
+>     Push(kthread, 0);  /* ebp */
+> 
+>     /* DS register (data selector) */
+>     Push(kthread, (ulong_t)((*userContext).dsSelector));
+>     /* ES register (data selector) */
+>     Push(kthread, (ulong_t)((*userContext).dsSelector));
+>     /* FS register (data selector) */
+>     Push(kthread, (ulong_t)((*userContext).dsSelector));
+>     /* GS register (data selector) */
+>     Push(kthread, (ulong_t)((*userContext).dsSelector));
+> 
+>     return;
+512,519c554,570
+<     /*
+<      * Hints:
+<      * - Use Create_Thread() to create a new "raw" thread object
+<      * - Call Setup_User_Thread() to get the thread ready to
+<      *   execute in user mode
+<      * - Call Make_Runnable_Atomic() to schedule the process
+<      *   for execution
+<      */
+---
+>     /* Create a new "raw" thread object */
+>     /*Print("Starting a user thread...\n");*/
+> 
+>     struct Kernel_Thread* uThread = Create_Thread(PRIORITY_USER, detached);
+>     if (uThread==0){/* There wasn't enough memory */
+>         /*Print("Start_User_Thread: There wasn't enough memory");*/
+>         return 0;
+>     }
+>     uThread->tlocalData[semKey] = Create_Bit_Set(MAX_SYS_SEMAPHORES);
+>     /* Get the thread ready to execute in user mode */
+>     Setup_User_Thread(uThread, userContext);
+> 
+>     /* Schedule the process for execution */
+>     Make_Runnable_Atomic(uThread);
+>     /*Print("User thread started!\n");*/
+>     KASSERT(uThread!=0);
+>     return uThread;

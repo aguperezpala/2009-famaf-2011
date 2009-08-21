@@ -1,0 +1,165 @@
+21d20
+< #include <geekos/timer.h>
+38,42d36
+< typedef  enum { RR , MLF }  Sched_Pol;
+< 
+< /*### La política por defecto es Multilevel Feedback ###*/
+< Sched_Pol Scheduling_Policy = MLF;
+< 
+377,378c371
+<     while (true) {
+< 	    Print ("AAAAAAAAAAAAAAA");
+---
+>     while (true)
+380d372
+<     }
+496,523d487
+< 
+< 
+< /*###
+<  * Selecciona la política de scheduling
+<  * policy: 0 => Round Robin
+<  *	   1 => Multilevel Feedback
+<  *	   _ => Error
+<  * quantum: [2..100] => Quantum switched
+<  *	    [other]  => Error
+<  *###
+<  */
+< int Set_Scheduling_Policy(uint_t policy, uint_t quantum)
+< {
+< 	if (policy == 0)
+< 		Scheduling_Policy = RR;
+< 	else if (policy == 1)
+< 		Scheduling_Policy = MLF;
+< 	else
+< 		return -1;
+< 	
+< 	if (quantum < 2 || quantum > 100)
+< 		return -1;
+< 	else
+< 		Set_gQuantum (quantum);
+< 	
+< 	return 0;
+< }
+< 
+583d546
+< 
+592c555
+<     Print("Starting a user thread...\n");
+---
+>     /*Print("Starting a user thread...\n");*/
+645,704d607
+< 
+< /*###
+<  * Encuentra el mejor thread (ejecutable, ie: no bloqueado) en la cola dada
+<  * PRE: Q != NULL
+<  *###
+<  */
+< static struct Kernel_Thread* Get_Runnable_In_Queue (struct Thread_Queue* Q)
+< {
+< 	struct Kernel_Thread* best = NULL, *first = NULL;
+< 	
+< 	KASSERT (Q != NULL);
+< 	
+< 		
+< 	first = Remove_From_Front_Of_Thread_Queue (Q);
+< 	if (first != NULL)
+< 		Add_To_Back_Of_Thread_Queue (Q, first);
+< 	
+< 	
+< 	/* Find the best thread from this run queue */
+< 	do {		
+< 		best = NULL;
+< 		
+< 		if (!Is_Thread_Queue_Empty (Q)) {
+< 			
+< 			best = Remove_From_Front_Of_Thread_Queue (Q);
+< 			/* Cola no vacía => best != NULL */
+< 			KASSERT(best != NULL);
+< 			
+< 			if (!best->blocked)
+< 				/* Pescamos uno */
+< 				break;
+< 				/** GUARDA CON EL BREAK */
+< 			else
+< 				/* Lo metemos de vuelta para seguir buscando */
+< 				Add_To_Back_Of_Thread_Queue (Q, best);
+< 		}
+< 		
+< 		
+< 	} while (best != first);
+< 	
+< 	if (best == first && best != NULL && best->blocked) best = NULL;
+< 	
+< 	return best;
+< }
+< 
+< /* ### Debuggeo únicamente, leaks asegurados ### */
+< static int Kernel_Queue_Size (struct Thread_Queue* Q)
+< {
+< 	int cnt = 0;
+< 	struct Kernel_Thread* best = NULL;
+< 	
+< 	while (!Is_Thread_Queue_Empty (Q)) {
+< 		best = Remove_From_Front_Of_Thread_Queue (Q);
+< 		cnt++;
+< 	}
+< 		
+< 	return cnt;
+< }
+< 
+< /** TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO */
+711,745c614,617
+< 	struct Kernel_Thread* best = NULL;
+< 	int i = 0;
+< 	static int corrida = 0;
+< 	
+< 	if (Scheduling_Policy == RR) {
+< 		best = Get_Runnable_In_Queue (&s_runQueue[0]);
+< 		KASSERT (best != NULL); /* Sino está todo como el chori */
+< 		return best;
+< 	}
+< 	
+< 	/* Si llegamos acá estamos en política MLF */
+< 	
+< 	/* Find the best thread from the highest-priority run queue */
+< 	for (i = 0 ; i < MAX_QUEUE_LEVEL ; i++) {
+< 	
+< 		best = Get_Runnable_In_Queue (&s_runQueue[i]);
+< 		
+< 		if (best != NULL) break;
+< 	}
+< 	
+< 	KASSERT (best != NULL); /* Sino está todo como el chori */
+< 	
+< // 	Print("Scheduling %x\n", (uint_t)best);
+< 	if (corrida > 70) {
+< 		
+< 		for (i=0 ; i<MAX_QUEUE_LEVEL ; i++)
+< 			Print("Queue nº %i size: %d\n", i, Kernel_Queue_Size (&s_runQueue[i]));
+< 		
+< 		TODO("FIN");
+< 	}
+< 	
+< 	corrida++;
+< 	
+< 	return best;
+< 	TODO("Find a runnable thread from run queues");
+---
+>     struct Kernel_Thread* best = 0;
+> 
+>     /* Find the best thread from the highest-priority run queue */
+>     TODO("Find a runnable thread from run queues");
+749a622
+>     return best;
+893c766
+< /*###
+---
+> /*
+902d774
+<  *###
+912,915d783
+<     /* Vamos a decrementarle en uno la prioridad => Hacking GeekOS */
+<     if (current->currentReadyQueue > 0)
+< 	    current->currentReadyQueue--;
+<     
