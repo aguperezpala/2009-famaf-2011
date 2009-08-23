@@ -141,8 +141,5 @@ string_t * string_concat (string_t * string1, string_t * string2);
 
 
 
-
-
-
-
 #endif
+
