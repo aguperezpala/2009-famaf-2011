@@ -358,6 +358,12 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
 	TODO("CreateSemaphore system call");
 }
 
+/** Aca deberiamos crear una funcion "bool its_allowed (int SID)" que chequea
+  * si el kernel_thread actual tiene al Semaphore ID en la lista (supongo
+  * que se refiere a la lista del user_context) Y ademas chequea que este
+  * creado (osea, active = true)
+  */
+
 /*
  * Acquire a semaphore.
  * Assume that the process has permission to access the semaphore,
@@ -369,6 +375,39 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
  */
 static int Sys_P(struct Interrupt_State* state)
 {
+	int SID = state->ebx;
+	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
+	
+	/* Primero que todo chequeamos si tenemos "permiso" (usando la funcion
+	 * NO hecha y comentada arriba) para acceder al semaforo ese, si no 
+	 * devolvemos con error */
+	if (!its_allowed (state->ebx))
+		return -1;
+	/* aca estamos porque SI estamos habilitados para tocar el semaforo, que
+	 * en teoria es la posicion en el arreglo Sema[] */
+	
+	/* aumentamos en uno la cantidad de "threads" usando este semaforo */
+	Sema[SID].threads_using++;
+	
+	/* Debemos verificar si bloqueamos o no al thread */
+	if (Sema[SID].count < 0){	/* debemos bloquear */
+		/* Wait nos pide que sea sin interrupciones => para que sea
+		 * atomica la llamada, pero, que pasa? que se ejecuta una vez
+		 * que se duerme este thread? sigue ejecutando la siguiente
+		 * instruccion? o que saca otro thread y no sigue debajo
+		 * del Wait este?....
+		 */
+		Wait(Wait_Queue); /* esta lista esta definida kthread.h */
+		/* deshabilitamos interrupciones? sigue corriendo por aca? */
+		
+		/* decrementamos el semaforo */
+		Sema[SID].count--;
+	}
+	
+		
+	End_Int_Atomic(atom);
+	return 0;
+	
     TODO("P (semaphore acquire) system call");
 }
 
@@ -381,6 +420,28 @@ static int Sys_P(struct Interrupt_State* state)
  */
 static int Sys_V(struct Interrupt_State* state)
 {
+	int SID = state->ebx;
+	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
+	
+	/* Primero que todo chequeamos si tenemos "permiso" (usando la funcion
+	* NO hecha y comentada arriba) para acceder al semaforo ese, si no 
+	* devolvemos con error */
+	if (!its_allowed (state->ebx))
+		return -1;
+	/* aca estamos porque SI estamos habilitados para tocar el semaforo, que
+	* en teoria es la posicion en el arreglo Sema[] */
+	
+	/* decrementamos en uno la cantidad de threads que usan este sem */
+	Sema[SID].threads_using--;
+	
+	/* simplemente lo que hacemos es aumentar en uno el count y levantar
+	 * algun thread dando en la Wait_Queue */
+	Sema[SID].count++;
+	/** Requiere interrupciones deshabilitadas :(... verificar esto */
+	Wake_Up_One(Wait_Queue);
+	
+	End_Int_Atomic(atom);
+	return 0;
     TODO("V (semaphore release) system call");
 }
 
