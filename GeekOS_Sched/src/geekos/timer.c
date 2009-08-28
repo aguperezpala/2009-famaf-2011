@@ -295,3 +295,6 @@ void Micro_Delay(int us)
 /*### Modificador del quantum de Round Robin de estadía en CPU ###*/
 void Set_gQuantum (int quantum) { g_Quantum = quantum; }
 
+
+/*### Obtiene la g_numTicks para la syscall ###*/
+ulong_t Get_gNumTicks (void) { return g_numTicks; }
