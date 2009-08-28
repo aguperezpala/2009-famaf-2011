@@ -29,6 +29,11 @@ DEFINE_LIST(Thread_Queue, Kernel_Thread);
  */
 DEFINE_LIST(All_Thread_List, Kernel_Thread);
 
+
+/*### Vamos a definir una cola para los threads de los sem ###*/
+DEFINE_LIST(Wait_Queue, Kernel_Thread);
+
+
 /*
  * Kernel thread context data structure.
  * NOTE: there is assembly code in lowlevel.asm that depends
@@ -73,6 +78,8 @@ struct Kernel_Thread {
  */
 IMPLEMENT_LIST(Thread_Queue, Kernel_Thread);
 IMPLEMENT_LIST(All_Thread_List, Kernel_Thread);
+/* ### Implementamos la lista ### */
+IMPLEMENT_LIST(Wait_Queue, Kernel_Thread);
 
 static __inline__ void Enqueue_Thread(struct Thread_Queue *queue, struct Kernel_Thread *kthread) {
     Add_To_Back_Of_Thread_Queue(queue, kthread);
