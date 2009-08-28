@@ -364,6 +364,43 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
   * que se refiere a la lista del user_context) Y ademas chequea que este
   * creado (osea, active = true)
   */
+/*### Funcion que chequea si el kthread actual tiene en su lista de semaforos
+ * el sem con id SID.
+ *	REQUIRES:
+ *		SID € [0, MAX_NUM_SEMAPHORES-1 ]
+ *	RETURNS:
+ *		true <==> valid SID & Sema[SID].active == TRUE
+ * 		false otherwise
+ *###*/
+static bool its_allowed (int SID)
+{
+	bool result = false;
+	int listSize = 0, i = 0;
+	int * semList = NULL;
+	
+	/* si no esta dentro del rango valido devolvemos false */
+	if (SID < 0 || SID >= MAX_NUM_SEMAPHORES)
+		return false;
+	
+	/* si esta dentro del rango, pero... esta activado? */
+	if (Sema[SID].active == false)
+		return false;
+	
+	/* ahora obtenemos los valores del user_context */
+	listSize = g_currentThread->userContext->activeSemaCnt;
+	semList = g_currentThread->userContext->semaphores;
+	
+	/* lo buscamos en la lista */
+	for (i = 0; i < listSize; i++) {
+		if (semList[i] == SID) {
+			/* lo encontramos */
+			result = true;
+			break;
+		}
+	}
+	
+	return result;
+}
 
 /*
  * Acquire a semaphore.
