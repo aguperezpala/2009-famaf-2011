@@ -483,6 +483,16 @@ static int Sys_V(struct Interrupt_State* state)
     TODO("V (semaphore release) system call");
 }
 
+/*### Que deberiamos hacer para destruir el semaforo:
+ * Primero ver que esta intentando eliminar un semaforo correcto: (its_allowed).
+ * Si esta habilitado para borrar chequear la cantidad de referencias de diferentes
+ * threads que tienen el semaforo, si es mayor que uno NO se elimina el semaforo
+ * ya que hay mas threads usandolo.
+ * En cualquier caso debemos eliminarlo de la lista de semaforos del kthread 
+ * (del User_Context->semaphores[]).
+ * En caso de que sea el unico thread usando el semaforo => desactivamos el 
+ * semaforo de Sem[SID].active = FALSE.
+ *###*/
 /*
  * Destroy a semaphore.
  * Params:
@@ -492,6 +502,41 @@ static int Sys_V(struct Interrupt_State* state)
  */
 static int Sys_DestroySemaphore(struct Interrupt_State* state)
 {
+	/** verificar el tema de Atomic y las interrupciones... */
+	bool atom = Begin_Int_Atomic();	
+	int SID = state->ebx;
+	
+	/* verificamos si esta habilitado, si no devolvemos -1 */
+	if (!its_allowed(SID))
+		return -1;
+	
+	/* Ahora, como en cualquier caso tenemos que eliminarlo de nuestra lista
+	 * de semaforos (osea del User_context) lo eliminamos */
+	del_sem_from_list (SID); /** NOTE: fucking FIXME :) (falta implementar).
+	* yo diria que usemos arreglos de tamaño constante (i.e: userContext->
+	* semaphores[MAX_NUM_SEMAPHORES] para evitarnos bastantes kilombos, 
+	* seteando en numeros negativos los semaforos deshabilitados del arreglo
+	* y listo :)
+	*/
+	/* ahora vemos la cantidad de threads que estan referenciando este
+	 * semaforo */
+	if (Sema[SID].threads_using > 1) {
+		/* simplemente decrementamos en uno la cantidad de threads que
+		 * referencian el sem */
+		Sema[SID].threads_using--;
+	} else {
+		/* tenemos que eliminarlo a la mierda porque es = 1 (osea es el
+		 * ultimo thread que lo referencia */
+		Sema[SID].threads_using = 0;
+		Sema[SID].count = 0;	/* al pedo pero bueno, limpiamos :) */
+		Sema[SID].active = false;	/* con esto alcanzaria */
+		/* limpiamos el nombre */
+		memset (Sema[SID].name, '\0', MAX_NAME_LEN);
+	}
+		
+	
+	End_Int_Atomic(atom);
+	return 0;
     TODO("DestroySemaphore system call");
 }
 
