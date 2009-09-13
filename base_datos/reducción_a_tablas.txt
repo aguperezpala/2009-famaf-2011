@@ -1,2 +1,4 @@
 Planilla = (Nro:Int , Fecha:Date).
-Situación_Laboral = (Planilla.Nro:Int , Tarjeta:Bool , Ticket:Bool , Cuenta_Banco:Bool , Ingreso_Familiar:Int , Comercio.Codigo:Int , Trabajo.Codigo:Int  
+Situación_Laboral = (Planilla.Nro:Int , Tarjeta:Bool , Ticket:Bool , Cuenta_Banco:Bool , Ingreso_Familiar:Int , Comercio.Codigo:Int , Trabajo.Codigo:Int)
+Comercio = (Codigo:Int , 
+Vivienda = (Planilla.Nro:Int , Tipo_Vivienda.Codigo:Int , Tenencia_Vivienda.Codigo:Int , Propio:Bool , OCV:Bool , 
