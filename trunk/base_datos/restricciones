@@ -38,6 +38,7 @@ Superclave:
 	Como es una entidad débil y tiene una relacion uno a uno con cada
 planilla esta univocamente identificada entonces con Planilla.numero.
 
+
 Vivienda y Servicios:
 Restriccion de cardinalidad:
 	Estas 2 entidades, se encuentran relacionadas totalmente entre ambas,
@@ -45,6 +46,39 @@ osea todo vivienda tiene una y solo una entidad Servicios relacionada, a su vez
 Vivienda esta también relacionada en forma total con planilla.
 
 Superclave:
-Formada por la clave parcial Nombre y {Municipio.Nombre} U
-{Estado.Nombre}.
+	La superclave de ambas (Vivienda y Servicios) esta univocamente
+determinada por el numero de la planilla (Planilla.numero).
+
+
+
+Situacion de exclusión y Salud:
+Restriccion de cardinalidad:
+	Ambas se encuentran relacionadas en forma total (entre ambas) y a su vez
+Salud esta relacionada de la misma forma con Planilla.
+
+Superclave:
+	Como el caso anterior, ambas están determinadas univocamente con
+Planilla.numero.
+planilla esta univocamente identificada entonces con Planilla.numero.
+
+
+Participacion comunitaria.
+Restriccion de cardinalidad:
+	Se encuentra relacionada en forma total y unicamente con Planilla.
+
+Superclave:
+	No posee clave parcial y se identifica univocamente con Planilla.numero.
 	
+
+Encuestado
+Restriccion de cardinalidad:
+	Se encuentra relacionada en forma total con Planilla y a su vez, cada
+encuestado puede ser del tipo "Jefe del grupo familiar", cada uno de los cuales
+puede estar en una relacion del tipo parentesco con entidades que no sean del
+tipo "Jefe del grupo familiar" dentro del conjunto de encuestados.
+
+Superclave:
+	Todo encuestado está unívocamente identificado por su nº de CI, por lo
+cual el conjunto de entidades encuestado se considera fuerte.
+
+
