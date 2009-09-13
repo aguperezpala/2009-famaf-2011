@@ -21,7 +21,8 @@ part-comuni.existen-oc, part-comuni.admin-rec, part-comuni.constitucion,
 part-comuni.sabe, part-comuni.apoya, part-comuni.area, part-comuni.misiones)
 
 
-Los atributos de la siguiente lista son tablas con 2 atributos (codigo:Int , Nombre:String):
+Los atributos de la siguiente lista son tablas con 2 atributos (codigo:Int , Nombre:String). 
+Ademas estos tienen una tabla de atributos multivalorados incorporada:
 Situación_Laboral.Comercio
 Situación_Laboral.Trabajo
 Vivienda.Tipo
