@@ -1,0 +1,50 @@
+Entidades:
+
+Comunidad
+Restriccion de cardinalidad:
+	Toda comunidad tiene una relacion total con un sector determinado, a su
+vez hay muchos jefes de familia que se relacionan con la misma, y le
+corresponden varias planillas.
+	
+Superclave:
+	La superclave esta formada por su clave parcial (Nombre) con la unión
+de: Nombre de Sector, nombre de Municipio y el nombre del Estado.
+
+
+Sector
+Restriccion de cardinalidad:
+	Todo sector está en un Municipio determinada, y a su vez puede contener
+varias comunidades.
+
+Superclave:
+	Formada por la clave parcial Nombre y {Municipio.Nombre} U
+{Estado.Nombre}.
+
+
+Parroquia
+Restriccion de cardinalidad:
+	Toda Parroquia se encuentra en un Municipio determinado.
+
+Superclave:
+	Formada por la clave parcial Nombre y {Municipio.Nombre} U
+{Estado.Nombre}.
+
+
+Situacion Laboral
+Restriccion de cardinalidad:
+	Toda Situacion Laboral esta relacionada una a una con una planilla.
+
+Superclave:
+	Como es una entidad débil y tiene una relacion uno a uno con cada
+planilla esta univocamente identificada entonces con Planilla.numero.
+
+Vivienda y Servicios:
+Restriccion de cardinalidad:
+	Estas 2 entidades, se encuentran relacionadas totalmente entre ambas,
+osea todo vivienda tiene una y solo una entidad Servicios relacionada, a su vez
+Vivienda esta también relacionada en forma total con planilla.
+
+Superclave:
+Formada por la clave parcial Nombre y {Municipio.Nombre} U
+{Estado.Nombre}.
+	
