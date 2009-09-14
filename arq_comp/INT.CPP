@@ -20,46 +20,46 @@ int picaddr; /* Programmable Interrupt Controller (PIC) Base Address */
 
 
 void interrupt (*oldhandler)(...);
+
 void interrupt parisr(...) /* Interrupt Service Routine (ISR) */
 {
-interflag = 1;
-outportb(picaddr,0x20); /* End of Interrupt (EOI) */
+	interflag = 1;
+	outportb(picaddr,0x20); /* End of Interrupt (EOI) */
 }
+
 void main(void)
 {
-int c;
-int intno; /* Interrupt Vector Number */
-int picmask; /* PIC's Mask */
-/* Calculate Interrupt Vector, PIC Addr & Mask. */
+	int c;
+	int intno; /* Interrupt Vector Number */
+	int picmask; /* PIC's Mask */
+	/* Calculate Interrupt Vector, PIC Addr & Mask. */
 
-intno = IRQ + 0x08;
-picaddr = PIC1;
-picmask = 1;
-picmask = picmask << IRQ;
+	intno = IRQ + 0x08;
+	picaddr = PIC1;
+	picmask = 1;
+	picmask = picmask << IRQ;
 
+	outportb(CONTROL, inportb(CONTROL) & 0xDF); /* Make sure port is in Forward Direction */
+	outportb(DATA,0xFF);
+	oldhandler = getvect(intno); /* Save Old Interrupt Vector */
+	setvect(intno, parisr); /* Set New Interrupt Vector Entry */
+	outportb(picaddr+1,inportb(picaddr+1) & (0xFF - picmask)); /* Un-Mask Pic */
+	outportb(CONTROL, inportb(CONTROL) | 0x10); /* Enable Parallel Port IRQ's */
+	clrscr();
 
-outportb(CONTROL, inportb(CONTROL) & 0xDF); /* Make sure port is in Forward Direction */
-outportb(DATA,0xFF);
-oldhandler = getvect(intno); /* Save Old Interrupt Vector */
-setvect(intno, parisr); /* Set New Interrupt Vector Entry */
-outportb(picaddr+1,inportb(picaddr+1) & (0xFF - picmask)); /* Un-Mask Pic */
-outportb(CONTROL, inportb(CONTROL) | 0x10); /* Enable Parallel Port IRQ's */
-clrscr();
+	printf("Parallel Port Interrupt Polarity Tester\n");
+	printf("IRQ %d : INTNO %02X : PIC Addr 0x%X : Mask 0x%02X\n",
+		IRQ,intno,picaddr,picmask);
+	interflag = 0; /* Reset Interrupt Flag */
+	delay(10);
 
-printf("Parallel Port Interrupt Polarity Tester\n");
-printf("IRQ %d : INTNO %02X : PIC Addr 0x%X : Mask 0x%02X\n",IRQ,intno,picaddr,picmask);
-interflag = 0; /* Reset Interrupt Flag */
-delay(10);
-
-printf("esperando inter...");
-while (interflag == 0);
+	printf("esperando inter...");
+	while (interflag == 0);
 	printf("Llego");
 
-getch();
+	getch();
 
-
-
-outportb(CONTROL, inportb(CONTROL) & 0xEF); /* Disable Parallel Port IRQ's */
-outportb(picaddr+1,inportb(picaddr+1) | picmask); /* Mask Pic */
-setvect(intno, oldhandler); /* Restore old Interrupt Vector Before Exit */
+	outportb(CONTROL, inportb(CONTROL) & 0xEF); /* Disable Parallel Port IRQ's */
+	outportb(picaddr+1,inportb(picaddr+1) | picmask); /* Mask Pic */
+	setvect(intno, oldhandler); /* Restore old Interrupt Vector Before Exit */
 }
