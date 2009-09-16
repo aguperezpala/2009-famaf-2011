@@ -1,76 +1,86 @@
-Entidades:
+________________________________________________________________________________
+Entidades
 
-Comunidad
-Restriccion de cardinalidad:
+-- Comunidad -------------------------------------------------------------------
+Restricciones de cardinalidad:
 	Toda comunidad tiene una relacion total con un sector determinado, a su
 vez hay muchos jefes de familia que se relacionan con la misma, y le
 corresponden varias planillas.
 	
 Superclave:
 	La superclave esta formada por su clave parcial (Nombre) con la unión
-de: Nombre de Sector, nombre de Municipio y el nombre del Estado.
+del único atributo de sector (CP)
 
 
-Sector
-Restriccion de cardinalidad:
-	Todo sector está en un Municipio determinada, y a su vez puede contener
-varias comunidades.
-
-Superclave:
-	Formada por la clave parcial Nombre y {Municipio.Nombre} U
-{Estado.Nombre}.
-
-
-Parroquia
-Restriccion de cardinalidad:
-	Toda Parroquia se encuentra en un Municipio determinado.
+-- Sector ----------------------------------------------------------------------
+Restricciones de cardinalidad:
+	Todo sector está en un Municipio determinado, y a su vez puede contener
+varias comunidades. Por otra parte en cada sector puede haber varias Parroquias.
 
 Superclave:
-	Formada por la clave parcial Nombre y {Municipio.Nombre} U
-{Estado.Nombre}.
+	Este es un conjunto de entidades fuerte, cuya clave primaria es su
+código de sector, que es el Código Postal (CP) del sector.
 
 
-Situacion Laboral
+-- Parroquia -------------------------------------------------------------------
 Restriccion de cardinalidad:
-	Toda Situacion Laboral esta relacionada una a una con una planilla.
+	Toda Parroquia se encuentra en un Sector determinado.
+
+Superclave:
+	Formada por la clave parcial Nombre y {Sector.CP}
+
+
+-- Situacion Laboral -----------------------------------------------------------
+Restricciones de cardinalidad:
+	Toda Situacion Laboral esta relacionada con una única planilla.
 
 Superclave:
 	Como es una entidad débil y tiene una relacion uno a uno con cada
-planilla esta univocamente identificada entonces con Planilla.numero.
+planilla esta univocamente identificada entonces con Planilla.numero. Es
+importante aclarar que no tiene clave parcial, pues ninguno de sus atributos es
+suficiente para determinar unívocamente un situación laboral determinada. Esto
+resulta en la posibilidad de que existan en la BD entradas para "Situac. Lab."
+con los mismos valores en todos sus atributos, pero que correspondan a entidades
+diferentes. Sin embargo como se dijo el nº de planilla es suficiente para
+diferenciarlas.
 
 
-Vivienda y Servicios:
-Restriccion de cardinalidad:
+-- Vivienda y Servicios --------------------------------------------------------
+Restricciones de cardinalidad:
 	Estas 2 entidades, se encuentran relacionadas totalmente entre ambas,
-osea todo vivienda tiene una y solo una entidad Servicios relacionada, a su vez
+osea todo vivienda tiene una y solo una entidad Servicios relacionada. A su vez
 Vivienda esta también relacionada en forma total con planilla.
 
 Superclave:
 	La superclave de ambas (Vivienda y Servicios) esta univocamente
-determinada por el numero de la planilla (Planilla.numero).
+determinada por el numero de la planilla (Planilla.numero). Se da aquí la misma
+situación que con el conjunto de entidades débil "Situación Laboral"
 
 
-
-Situacion de exclusión y Salud:
+-- Situacion de exclusión y Salud ----------------------------------------------
 Restriccion de cardinalidad:
-	Ambas se encuentran relacionadas en forma total (entre ambas) y a su vez
-Salud esta relacionada de la misma forma con Planilla.
+	Ambas se encuentran relacionadas en forma total (entre sí) y a su vez
+Salud está relacionada de la misma forma con Planilla. De hecho Situación de
+exclusión podría haber sido modelado como un atributo multivalorado del conj. de
+entidades "Salud". Se escogió transformarla en un conj. de ent. débil con una
+relación total con Salud para no tener que incluir un atributo multivalorado
+compuesto al diagrama. Al representarlo como conj. de ent. se pueden modelar
+mejor sus componentes (que aprecen como sus atributos)
 
 Superclave:
 	Como el caso anterior, ambas están determinadas univocamente con
 Planilla.numero.
-planilla esta univocamente identificada entonces con Planilla.numero.
 
 
-Participacion comunitaria.
+-- Participacion comunitaria ---------------------------------------------------
 Restriccion de cardinalidad:
-	Se encuentra relacionada en forma total y unicamente con Planilla.
+	Se encuentra relacionada en forma total y única con Planilla.
 
 Superclave:
 	No posee clave parcial y se identifica univocamente con Planilla.numero.
 	
 
-Encuestado
+-- Encuestado ------------------------------------------------------------------
 Restriccion de cardinalidad:
 	Se encuentra relacionada en forma total con Planilla y a su vez, cada
 encuestado puede ser del tipo "Jefe del grupo familiar", cada uno de los cuales
