@@ -1,4 +1,88 @@
-Planilla = (Nro:Int , Fecha:Date).
-Situación_Laboral = (Planilla.Nro:Int , Tarjeta:Bool , Ticket:Bool , Cuenta_Banco:Bool , Ingreso_Familiar:Int , Comercio.Codigo:Int , Trabajo.Codigo:Int)
-Comercio = (Codigo:Int , 
-Vivienda = (Planilla.Nro:Int , Tipo_Vivienda.Codigo:Int , Tenencia_Vivienda.Codigo:Int , Propio:Bool , OCV:Bool , Tipo_Paredes.Codigo:Int , Tipo_Techo.Codigo:Int , Enseres.Codigo:Int , 
+Reducción a Tablas
+
+• Planilla = (Nro:Int , Fecha:Date). 
+
+  1. Situación_Laboral-Planilla = (Planilla.Nro:Int , 
+    Tarjeta:Bool , Ticket:Bool , Cuenta_Banco:Bool , 
+    Ingreso_Familiar:String , Trabajo:String) 
+
+    (a) Comercio-Situación_Laboral = (Planilla.Nro:Int , 
+      Comercio:String) 
+
+  2. Vivienda-Planilla = (Planilla.Nro: Int , 
+    Tipo_Vivienda:String , Forma_Vivienda:String , 
+    Terreno_Propio:Bool , OCV:Bool , Paredes:String , 
+    Techo:String , Salubridad:String )
+
+    (a) Enseres-Vivienda = ( Planilla.Nro:Int , Enseres:String )
+
+    (b) Plagas-Vivienda = (Planilla.Nro:Int , Plagas:String )
+
+    (c) Mascotas-Vivienda = ( Planilla.Nro:Int , Mascotas:String)
+
+    (d) Servicios-Vivienda = (Planilla.Nro:Int , 
+      Aguas_Servidas:String , Aguas_Blancas:String , Gas:String , 
+      Electricidad:String)
+
+      i. Telefonia-Servicios = (Planilla.Nro , Telefonia:String)
+
+      ii. Medios-Servicios = (Planilla.Nro , Medios:String)
+
+      iii. Transporte-Servicios = (Planilla.Nro , 
+        Transporte:String)
+
+      iv. Basura-Servicios = (Planilla.Nro , Basura:String)
+
+      v. Servicios_Comunales-Servicios = (Planilla.Nro , 
+        Servicios_Comunales:String)
+
+  3. Salud-Planilla = (Planillla.Nro:Int , Ayuda_Especial:String)
+
+    (a) Historia_Familiar-Salud = (Planillla.Nro:Int , 
+      Historia_Familiar:String )
+
+      i. Situacion_Exclusion-Salud = (Planilla.Nro:Int , 
+        Niños_calle:Int , Indigentes:Int , Terminales:Int , 
+        Discapacitados:Int , Tercera_edad:Int )
+
+  4. Participación_Comunitaria-Planilla = ( Planilla.Nro:Int , 
+    Org_Comunitarias:Bool , Propia:Bool , Familia:Bool , 
+    Administracion:Bool , Constitución:Bool , Sabe:String , 
+    Apoya:Bool )
+
+    (a) Misiones-Participación_Comunitaria = ( Planilla.Nro:Int , 
+      Misiones:String)
+
+      i. Area-Participación_Comunitaria = ( Planilla.Nro:Int , 
+        Area:String)
+
+  5. Comunidad-Planilla = (Planilla.Nro:Int , 
+    Comunidad.Nombre:String )
+
+    (a) Comunidad = (Nombre:String , Sector.Nombre:String , 
+      Dirección.Nro:Int , Dirección.Calle:String )
+
+    (b) Sector = (Nombre:String , Municipio.Nombre:String )
+
+    (c) Parroquia = (Nombre:String , Municipio.Nombre:String )
+
+    (d) Municipio = ( Nombre:String , Estado.Nombre:String )
+
+    (e) Estado = (Nombre:String)
+
+  6. Planilla-Jefe = (Planilla.Nro:Int , Jefe.NroCI:Int)
+
+    (a) Jefe= (NroCI:Int , Telefono.Celular:Int , 
+      Telefono:Habitación , Telefono:Oficina , E-mail:String , 
+      Dedicacion_Actual:String , Forma_Cobro:String , 
+      Fecha_Nacimiento:Date)
+
+      i. Encuestado-Jefe = (NroCI:Int , Jefe.NroCI:Int, 
+        Nombre:String , Apellido:String , Edad:Int , Sexo:Bool , 
+        Ingreso_Mensual:Int , Instrucción:String , 
+        Profesión:String ) ( Si el encuestado es el jefe , 
+        entonces los CI son iguales )
+
+    (b) Comunidad-Jefe = (Jefe.NroCI:Int , Ventajas:String , 
+      Desventajas:String)
+
