@@ -6,26 +6,19 @@ Jefe_de_Grupo_Familiar.E-mail, Jefe_de_Grupo_Familiar.Teléfono.Celular, Jefe_de
 Situación_comunidad.Ventajas, Situación_comunidad.Desventajas, Comunidad.Nombre,
 Comunidad.Dirección.Nro, Comunidad.Dirección.Calle, Sector.CP, Municipio.Nombre,
 Parroquia.Nombre, Estado.Nombre, Situación_Laboral.Tarjeta, Situación_Laboral.Ticket,
-Situación_Laboral.cta-banco, Situación_Laboral.ing-familiar, Situación_Laboral.com-casa,
-Situación_Laboral.clase-trabajo, Vivienda.mascotas, Vivienda.plagas,
-Vivienda.cond-salubridad, Vivienda.enseres, Vivienda.mat.techo,
-Vivienda.mat.paredes, Vivienda.terr-propio, Vivienda.tenencia, Vivienda.tipc,
-Vivienda.ocv, Servicios.serv-comunales, Servicios.rec-basura,
-Servicios.transporte, Servicios.medios, Servicios.telefonia,
-Servicios.electricidad, Servicios.gas, Servicios.aguas-servidas,
-Servicios.aguas-blancas, Salud.hist-familiar, Salud.requiere-ayuda,
-Situación_de_Exclusión.tercera-edad, Situación_de_Exclusión.discapacitados,
-Situación_de_Exclusión.enf-terminarles, Situación_de_Exclusión.indigentes,
-Situación_de_Exclusión.niños-calle, Participación_Comunitaria.propia, Participación_Comunitaria.familia,
-Participación_Comunitaria.existen-oc, Participación_Comunitaria.admin-rec, Participación_Comunitaria.constitucion,
-Participación_Comunitaria.sabe, Participación_Comunitaria.apoya, Participación_Comunitaria.area, Participación_Comunitaria.misiones)
-
-
-Los atributos de la siguiente lista son tablas con 2 atributos (codigo:Int , Nombre:String). 
-Ademas estos tienen una tabla de atributos multivalorados incorporada:
-Situación_Laboral.Comercio
-Situación_Laboral.Trabajo
-Vivienda.Tipo
+Situación_Laboral.Cta_banco, Situación_Laboral.Ingreso_familiar, Situación_Laboral.Comercio_en_casa,
+Situación_Laboral.Trabajo, Vivienda.Mascotas, Vivienda.Plagas,
+Vivienda.cond-Cond_salubridad, Vivienda.Enseres, Vivienda.Techo,
+Vivienda.Paredes, Vivienda.Terreno_propio, Vivienda.Forma_tenencia, Vivienda.Tipo,
+Vivienda.OCV, Servicios.Servicios_comunales, Servicios.Recolección_basura,
+Servicios.Transporte, Servicios.Medios, Servicios.Telefonía,
+Servicios.Electricidad, Servicios.Gas, Servicios.Aguas_servidas,
+Servicios.Aguas_blancas, Salud.Historia_familiar, Salud.Ayuda_especial,
+Situación_de_Exclusión.Tercera_edad, Situación_de_Exclusión.Discapacitados,
+Situación_de_Exclusión.Enfermedades_terminarles, Situación_de_Exclusión.Indigentes,
+Situación_de_Exclusión.Niños_calle, Participación_Comunitaria.Propia, Participación_Comunitaria.Familia,
+Participación_Comunitaria.Org_comunitarias, Participación_Comunitaria.Administración, Participación_Comunitaria.Constitución,
+Participación_Comunitaria.Sabe, Participación_Comunitaria.Apoya, Participación_Comunitaria.Área, Participación_Comunitaria.Misiones)
 
 
 
