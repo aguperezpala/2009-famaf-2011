@@ -1,40 +1,52 @@
 ________________________________________________________________________________
-Entidades
+Conjuntos de Entidades
+
+-- Planilla --------------------------------------------------------------------
+·Restricciones de cardinalidad:
+	La relación entre este conj. de entidades y los demás está explicada en
+los apartados correspondientes a cada una de esos otros conjuntos. Los conj. que
+están enrelación directa con Planilla son: Comunidad; Jefe de grupo familiar;
+Situación Laboral; Vivienda; Salud; Participación Comunitaria.
+
+·Superclave:
+	Toda entidad de este conj. queda unívocamente identificada mediante su
+número.
+
 
 -- Comunidad -------------------------------------------------------------------
-Restricciones de cardinalidad:
+·Restricciones de cardinalidad:
 	Toda comunidad tiene una relacion total con un sector determinado, a su
 vez hay muchos jefes de familia que se relacionan con la misma, y le
 corresponden varias planillas.
-	
-Superclave:
+
+·Superclave:
 	La superclave esta formada por su clave parcial (Nombre) con la unión
 del único atributo de sector (CP)
 
 
 -- Sector ----------------------------------------------------------------------
-Restricciones de cardinalidad:
+·Restricciones de cardinalidad:
 	Todo sector está en un Municipio determinado, y a su vez puede contener
 varias comunidades. Por otra parte en cada sector puede haber varias Parroquias.
 
-Superclave:
+·Superclave:
 	Este es un conjunto de entidades fuerte, cuya clave primaria es su
 código de sector, que es el Código Postal (CP) del sector.
 
 
 -- Parroquia -------------------------------------------------------------------
-Restriccion de cardinalidad:
+·Restriccion de cardinalidad:
 	Toda Parroquia se encuentra en un Sector determinado.
 
-Superclave:
+·Superclave:
 	Formada por la clave parcial Nombre y {Sector.CP}
 
 
 -- Situacion Laboral -----------------------------------------------------------
-Restricciones de cardinalidad:
+·Restricciones de cardinalidad:
 	Toda Situacion Laboral esta relacionada con una única planilla.
 
-Superclave:
+·Superclave:
 	Como es una entidad débil y tiene una relacion uno a uno con cada
 planilla esta univocamente identificada entonces con Planilla.numero. Es
 importante aclarar que no tiene clave parcial, pues ninguno de sus atributos es
@@ -46,19 +58,19 @@ diferenciarlas.
 
 
 -- Vivienda y Servicios --------------------------------------------------------
-Restricciones de cardinalidad:
+·Restricciones de cardinalidad:
 	Estas 2 entidades, se encuentran relacionadas totalmente entre ambas,
 osea todo vivienda tiene una y solo una entidad Servicios relacionada. A su vez
 Vivienda esta también relacionada en forma total con planilla.
 
-Superclave:
+·Superclave:
 	La superclave de ambas (Vivienda y Servicios) esta univocamente
 determinada por el numero de la planilla (Planilla.numero). Se da aquí la misma
 situación que con el conjunto de entidades débil "Situación Laboral"
 
 
 -- Situacion de exclusión y Salud ----------------------------------------------
-Restriccion de cardinalidad:
+·Restricciones de cardinalidad:
 	Ambas se encuentran relacionadas en forma total (entre sí) y a su vez
 Salud está relacionada de la misma forma con Planilla. De hecho Situación de
 exclusión podría haber sido modelado como un atributo multivalorado del conj. de
@@ -67,28 +79,38 @@ relación total con Salud para no tener que incluir un atributo multivalorado
 compuesto al diagrama. Al representarlo como conj. de ent. se pueden modelar
 mejor sus componentes (que aprecen como sus atributos)
 
-Superclave:
+·Superclave:
 	Como el caso anterior, ambas están determinadas univocamente con
 Planilla.numero.
 
 
 -- Participacion comunitaria ---------------------------------------------------
-Restriccion de cardinalidad:
+·Restricciones de cardinalidad:
 	Se encuentra relacionada en forma total y única con Planilla.
 
-Superclave:
+·Superclave:
 	No posee clave parcial y se identifica univocamente con Planilla.numero.
 	
 
 -- Encuestado ------------------------------------------------------------------
-Restriccion de cardinalidad:
-	Se encuentra relacionada en forma total con Planilla y a su vez, cada
-encuestado puede ser del tipo "Jefe del grupo familiar", cada uno de los cuales
-puede estar en una relacion del tipo parentesco con entidades que no sean del
-tipo "Jefe del grupo familiar" dentro del conjunto de encuestados.
+·Restricciones de cardinalidad:
+	El conj. de encuestados representa todas las personas que figuran en el
+censo, ya sean los que completaron la planilla o los que habitan en el mismo
+grupo familiar de quien los hizo. Su relación con "Jefe de grupo familiar" es
+de varios a uno.
 
-Superclave:
-	Todo encuestado está unívocamente identificado por su nº de CI, por lo
-cual el conjunto de entidades encuestado se considera fuerte.
+·Superclave:
+	Toda persona tiene un ID único dentro de un mismo Estado, conocido aquí
+como Cédula de Identidad (CI), la que se convierte en su clave primaria.
 
 
+-- Jefe de grupo familiar ------------------------------------------------------
+·Restricciones de cardinalidad:
+	La relación de Jefe de grupo familiar con Encuestados es de uno a varios
+, ya que por cada persona que llenó la Planilla puede haber varias personas
+dentro del mismo grupo familiar. Por otra parte la relación de JGF con Planilla
+es uno a uno.
+
+·Superclave:
+	Jefe de grupo familiar es un conj. de ent. fuerte debido a que forma
+parte de los encuestados y por ende cuenta con su priopio nº de CI.
