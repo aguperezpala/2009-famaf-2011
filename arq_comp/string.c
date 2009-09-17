@@ -1,139 +1,123 @@
+/* * * * * * * * * * * * * * * * * * * * * * * *
+ * <  TAD String  >--<  Versión de Mariano  >  *
+ * * * * * * * * * * * * * * * * * * * * * * * */
+
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "string.h"
 
 
-struct _string {
-	unsigned int size;	/* el tamaño del string */
-	unsigned int p;		/* el puntero del visor */
-	char * data;		/* los datos */
-};
 
+string* string_create (char* cstr){
+  string *result = NULL;
+  
+  result = (string*) calloc (1, sizeof (*result));
+  
+  if (result != NULL){
+    result-> data = cstr;
+    result-> len_data = strlen (cstr);
+    result-> pos =-1; 
+    result-> initialized = 0;
+  }
+  
+  return result;
+}
 
+void string_destroy (string *str){
+  free (str);
+}
 
+char* string_get_front (string *str, int pos ,int len){
+  int i = 0;
+  char* result = NULL;
+  
+  if (pos >= 0 && len >= 0){
+    result = (char*) calloc (len + 1, sizeof (char));
+    
+    if (result != NULL){
+    	str->initialized = 1;
+	str-> pos = pos;
+	
+	for (i = 0; i < len; i++)
+	  result[i] = str->data[(pos + i) % str->len_data];
+	
+	result[len] = '\0';
+    }
+  
+  }
+  
+  return result;
+}
 
+char* string_get_back (string *str, int pos ,int len){
+  int i = 0;
+  int index = 0;
+  char* result = NULL;
+  
+  if (pos >= 0 && len >= 0){
+    result = (char*) calloc (len + 1, sizeof (char));
+      
+    if (result != NULL){
+      str->initialized = 1;
+      str-> pos = pos;
+      
+      index = pos % str-> len_data;
+      for (i = 0; i < len; i++){
+	result[(len - 1) - i] = str->data[index];
+	index = (index - 1 + str-> len_data) % str-> len_data;
+      }
+      result[len] = '\0';
+    }
+  }
+  
+  return result;
+}
 
-/* Constructor:
-REQUIRES:
-size > 0 (the buffer size)
-data != null && size(data) == size
-RETURNS:
-NULL => error
-string != NULL (!error)
-*/
-string_t * string_create (unsigned int size, char * data);
+char* string_slice_right (string *str, int count, int len){
+  int i = 0;
+  int pos = 0;
+  char* result = NULL;
+  
+  if (count >= 0 && len >= 0 && str-> initialized == 1){
+    result = (char*) calloc (len + 1, sizeof (char));
+    
+    if (result != NULL){   
+      pos = str-> pos + count;
+      
+      for (i = 0; i < len; i++)
+	result[i] = str->data[(pos + i) % str->len_data];
+      
+      result[len] = '\0';
+    }
+  }
+  
+  return result;
+}
 
-
-/* Destructor
-REQUIRES:
-string != NULL
-*/
-void string_destroy (string_t * string);
-
-
-
-/* ### GETS ### */
-
-/* Funcion que devuelve un string_t * de winSize caracteres, comenzando desde 
-* string[posOff] hacia adelante.
-* 	REQUIRES:
-* 		string != NULL
-*		winSize >= 0
-*		0 <= posOff <= size(string)
-*	RETURNS:
-*		NULL => error
-*		new string_t * => no error
-*/
-string_t * string_get_front (string_t * string, unsigned int winSize, unsigned int posOff);
-
-
-/* Funcion que devuelve un string_t * de winSize caracteres, comenzando desde 
-* string[posOff] hacia atras.
-* 	REQUIRES:
-* 		string != NULL
-*		winSize >= 0
-*		0 <= posOff <= size(string)
-*	RETURNS:
-*		NULL => error
-*		new string_t * => no error
-*/
-string_t * string_get_back (string_t * string, unsigned int winSize, unsigned int posOff);
-
-
-/* Funcion que devuelve el tamaño del string
-*	REQUIRES:
-*		string != NULL
-*	RETURNS:
-*		stringSize
-*/
-unsigned int string_get_size (string_t * string);
-
-
-/* Funcion que devuelve la posicion del "visor"
-*	REQUIRES:
-*		string != NULL
-*	RETURNS:
-*		viewerPos
-*/
-unsigned int string_get_viewer_pos (string_t * string);
-
-
-/* Funcion que devuelve el caracter de la posicion actual del visor
-*	REQUIRES:
-*		string != NULL
-*	RETURNS:
-*		char
-*/
-char string_get_char (string_t * string);
-
-
-/* ### set ### */
-
-
-/* Funcion que setea un caracter en la posicion del "visor"
-*	REQUIRES:
-*		string != NULL
-*		c = caracter
-*/
-void string_set_char (string_t * string, char c);
-
-
-
-
-
-
-/* ### Slides ### */
-
-/* Funcion que mueve el "visor" de un string_t hacia adelante desp lugares, en 
-* caso de desplazarse mas alla del tamaño, comienza nuevamente (osea se mueve
-* sobre el arreglo en forma "circular")
-* 	REQUIRES:
-* 		string != NULL
-*		winSize >= 0
-*		desp >= 0
-*//* FIXME: que hace el winSize? */
-void string_slide_front (string_t * string, unsigned int winSize, unsigned int desp);
-
-
-/* Funcion que mueve el "visor" de un string_t hacia atras desp lugares, en 
-* caso de desplazarse mas alla del tamaño, comienza nuevamente (osea se mueve
-* sobre el arreglo en forma "circular")
-* 	REQUIRES:
-* 		string != NULL
-*		winSize >= 0
-*		desp >= 0
-*//* FIXME: que hace el winSize? */
-void string_slide_back (string_t * string, unsigned int winSize, unsigned int desp);
-
-
-
-
-/* ### Adicionales ### */
-
-/* Funcion que sirve para concatenar 2 string_t, devolviendo el resultado en
-*  un nuevo string_t * (NOTE: alloca memoria)
-*	REQUIRES:
-*		string1 != NULL
-*		string2 != NULL
-*	RETURNS:
-*		(string_t *) string1 ++ string2
-*/
-string_t * string_concat (string_t * string1, string_t * string2);
+char* string_slice_left (string *str, int count, int len){
+  int i = 0;
+  int index = 0;
+  int pos = 0;
+  char* result = NULL;
+  
+  if (pos >= 0 && len >= 0 && str->initialized == 1){
+    result = (char*) calloc (len + 1, sizeof (char));
+      
+    if (result != NULL){
+      
+      pos = str->pos - count;
+      
+      index = pos % str-> len_data;
+      for (i = 0; i < len; i++){
+	result[(len - 1) - i] = str->data[index];
+	index = (index - 1 + str-> len_data) % str-> len_data;
+      }
+      result[len] = '\0';
+    }
+  }
+  
+  return result;
+}
