@@ -2,7 +2,7 @@
 \lyxformat 345
 \begin_document
 \begin_header
-\textclass amsart
+\textclass article
 \use_default_options true
 \begin_modules
 theorems-ams
@@ -22,20 +22,20 @@ theorems-ams
 \paperfontsize default
 \spacing single
 \use_hyperref false
-\papersize default
-\use_geometry true
+\papersize a4paper
+\use_geometry false
 \use_amsmath 1
 \use_esint 1
 \cite_engine basic
 \use_bibtopic false
 \paperorientation portrait
-\leftmargin 0.1cm
-\topmargin 0.1cm
-\rightmargin 0.1cm
-\bottommargin 0.1cm
-\headheight 0.1cm
-\headsep 0.1cm
-\footskip 0.1cm
+\leftmargin 0.5cm
+\topmargin 0.5cm
+\rightmargin 0.5cm
+\bottommargin 0.5cm
+\headheight 0.5cm
+\headsep 0.5cm
+\footskip 0.5cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -76,20 +76,20 @@ Comercio-Situación_Laboral = (Planilla.Nro:Int , Comercio:String)
 \begin_layout Enumerate
 Vivienda-Planilla = (Planilla.Nro: Int , Tipo_Vivienda:String , Forma_Vivienda:St
 ring , Terreno_Propio:Bool , OCV:Bool , Paredes:String , Techo:String ,
- Salubridad:String )
+ Salubridad:String)
 \end_layout
 
 \begin_deeper
 \begin_layout Enumerate
-Enseres-Vivienda = ( Planilla.Nro:Int , Enseres:String )
+Enseres-Vivienda = (Planilla.Nro:Int , Enseres:String)
 \end_layout
 
 \begin_layout Enumerate
-Plagas-Vivienda = (Planilla.Nro:Int , Plagas:String )
+Plagas-Vivienda = (Planilla.Nro:Int , Plagas:String)
 \end_layout
 
 \begin_layout Enumerate
-Mascotas-Vivienda = ( Planilla.Nro:Int , Mascotas:String)
+Mascotas-Vivienda = (Planilla.Nro:Int , Mascotas:String)
 \end_layout
 
 \begin_layout Enumerate
@@ -126,61 +126,65 @@ Salud-Planilla = (Planillla.Nro:Int , Ayuda_Especial:String)
 
 \begin_deeper
 \begin_layout Enumerate
-Historia_Familiar-Salud = (Planillla.Nro:Int , Historia_Familiar:String )
+Historia_Familiar-Salud = (Planillla.Nro:Int , Historia_Familiar:String)
 \end_layout
 
 \begin_deeper
 \begin_layout Enumerate
 Situacion_Exclusion-Salud = (Planilla.Nro:Int , Niños_calle:Int , Indigentes:Int
- , Terminales:Int , Discapacitados:Int , Tercera_edad:Int )
+ , Terminales:Int , Discapacitados:Int , Tercera_edad:Int)
 \end_layout
 
 \end_deeper
 \end_deeper
 \begin_layout Enumerate
-Participación_Comunitaria-Planilla = ( Planilla.Nro:Int , Org_Comunitarias:Bool
+Participación_Comunitaria-Planilla = (Planilla.Nro:Int , Org_Comunitarias:Bool
  , Propia:Bool , Familia:Bool , Administracion:Bool , Constitución:Bool
- , Sabe:String , Apoya:Bool )
+ , Sabe:String , Apoya:Bool)
 \end_layout
 
 \begin_deeper
 \begin_layout Enumerate
-Misiones-Participación_Comunitaria = ( Planilla.Nro:Int , Misiones:String)
+Misiones-Participación_Comunitaria = (Planilla.Nro:Int , Misiones:String)
 \end_layout
 
 \begin_deeper
 \begin_layout Enumerate
-Area-Participación_Comunitaria = ( Planilla.Nro:Int , Area:String)
+Area-Participación_Comunitaria = (Planilla.Nro:Int , Area:String)
 \end_layout
 
 \end_deeper
 \end_deeper
 \begin_layout Enumerate
-Comunidad-Planilla = (Planilla.Nro:Int , Comunidad.Nombre:String )
+Comunidad-Planilla = (Planilla.Nro:Int , Comunidad.Nombre:String)
+\end_layout
+
+\begin_layout Enumerate
+Comunidad-Sector = (Nombre:String , Sector.CP:Int , Dirección.Nro:Int , Dirección.C
+alle:String)
 \end_layout
 
 \begin_deeper
 \begin_layout Enumerate
-Comunidad = (Nombre:String , Sector.Nombre:String , Dirección.Nro:Int , Dirección.C
-alle:String )
+Sector = (CP:Int)
 \end_layout
 
+\begin_deeper
 \begin_layout Enumerate
-Sector = (Nombre:String , Municipio.Nombre:String )
+Parroquia-Sector = (Nombre:String , Sector.CP:Int)
 \end_layout
 
-\begin_layout Enumerate
-Parroquia = (Nombre:String , Municipio.Nombre:String )
-\end_layout
-
-\begin_layout Enumerate
-Municipio = ( Nombre:String , Estado.Nombre:String )
-\end_layout
-
+\end_deeper
 \begin_layout Enumerate
 Estado = (Nombre:String)
 \end_layout
 
+\begin_deeper
+\begin_layout Enumerate
+Municipio-Estado = (Nombre:String , Estado.Nombre:String)
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Enumerate
 Planilla-Jefe = (Planilla.Nro:Int , Jefe.NroCI:Int)
@@ -197,7 +201,7 @@ nto:Date)
 \begin_layout Enumerate
 Encuestado-Jefe = (NroCI:Int , Jefe.NroCI:Int, Nombre:String , Apellido:String
  , Edad:Int , Sexo:Bool , Ingreso_Mensual:Int , Instrucción:String , Profesión:S
-tring ) ( Si el encuestado es el jefe , entonces los CI son iguales )
+tring) (Si el encuestado es el jefe , entonces los CI son iguales)
 \end_layout
 
 \end_deeper
