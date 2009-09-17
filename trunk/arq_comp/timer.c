@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "timer.h"
 
 struct __timer {
 	unsigned int to; /* Timeout */
@@ -29,7 +29,7 @@ timer *setup_timer (unsigned int timeout)
 		t = (timer *) calloc (1, sizeof (struct __timer));
 	
 	if (t != NULL)	
-		t.to = timeout;
+		t->to = timeout;
 	
 	return t;
 }
@@ -57,15 +57,15 @@ timer *stop_timer (timer *t)
  *
  * PRE: t != NULL
  *    b = timeout_timer (t)
- * POS:  b => el timer alcanzó el tiempo seteado con start_timer
- *	¬b => aún no se alcanzó ese tiempo
+ * POS: 1 => el timer alcanzó el tiempo seteado con start_timer
+ *	0 => aún no se alcanzó ese tiempo
  */
-bool timeout_timer (timer *t)
+int timeout_timer (timer *t)
 {
 	if (t != NULL)
-		return t.to <= t.ct;
+		return t->to <= t->ct;
 	else
-		return false;
+		return 0;
 }
 
 
@@ -80,7 +80,7 @@ bool timeout_timer (timer *t)
 void start_timer (timer *t)
 {
 	if (t != NULL)
-		t.ct = 0;
+		t->ct = 0;
 }
 
 
@@ -93,5 +93,5 @@ void start_timer (timer *t)
 void inc_timer (timer *t)
 {
 	if (t != NULL)
-		t.ct++;
+		t->ct++;
 }
