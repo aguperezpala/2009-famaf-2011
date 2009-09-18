@@ -70,6 +70,13 @@ char map_ascii[MAX_CHAR_MAP] =
     0x00, 0x6e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00	/* 114 - 127 [70 - 7f] */
 };
 
+
+/* NOTE
+ * Para lo que sigue ver fotocopia "Display 7 segmentos cátodo común",
+ * los pines 14, 16 y 17. Y comparar con la filmina del LPT1 (del teórico),
+ * los pines 14, 16 y 17.
+ */
+
 /**
  * Turn on displays in direct order.
  */
@@ -77,6 +84,13 @@ int dir_order[DISPLAY_SIZE] =
 {
     10, 8, 14, 12, 2, 0, 6, 4 /* 1010 1000 1110 1100 0010 0000 0110 0100 */
 };
+/* NOTE
+ * Cada secuencia de bits xyzw envía info al registro CONTROL
+ * de la LPT1. Se usan los bits xyz == a3a2a1, que son "auto_feed",
+ * "initialize_printer" y "select_printer" El bit a0 que es el
+ * "strobe" no se usa y es siempre '0' (pero eso las dir. son pares)
+ * Initialize_printer es activa por bajo, las otras dos por alto.
+ */
 
 /**
  * Turn on displays in reverse order.
