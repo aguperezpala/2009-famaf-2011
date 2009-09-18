@@ -37,22 +37,21 @@
 #define DELAY   100
 
 
-char* str_to_print = NULL;
-string* win_string = NULL;
+char* str_to_print = NULL; /* Lo que se manda a los display */
+string* win_string = NULL; /* TAD que guarda el char * ingresado */
 
 int base = 0, offset = 0, picaddr = 0, nxt_to_pr = 0;
 
-timer *timer_to_print = NULL;
+timer *timer_to_print = NULL; /* Timer que regula la veloc. de "impresión" */
 
 void interrupt (*oldhandler)(__CPPARGS);
 
 
 void interrupt lptisr (__CPPARGS) {
-/* En DATA escribimos el dígito a imprimir
+/* NOTE
+ * En DATA escribimos el dígito a imprimir
  * Con CONTROL seleccionamos el display donde imprimirlo
- * CONTROL: (MSB) - - - - ~17  16 ~14 ~1 (LSB)
- * Usamos la lineas: Strobe:Bit0, LineFeed:Bit1, Select_Printer:Bit3 ?
- * Son activas por bajo! (salvo bit2)
+ * Ver table.h para más info sobre la selección del display
  */
 	int ans = 0;
 	int ascii_code = 0;
@@ -61,25 +60,31 @@ void interrupt lptisr (__CPPARGS) {
 
 	disable();
 
-	/* Obtenemos el código ascci del caracter a imprimir */
+/* Cálculo de la información a mostrar por el display: */
+	
+	/* Obtenemos el código ascii del caracter a imprimir */
 	ascii_code = str_to_print[base + offset];
 
 	/* Traducimos ese caracter según la tablita */
 	display_code = map_ascii[ascii_code];
 
-	outport (DATA, display_code);	/* Output data */
+	outport (DATA, display_code);		/* Output data */
 	offset = (offset + 1) % DISPLAY_SIZE;	/* Update offset */
-
+	
+/* Selección del display por donde se muestra esa información: */
+	
+	/* NOTE
+	 * Lo que sigue es para activar con el reg. CONTROL el display indicado
+	 * El inport con la máscara se hace para no deshabilitar por error
+	 * la IRQ de la LPT --> ver "Enable parallel port IRQ" en el main
+	 */
 	ans = inport (CONTROL) & 0x10;
-	/* Porqué está Máscara?, Usamos los Bit0,1,3? */
-
 	outport (CONTROL, ans | dir_order[offset]); /* See port02.c */
-
-	/* Vemos si ya hay que mostrar otra cosa m�s all� */
+	
+/* Actualización de la información a mostrar por el display: */
+	
 	inc_timer (timer_to_print);
-
 	if (timeout_timer (timer_to_print)) {
-
 		/* Reinicializamos la cuenta */
 		start_timer (timer_to_print);
 
@@ -87,7 +92,7 @@ void interrupt lptisr (__CPPARGS) {
 		str_to_print = string_slice_right (win_string, nxt_to_pr, DISPLAY_SIZE);
 	}
 
-	outport(picaddr,0x20);			    /* PIC end of interrupt */
+	outport(picaddr,0x20);	/* PIC end of interrupt */
 
 	enable();
 }
@@ -134,23 +139,6 @@ int main(int argc,char* argv[]) {
 	timer_to_print = setup_timer (DELAY);
 	start_timer (timer_to_print);
 
-	/*
-	for ( i = 0 ; i < 20 ; i++) {
-
-		str_to_print = string_slice_right (win_string, i%MODULO, DISPLAY_SIZE);
-
-		printf ("str_to_print: %s\n", str_to_print);
-
-		free (str_to_print);
-
-		ASSERT (str_to_print != NULL);
-	}
-	*/
-
-	/* ---                           --- */
-
-
-
 	/* Main program */
 	printf ("Interrupt is enabled. Main program prints some values.\n");
 	for (;!kbhit();) {
@@ -177,6 +165,7 @@ int main(int argc,char* argv[]) {
 	/* Free all resources */
 	win_string = string_destroy (win_string);
 	free (str_to_print);
+	timer_to_print = stop_timer (timer_to_print);
 
 	/* Quit program */
 	printf ("\nExit interrupt successfully. Quit program\n");
