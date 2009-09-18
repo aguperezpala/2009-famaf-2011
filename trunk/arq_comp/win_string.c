@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "string.h"
+#include "win_string.h"
 #include "no_std_assert.h"
 
 
