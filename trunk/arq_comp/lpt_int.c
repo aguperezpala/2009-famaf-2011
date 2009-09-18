@@ -2,7 +2,7 @@
 *	Centronic interrupt program example 1 (in C).
 *
 *
-* @author	E.E. Javier Gaspar
+* @author	E.E. Javier Gaspar + U.G. Super-Team
 * @version	1.0 - October 15th, 2004
 */
 
@@ -40,8 +40,7 @@
 char* str_to_print = NULL;
 string* win_string = NULL;
 
-int base = 0, offset = 0, wrap = DISPLAY_SIZE, picaddr = 0, nxt_to_pr = 0;
-/* Cambié 8 en wrap por DISPLAY_SIZE */
+int base = 0, offset = 0, picaddr = 0, nxt_to_pr = 0;
 
 timer *timer_to_print = NULL;
 
@@ -50,12 +49,11 @@ void interrupt (*oldhandler)(__CPPARGS);
 
 void interrupt lptisr (__CPPARGS) {
 /* En DATA escribimos el dígito a imprimir
- * Con CONTROL seleccionamos el display a imprimir
+ * Con CONTROL seleccionamos el display donde imprimirlo
  * CONTROL: (MSB) - - - - ~17  16 ~14 ~1 (LSB)
  * Usamos la lineas: Strobe:Bit0, LineFeed:Bit1, Select_Printer:Bit3 ?
  * Son activas por bajo! (salvo bit2)
  */
-
 	int ans = 0;
 	int ascii_code = 0;
 	int display_code = 0;
@@ -69,15 +67,15 @@ void interrupt lptisr (__CPPARGS) {
 	/* Traducimos ese caracter según la tablita */
 	display_code = map_ascii[ascii_code];
 
-	outport (DATA, display_code);    /* Output data */
-	offset = (offset + 1) % wrap;		    /* Update offset */
+	outport (DATA, display_code);	/* Output data */
+	offset = (offset + 1) % DISPLAY_SIZE;	/* Update offset */
 
 	ans = inport (CONTROL) & 0x10;
 	/* Porqué está Máscara?, Usamos los Bit0,1,3? */
 
 	outport (CONTROL, ans | dir_order[offset]); /* See port02.c */
 
-	/* Vemos si ya hay que mostrar otra cosa m�s all� */
+	/* Vemos si ya hay que mostrar otra cosa m�s all� */
 	inc_timer (timer_to_print);
 
 	if (timeout_timer (timer_to_print)) {
@@ -102,7 +100,7 @@ int main(int argc,char* argv[]) {
 	intno = IRQn + 8;
 	picaddr = PIC1;
 	picmask = 1;
-	picmask = picmask << IRQn; /* 0..0 0..0 0..0 010000000 */
+	picmask = picmask << IRQn; /* 1000 0000 == 0x80 */
 
 	/* Make sure port is in forward direction */
 	outport (CONTROL, inp (CONTROL)&0xDF);

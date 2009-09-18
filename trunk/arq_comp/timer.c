@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "timer.h"
+/* FIXME: implementar el uso de la macro ASSERT cuando ésta sea implementada
+#include "assert.h" */
+
 
 struct __timer {
 	unsigned int to; /* Timeout */
