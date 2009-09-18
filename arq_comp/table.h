@@ -75,7 +75,7 @@ char map_ascii[MAX_CHAR_MAP] =
  */
 int dir_order[DISPLAY_SIZE] =
 {
-    10, 8, 14, 12, 2, 0, 6, 4
+    10, 8, 14, 12, 2, 0, 6, 4 /* 1010 1000 1110 1100 0010 0000 0110 0100 */
 };
 
 /**
@@ -85,6 +85,7 @@ int rev_order[DISPLAY_SIZE] =
 {
     4, 6, 0, 2, 12, 14, 8, 10
 };
+
 
 #ifdef __cplusplus
 }

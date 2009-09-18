@@ -18,8 +18,11 @@
 #include <dos.h>
 #include <stdio.h>
 
+#include "no_std_assert.h"
+
 #include "table.h"
 #include "win_string.h"
+
 
 #ifdef __cplusplus
     #define __CPPARGS ...
@@ -38,10 +41,22 @@ int base=48, offset=0, wrap=8, picaddr = 0;
 void interrupt (*oldhandler)(__CPPARGS);
 
 
+/* Convierte el string 'str' a un array de int que contiene los códigos 
+ * ascii de 'str'.
+ * PRE: str != NULL
+ *      str debe ser NUL terminado
+ * POS: result != NULL
+ * Nota: el arreglo debe ser liberado por el llamador
+ */
+
+static int* str_to_ascii_table (const char* str);
+
 void interrupt lptisr (__CPPARGS) {
 /* En DATA escribimos el dígito a imprimir
  * Con CONTROL seleccionamos el display a imprimir
- * CONTROL: MSB - - - - ~17  16 ~14 ~1 LSB
+ * CONTROL: (MSB) - - - - ~17  16 ~14 ~1 (LSB)
+ * Usamos la lineas: Strobe:Bit0, LineFeed:Bit1, Select_Printer:Bit3 ?
+ * Son activas por bajo! (salvo bit2)
  */
 	
 	int ans = 0;
@@ -51,7 +66,9 @@ void interrupt lptisr (__CPPARGS) {
 	outport (DATA, map_ascii[base+offset]);	    /* Output data */
 	offset = (offset + 1) % wrap;		    /* Update offset */
 	
-	ans = inport (CONTROL) & 0x10;		    /* See port02.c */
+	ans = inport (CONTROL) & 0x10;		    
+	/* Porqué está Máscara?, Usamos los Bit0,1,3? */
+	
 	outport (CONTROL, ans | dir_order[offset]); /* See port02.c */
 	
 	outport(picaddr,0x20);			    /* PIC end of interrupt */
@@ -87,6 +104,21 @@ int main(int argc,char* argv[]) {
     /* Enable parallel port IRQ's */
     outport (CONTROL, inp(CONTROL)|0x10);
     
+    
+    /* --- Setup the string to print --- */
+    
+    win_string = string_create (TEXT);
+    ASSERT (win_string != NULL);
+    
+    str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
+    ASSERT (str_to_print);
+     
+    
+    
+    
+    
+    
+    
     /* Main program */
     printf ("Interrupt is enabled. Main program prints some values.\n");
     for (;!kbhit();) {		
@@ -116,3 +148,18 @@ int main(int argc,char* argv[]) {
     return 0;
 }
 
+static int* str_to_ascii_table (const char* str) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
