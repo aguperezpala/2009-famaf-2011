@@ -37,7 +37,8 @@
 
 char* str_to_print = NULL;
 
-int base=48, offset=0, wrap=8, picaddr = 0;
+int base = 48, offset = 0, wrap = DISPLAY_SIZE, picaddr = 0; 
+/* Cambié 8 en wrap por DISPLAY_SIZE */
 
 void interrupt (*oldhandler)(__CPPARGS);
 
@@ -51,10 +52,19 @@ void interrupt lptisr (__CPPARGS) {
  */
 	
 	int ans = 0;
+	int ascii_code = 0;
+	int display_code = 0;
+	
 
 	disable();
 	
-	outport (DATA, map_ascii[base+offset]);	    /* Output data */
+	/* Obtenemos el código ascci del caracter a imprimir */
+	ascii_code = str_to_print[base + offset];
+	
+	/* Traducimos ese caracter según la tablita */
+	display_code = map_ascii[ascii_code];
+	
+	outport (DATA, map_ascii[display_code]);    /* Output data */
 	offset = (offset + 1) % wrap;		    /* Update offset */
 	
 	ans = inport (CONTROL) & 0x10;		    
@@ -102,11 +112,11 @@ int main(int argc,char* argv[]) {
     ASSERT (win_string != NULL);
     
     str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
-    ASSERT (str_to_print);
+    ASSERT (str_to_print != NULL);
      
     
     
-    
+    /* ---                           --- */
     
     
     
@@ -133,6 +143,10 @@ int main(int argc,char* argv[]) {
     /* Output null data */
     outport (DATA, 0x00);
     
+    /* Free all resources */
+    win_string = string_destroy (win_string);
+    free (str_to_print);
+        
     /* Quit program */
     printf ("\nExit interrupt successfully. Quit program\n");
     
