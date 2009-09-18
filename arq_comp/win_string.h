@@ -35,7 +35,9 @@ string* string_destroy (string *str);
  *      0 <= pos <= str->len_data
  *	0 <= len
  * POS: result != NULL
-        result es NUL terminado 
+ *      result es NUL terminado 
+ *      result debe ser liberado por el llamador
+ *      result-> pos = pos (string_pointer)
  */
 char* string_get_front (string *str, int pos ,int len);
 
@@ -46,7 +48,13 @@ char* string_get_front (string *str, int pos ,int len);
 char* string_get_back (string *str, int pos ,int len);
 
 /* Idem a 'string_get_* ()' sólo que no modifican el 'string_pointer' 
- * se debe llamar luego de 'string_get_* ()'
+ * PRE: str != NULL;
+ *      0 <= pos <= str->len_data
+ *	0 <= len
+ *      str-> initialized == 1
+ * POS: result != NULL
+ *      result es NUL terminado 
+ *      result debe ser liberado por el llamador
  */
 char* string_slice_right (string *str, int count, int len);
 

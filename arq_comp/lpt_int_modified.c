@@ -17,7 +17,9 @@
 #include <conio.h>
 #include <dos.h>
 #include <stdio.h>
+
 #include "table.h"
+#include "win_string.h"
 
 #ifdef __cplusplus
     #define __CPPARGS ...
@@ -25,62 +27,92 @@
     #define __CPPARGS
 #endif
 
-//int base=65,offset=0,wrap=26,picaddr;
-//int base=97,offset=0,wrap=26,picaddr;
-int base=48,offset=0,wrap=8,picaddr;
+
+#define TEXT "Zapallo"
+
+
+char* str_to_print = NULL;
+
+int base=48, offset=0, wrap=8, picaddr = 0;
+
 void interrupt (*oldhandler)(__CPPARGS);
 
-void interrupt lptisr(__CPPARGS) {
-	int ans;
+
+void interrupt lptisr (__CPPARGS) {
+/* En DATA escribimos el dígito a imprimir
+ * Con CONTROL seleccionamos el display a imprimir
+ * CONTROL: MSB - - - - ~17  16 ~14 ~1 LSB
+ */
+	
+	int ans = 0;
 
 	disable();
-	outport(DATA,map_ascii[base+offset]);	/* Output data */
-	offset=(offset+1)%wrap;		/* Update offset */
-	ans=inport(CONTROL)&0x10;		/* See port02.c */
-	outport(CONTROL,ans|dir_order[offset]);		/* See port02.c */
-	outport(picaddr,0x20);			/* PIC end of interrupt */
+	
+	outport (DATA, map_ascii[base+offset]);	    /* Output data */
+	offset = (offset + 1) % wrap;		    /* Update offset */
+	
+	ans = inport (CONTROL) & 0x10;		    /* See port02.c */
+	outport (CONTROL, ans | dir_order[offset]); /* See port02.c */
+	
+	outport(picaddr,0x20);			    /* PIC end of interrupt */
+	
 	enable();
 }
 
-int main(int argc,char* argv[]) {
-	int intno,picmask;
 
-	//clrscr();
-	intno=IRQn+8;
-	picaddr=PIC1;
-	picmask=1;
-	picmask=picmask<<IRQn;
-	/* Make sure port is in forward direction */
-	outport(CONTROL,inp(CONTROL)&0xDF);
-	outport(DATA,0xFF);
-	/* Save old interrupt vector */
-	oldhandler=getvect(intno);
-	/* Set new interrupt vector entry */
-	disable(); setvect(intno,lptisr); enable();
-	/* Un-Mask Pic */
-	outport(picaddr+1,inp(picaddr+1)&(0xFF-picmask));
-	/* Enable parallel port IRQ's */
-	outport(CONTROL,inp(CONTROL)|0x10);
-	/* Main program */
-	printf("Interrupt is enabled. Main program prints some values.\n");
-	for (;!kbhit();) {				// while (!kbhit())
-	printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
-		base,offset,map_ascii[base+offset]);
-	printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
-	/*outp(DATA,ascii[base+offset]);	// debugging support
-	offset=(offset+1)%wrap;			// debugging support
-	delay(500);				// debugging support*/
+int main(int argc,char* argv[]) {
+    int intno = 0, picmask = 0;
+    string* win_string = NULL;
+
+    intno = IRQn + 8;
+    picaddr = PIC1;
+    picmask = 1;
+    picmask = picmask << IRQn; /* 0..0 0..0 0..0 010000000 */
+    
+    /* Make sure port is in forward direction */
+    outport (CONTROL, inp (CONTROL)&0xDF);
+    outport (DATA,0xFF);
+    
+    /* Save old interrupt vector */
+    oldhandler = getvect (intno);
+    
+    /* Set new interrupt vector entry */
+    disable (); 
+    setvect (intno,lptisr); 
+    enable ();
+    
+    /* Un-Mask Pic */
+    outport (picaddr+1, inp (picaddr+1)&(0xFF-picmask));
+    
+    /* Enable parallel port IRQ's */
+    outport (CONTROL, inp(CONTROL)|0x10);
+    
+    /* Main program */
+    printf ("Interrupt is enabled. Main program prints some values.\n");
+    for (;!kbhit();) {		
+      printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
+	     base,offset,map_ascii[base+offset]);
+      printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
+	
     }
+    
     /* Disable parallel port IRQ's */
-    outport(CONTROL,inp(CONTROL)&0xEF);
+    outport (CONTROL, inp (CONTROL)&0xEF);
+    
     /* Mask Pic */
-    outport(picaddr+1,inp(picaddr+1)|picmask);
+    outport (picaddr+1, inp (picaddr+1)|picmask);
+    
     /* Restore old interrupt vector before exit */
-    disable(); setvect(intno,oldhandler); enable();
+    disable (); 
+    setvect (intno, oldhandler); 
+    enable ();
+    
     /* Output null data */
-    outport(DATA,0x00);
+    outport (DATA, 0x00);
+    
     /* Quit program */
-    printf("\nExit interrupt successfully. Quit program\n");
+    printf ("\nExit interrupt successfully. Quit program\n");
+    
     return 0;
 }
 
