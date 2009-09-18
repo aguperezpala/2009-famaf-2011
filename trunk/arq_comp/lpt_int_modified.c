@@ -17,6 +17,7 @@
 #include <conio.h>
 #include <dos.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "no_std_assert.h"
 
@@ -40,16 +41,6 @@ int base=48, offset=0, wrap=8, picaddr = 0;
 
 void interrupt (*oldhandler)(__CPPARGS);
 
-
-/* Convierte el string 'str' a un array de int que contiene los códigos 
- * ascii de 'str'.
- * PRE: str != NULL
- *      str debe ser NUL terminado
- * POS: result != NULL
- * Nota: el arreglo debe ser liberado por el llamador
- */
-
-static int* str_to_ascii_table (const char* str);
 
 void interrupt lptisr (__CPPARGS) {
 /* En DATA escribimos el dígito a imprimir
@@ -148,18 +139,4 @@ int main(int argc,char* argv[]) {
     return 0;
 }
 
-static int* str_to_ascii_table (const char* str) {
 
-
-
-
-
-
-
-
-
-
-
-
-
-}
