@@ -1,0 +1,1686 @@
+<!--Original from BC++ 3.1, converted by poli@vsb.cz, http://poli.cs.vsb.cz-->
+<HTML><PRE><A NAME="LBL1"></A> =========
+  CONIO.H
+ =========
+ Functions
+ =========
+  <A HREF="conio.htm#LBL10">cgets</A>         
+  <A HREF="conio.htm#LBL11">clreol</A>        
+  <A HREF="conio.htm#LBL12">clrscr</A>        
+  <A HREF="stdio.htm#LBL106">cprintf</A>       
+  <A HREF="conio.htm#LBL13">cputs</A>         
+  <A HREF="stdio.htm#LBL143">cscanf</A>        
+  <A HREF="conio.htm#LBL14">delline</A>       
+  <A HREF="conio.htm#LBL15">getch</A>         
+  <A HREF="conio.htm#LBL15">getche</A>        
+  <A HREF="conio.htm#LBL21">getpass</A>       
+  <A HREF="conio.htm#LBL22">gettext</A>       
+  <A HREF="conio.htm#LBL25">gettextinfo</A>   
+  <A HREF="conio.htm#LBL26">gotoxy</A>        
+  <A HREF="conio.htm#LBL30">highvideo</A>     
+  <A HREF="conio.htm#LBL36">insline</A>       
+  <A HREF="conio.htm#LBL31">inp</A>           
+  <A HREF="dos.htm#LBL161">inport</A>        
+  <A HREF="dos.htm#LBL161">inportb</A>       
+  <A HREF="conio.htm#LBL31">inpw</A>          
+  <A HREF="conio.htm#LBL40">kbhit</A>         
+  <A HREF="conio.htm#LBL30">lowvideo</A>      
+  <A HREF="conio.htm#LBL41">movetext</A>      
+  <A HREF="conio.htm#LBL30">normvideo</A>     
+  <A HREF="conio.htm#LBL31">outp</A>          
+  <A HREF="dos.htm#LBL161">outport</A>       
+  <A HREF="dos.htm#LBL161">outportb</A>      
+  <A HREF="conio.htm#LBL31">outpw</A>         
+  <A HREF="conio.htm#LBL42">putch</A>         
+  <A HREF="conio.htm#LBL22">puttext</A>       
+  <A HREF="conio.htm#LBL43">_setcursortype</A>
+  <A HREF="conio.htm#LBL44">textattr</A>      
+  <A HREF="conio.htm#LBL44">textbackground</A>
+  <A HREF="conio.htm#LBL44">textcolor</A>     
+  <A HREF="conio.htm#LBL50">textmode</A>      
+  <A HREF="conio.htm#LBL51">ungetch</A>       
+  <A HREF="conio.htm#LBL52">wherex</A>        
+  <A HREF="conio.htm#LBL52">wherey</A>        
+  <A HREF="conio.htm#LBL53">window</A>        
+
+ Constants, data types, and global variables
+ ============================================
+  <A HREF="conio.htm#LBL3">BLINK</A>        
+  <A HREF="conio.htm#LBL3">COLORS</A>       
+  <A HREF="conio.htm#LBL5">directvideo</A>  
+  <A HREF="conio.htm#LBL43">_NOCURSOR</A>    
+  <A HREF="conio.htm#LBL43">_NORMALCURSOR</A>
+  <A HREF="conio.htm#LBL43">_SOLIDCURSOR</A> 
+  <A HREF="conio.htm#LBL4">text_info</A>    
+  <A HREF="conio.htm#LBL2">text_modes</A>   
+  <A HREF="conio.htm#LBL6">_wscroll</A>     
+
+ See Also
+ ========
+  <A HREF="allbcpp.htm#LBL11">List of all Header files</A>
+
+<HR><A NAME="LBL2"></A>
+  text_modes                        &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ===================
+
+ Enum: Standard video modes
+
+  Constant |Value| Text Mode
+ ----------+-----+----------------------------------
+  LASTMODE | -1  | Previous text mode
+  BW40     |  0  | Black and white       40 columns
+  C40      |  1  | Color                 40 columns
+  BW80     |  2  | Black and white       80 columns
+  C80      |  3  | Color                 80 columns
+  MONO     |  7  | Monochrome            80 columns
+  C4350    | 64  | EGA and               43-line
+           |     | VGA                   50-line
+
+<HR><A NAME="LBL3"></A>
+  COLORS, CGA_COLORS, and EGA_COLORS
+  (Enumerated Constants for Colors)
+ ====================================
+These tables show
+  * the symbolic constants used to set text attributes on CGA and EGA
+    monitors. (Defined in <A HREF="conio.htm#LBL1">CONIO.H.</A>)
+  * the drawing colors available for BGI functions running on CGA and EGA
+    monitors. (Defined in <A HREF="graphics.htm#LBL1">GRAPHICS.H.</A>)
+
+The COLORS constants are used by these text
+mode functions:
+  <A HREF="conio.htm#LBL44">textattr</A>      
+  <A HREF="conio.htm#LBL44">textbackground</A>
+  <A HREF="conio.htm#LBL44">textcolor</A>     
+
+The CGA_COLORS and EGA_COLORS constants are
+used by these BGI graphics functions:
+  <A HREF="graphics.htm#LBL63">setallpalette</A> 
+  <A HREF="graphics.htm#LBL54">setbkcolor</A>    
+  <A HREF="graphics.htm#LBL60">setcolor</A>      
+  <A HREF="graphics.htm#LBL201">setpalette</A>    
+
+Valid colors depend on the current graphics
+driver and <A HREF="graphics.htm#LBL11">current graphics mode.</A>
+
+
+  COLORS (text mode)
+ ====================|Back-|Fore-
+  Constant     |Value|grnd?|grnd?
+ --------------+-----+-----+-----
+  BLACK        |  0  | Yes | Yes
+  BLUE         |  1  | Yes | Yes
+  GREEN        |  2  | Yes | Yes
+  CYAN         |  3  | Yes | Yes
+  RED          |  4  | Yes | Yes
+  MAGENTA      |  5  | Yes | Yes
+  BROWN        |  6  | Yes | Yes
+  LIGHTGRAY    |  7  | Yes | Yes
+  DARKGRAY     |  8  | No  | Yes
+  LIGHTBLUE    |  9  | No  | Yes
+  LIGHTGREEN   | 10  | No  | Yes
+  LIGHTCYAN    | 11  | No  | Yes
+  LIGHTRED     | 12  | No  | Yes
+  LIGHTMAGENTA | 13  | No  | Yes
+  YELLOW       | 14  | No  | Yes
+  WHITE        | 15  | No  | Yes
+ --------------+-----+-----+------
+  BLINK        |128  | No  | ***
+
+*** To display blinking characters in text
+mode, add BLINK to the foreground color.
+(Defined in <A HREF="conio.htm#LBL1">CONIO.H.</A>)
+
+
+  CGA_COLORS (graphics mode)
+ ============================
+
+In this table, the palette listings CGA0,
+CGA1, CGA2, and CGA3 refer to the four
+predefined four-color palettes available on
+CGA (and compatible) systems.
+
+  Palette| Constant assigned to this color number (pixel value)
+  Number |       1        |        2         |        3
+ --------+----------------+------------------+-----------------
+   CGA0  | CGA_LIGHTGREEN | CGA_LIGHTRED     | CGA_YELLOW
+   CGA1  | CGA_LIGHTCYAN  | CGA_LIGHTMAGENTA | CGA_WHITE
+   CGA2  | CGA_GREEN      | CGA_RED          | CGA_BROWN
+   CGA3  | CGA_CYAN       | CGA_MAGENTA      | CGA_LIGHTGRAY
+
+You can select the background color (entry
+#0) in each of these palettes, but the other
+colors are fixed.
+
+
+  EGA_ COLORS (graphics mode)
+ =============================
+
+  Constant      |Value| Constant         |Value
+ ---------------+-----+------------------+-----
+  EGA_BLACK     |  0  | EGA_DARKGRAY     | 56
+  EGA_BLUE      |  1  | EGA_LIGHTBLUE    | 57
+  EGA_GREEN     |  2  | EGA_LIGHTGREEN   | 58
+  EGA_CYAN      |  3  | EGA_LIGHTCYAN    | 59
+  EGA_RED       |  4  | EGA_LIGHTRED     | 60
+  EGA_MAGENTA   |  5  | EGA_LIGHTMAGENTA | 61
+  EGA_LIGHTGRAY |  7  | EGA_YELLOW       | 62
+  EGA_BROWN     | 20  | EGA_WHITE        | 63
+
+<HR><A NAME="LBL4"></A>
+  text_info                         &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ===========
+
+Current text window information.
+
+Used by the <A HREF="conio.htm#LBL25">gettextinfo</A> function.
+
+  struct text_info {
+    unsigned char winleft;        /* left window coordinate */
+    unsigned char wintop;         /* top window coordinate */
+    unsigned char winright;       /* right window coordinate */
+    unsigned char winbottom;      /* bottom window coordinate */
+    unsigned char attribute;      /* text attribute */
+    unsigned char normattr;       /* normal attribute */
+    unsigned char currmode;       /* current video mode:
+                                     BW40, BW80, C40, C80, or C4350 */
+    unsigned char screenheight;   /* text screen's height */
+    unsigned char screenwidth;    /* text screen's width */
+    unsigned char curx;           /* x-coordinate in current window */
+    unsigned char cury;           /* y-coordinate in current window */
+  };
+
+<HR><A NAME="LBL5"></A>
+  directvideo                       &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =============
+Controls video output
+
+ Declaration:  int directvideo
+
+directvideo controls where your program's
+console output goes:
+
+ Value| Meaning
+ -----+-------------------------------------
+   0  | (Default) Goes via ROM BIOS calls
+   1  | Goes directly to the video RAM
+
+To use directvideo = 1, your system's video
+hardware must be identical to IBM display
+adapters.
+
+If directvideo = 0, your console output will
+work on any IBM BIOS-compatible system.
+
+ See Also:
+  <A HREF="allbcpp.htm#LBL23">List of all global variables</A>
+
+<HR><A NAME="LBL6"></A>
+  _wscroll                          &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ==========
+
+Enables or disables scrolling in console
+I/O functions.
+
+ Declaration:  extern int_wscroll
+
+_wscroll is a console I/O flag. You can use
+it to draw along the edges of a window
+without having the screen scroll.
+
+Default = 1 (scrolling enabled)
+
+ See Also:
+  <A HREF="allbcpp.htm#LBL23">List of all global variables</A>
+
+<HR><A NAME="LBL10"></A> =======
+  cgets                            &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =======
+ Reads string from console
+
+ Declaration:  char *cgets(char *str);
+
+ Remarks:
+cgets reads a string of characters from the
+console and stores the string (and the string
+length) in the location *str.
+
+Before you call cgets, set str[0] to the
+maximum length of the string to be read.
+
+cgets reads characters until it encounters a
+carriage-return/linefeed combination (CR/LF),
+or until the maximum allowable number of
+characters have been read.
+
+If cgets reads a CR/LF, it replaces the CR/LF
+with a \0 (null terminator) before storing
+the string.
+
+On return, str[1] is set to the number of
+characters actually read.
+
+The characters read start at str[2] and end
+with a null terminator, so str must be at
+least (str[0] + 2) bytes long.
+
+ Return Value:
+  * On success, returns a pointer to str[2].
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL13">cputs</A> 
+  <A HREF="stdio.htm#LBL36">fgets</A> 
+  <A HREF="conio.htm#LBL15">getch</A> 
+  <A HREF="conio.htm#LBL15">getche</A>
+  <A HREF="stdio.htm#LBL66">gets</A>  
+
+ Example:
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    char buffer[83];
+    char *p;
+
+    /* There's space for 80 characters plus the NULL terminator */
+    buffer[0] = 81;
+
+    printf("Input some chars:");
+    p = cgets(buffer);
+    printf("\ncgets read %d characters: \"%s\"\n", buffer[1], p);
+    printf("The returned pointer is %p, buffer[0] is at %p\n", p, &buffer);
+
+    /* Leave room for 5 characters plus the NULL terminator */
+    buffer[0] = 6;
+
+    printf("Input some chars:");
+    p = cgets(buffer);
+    printf("\ncgets read %d characters: \"%s\"\n", buffer[1], p);
+    printf("The returned pointer is %p, buffer[0] is at %p\n", p, &buffer);
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL11"></A> ========
+  clreol                            &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ========
+ Clears to end of line in text window
+
+ Declaration:  void clreol(void);
+
+ Remarks:
+clreol clears all characters from the cursor
+position to the end of the line within the
+current text window, without moving the
+cursor.
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL12">clrscr</A> 
+  <A HREF="conio.htm#LBL14">delline</A>
+  <A HREF="conio.htm#LBL53">window</A> 
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+
+ {
+    clrscr();
+    cprintf("The function CLREOL clears all characters from the\r\n");
+    cprintf("cursor position to the end of the line within the\r\n");
+    cprintf("current text window, without moving the cursor.\r\n");
+    cprintf("Press any key to continue . . .");
+    gotoxy(14, 4);
+    getch();
+
+    clreol();
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL12"></A> ========
+  clrscr                            &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ========
+ Clears text mode window
+
+ Declaration:  void clrscr(void);
+
+ Remarks:
+clrscr clears the current text window and
+places the cursor in the upper left-hand
+corner (at position 1,1).
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL11">clreol</A> 
+  <A HREF="conio.htm#LBL14">delline</A>
+  <A HREF="conio.htm#LBL53">window</A> 
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    int i;
+
+    clrscr();
+    for (i = 0; i &LT; 20; i++)
+       cprintf("%d\r\n", i);
+    cprintf("\r\nPress any key to clear screen");
+    getch();
+
+    clrscr();
+    cprintf("The screen has been cleared!");
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL13"></A> =======
+  cputs                             &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =======
+ Writes a string to the text window on the screen
+
+ Declaration:  int cputs(const char *str);
+
+ Remarks:
+cputs writes the null-terminated string str
+to the current text window. It does not
+append a newline character.
+
+The string is written either directly to
+screen memory or by way of a BIOS call,
+depending on the value of <A HREF="conio.htm#LBL5">directvideo.</A>
+
+cputs does not translate linefeed characters
+(\n) into carriage-return/linefeed character
+pairs (\r\n).
+
+ Return Value:
+Returns the last character printed.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL10">cgets</A>
+  <A HREF="stdio.htm#LBL36">fputs</A>
+  <A HREF="conio.htm#LBL42">putch</A>
+  <A HREF="stdio.htm#LBL66">puts</A> 
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    /* clear the screen */
+    clrscr();
+
+    /* create a text window */
+    window(10, 10, 80, 25);
+
+    /* output some text in the window */
+    cputs("This is within the window\r\n");
+
+    /* wait for a key */
+    getch();
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL14"></A> =========
+  delline                           &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =========
+ (Text mode): Deletes line in text window
+
+ Declaration:  void delline(void);
+
+ Remarks:
+delline deletes the line containing the
+cursor and moves all lines below it one
+line up.
+
+delline operates within the currently active
+text window.
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL11">clreol</A> 
+  <A HREF="conio.htm#LBL12">clrscr</A> 
+  <A HREF="conio.htm#LBL36">insline</A>
+  <A HREF="conio.htm#LBL53">window</A> 
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    clrscr();
+    cprintf("The function DELLINE deletes the line containing the\r\n");
+    cprintf("cursor and moves all lines below it one line up.\r\n");
+    cprintf("DELLINE operates within the currently active text\r\n");
+    cprintf("window.  Press any key to continue . . .");
+    gotoxy(1,2);  /* Move the cursor to the second line and first column */
+    getch();
+
+    delline();
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL15"></A> ==================
+  getch and getche                  &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ==================
+  * getch gets a character from console but does not echo to the screen
+  * getche gets a character from console, and echoes to the screen
+
+ Declaration:
+  * int getch(void);
+  * int getche(void);
+
+ Remarks:
+getch reads a single character directly from
+the keyboard, without echoing to the screen.
+
+getche reads a single character from the
+keyboard and echoes it to the current text
+window, using direct video or BIOS.
+
+ Return Value:
+Both functions return the character read from
+the keyboard.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL10">cgets</A>  
+  <A HREF="stdio.htm#LBL143">cscanf</A> 
+  <A HREF="stdio.htm#LBL26">fgetc</A>  
+  <A HREF="stdio.htm#LBL60">getc</A>   
+  <A HREF="stdio.htm#LBL63">getchar</A>
+  <A HREF="conio.htm#LBL21">getpass</A>
+  <A HREF="conio.htm#LBL40">kbhit</A>  
+  <A HREF="conio.htm#LBL42">putch</A>  
+  <A HREF="conio.htm#LBL51">ungetch</A>
+
+ Examples:
+  <A HREF="conio.htm#LBL16">getch example</A> 
+  <A HREF="conio.htm#LBL20">getche example</A>
+
+<HR><A NAME="LBL16"></A>
+  getch example
+ ===============
+<I>
+ #include &LT;conio.h&GT;
+ #include &LT;stdio.h&GT;
+
+ int main(void)
+ {
+   int c;
+   int extended = 0;
+   c = getch();
+   if (!c)
+     extended = getch();
+   if (extended)
+     printf("The character is extended\n");
+   else
+     printf("The character isn't extended\n");
+
+   return 0;
+ }
+</I>
+
+<HR><A NAME="LBL20"></A>
+  getche example
+ ================
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    char ch;
+
+    printf("Input a character:");
+    ch = getche();
+    printf("\nYou input a '%c'\n", ch);
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL21"></A> =========
+  getpass                           &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =========
+ Reads a password
+
+ Declaration:  char *getpass(const char *prompt);
+
+ Remarks:
+getpass reads a password from the system
+console, after prompting with the
+null-terminated string prompt and disabling
+the echo.
+
+It returns a pointer to a null-terminated
+string of up to eight characters (not
+counting the null terminator).
+
+ Return Value:
+Returns a pointer to a static string that is
+overwritten with each call.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |  Yes |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL15">getch</A>
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    char *password;
+
+    password = getpass("Input a password:");
+    cprintf("The password is: %s\r\n", password);
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL22"></A> ==================
+  gettext, puttext                  &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ==================
+  * gettext copies text from text-mode screen to memory
+  * puttext copies text from memory to text-mode screen
+
+ Declaration:
+  * int gettext(int left, int top, int right, int bottom, void*destin);
+  * int puttext(int left, int top, int right, int bottom, void*source);
+
+ Remarks:
+* gettext stores the contents of an onscreen
+text rectangle defined by (left, top) and
+(right, bottom) into the area of memory
+*destin.
+
+* puttext writes the contents of the memory
+area *source out to the onscreen rectangle
+defined by (left, top) and (right, bottom).
+puttext is a text-mode function performing
+direct video output.
+
+gettext reads the rectangle's contents into
+memory (and puttext puts the stored contents
+into the rectangle) SEQUENTIALLY from left to
+right and top to bottom.
+
+All coordinates are absolute screen
+coordinates, not window-relative. The upper
+left corner is (1,1).
+
+Each position onscreen takes 2 bytes of
+memory.
+ * The first byte is the character in the cell.
+ * The second byte is the cell's video attribute.
+
+The space required for a rectangle w columns
+wide by h rows high is
+
+   bytes = (h rows) x (w columns) x 2
+
+ Return Value:
+  * On success,
+     * gettext returns 1
+     * puttext returns a non-zero value
+  * On error, both functions return 0 (for
+    example, if you gave coordinates outside
+    the range of the current screen mode)
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL41">movetext</A>
+  <A HREF="conio.htm#LBL53">window</A>  
+
+ Examples:
+  <A HREF="conio.htm#LBL24">gettext example</A>
+  <A HREF="conio.htm#LBL23">puttext example</A>
+
+<HR><A NAME="LBL23"></A>
+  puttext example
+ =================
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    char buffer[512];
+
+    /* put some text to the console */
+    clrscr();
+    gotoxy(20, 12);
+    cprintf("This is a test.  Press any key to continue ...");
+    getch();
+
+    /* grab screen contents */
+    gettext(20, 12, 36, 21,buffer);
+    clrscr();
+
+    /* put selected characters back to the screen */
+    gotoxy(20, 12);
+    puttext(20, 12, 36, 21, buffer);
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL24"></A>
+  gettext example
+ =================
+<I>
+ #include &LT;conio.h&GT;
+
+ char buffer[4096];
+
+ int main(void)
+ {
+    int i;
+
+    clrscr();
+    for (i = 0; i &LT;= 20; i++)
+       cprintf("Line #%d\r\n", i);
+    gettext(1, 1, 80, 25, buffer);
+
+    gotoxy(1, 25);
+    cprintf("Press any key to clear screen...");
+    getch();
+    clrscr();
+    gotoxy(1, 25);
+    cprintf("Press any key to restore screen...");
+    getch();
+    puttext(1, 1, 80, 25, buffer);
+    gotoxy(1, 25);
+    cprintf("Press any key to quit...");
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL25"></A> =============
+  gettextinfo                       &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =============
+ Gets text-mode video information
+
+ Declaration:  void gettextinfo(struct text_info *r);
+
+ Remarks:
+gettextinfo fills in a structure with the
+current text video information.
+
+ Arg| What It Is/Does
+ ---+----------------------------------------
+  r | Points to the <A HREF="conio.htm#LBL4">text_info structure</A> that
+    | gettextinfo fills in
+
+ Return Value:
+gettextinfo does not return. The results are
+returned in the structure *r.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL44">textattr</A>      
+  <A HREF="conio.htm#LBL44">textbackground</A>
+  <A HREF="conio.htm#LBL44">textcolor</A>     
+  <A HREF="conio.htm#LBL50">textmode</A>      
+  <A HREF="conio.htm#LBL52">wherex</A>        
+  <A HREF="conio.htm#LBL52">wherey</A>        
+  <A HREF="conio.htm#LBL53">window</A>        
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    struct text_info ti;
+    gettextinfo(&ti);
+    cprintf("window left      %2d\r\n",ti.winleft);
+    cprintf("window top       %2d\r\n",ti.wintop);
+    cprintf("window right     %2d\r\n",ti.winright);
+    cprintf("window bottom    %2d\r\n",ti.winbottom);
+    cprintf("attribute        %2d\r\n",ti.attribute);
+    cprintf("normal attribute %2d\r\n",ti.normattr);
+    cprintf("current mode     %2d\r\n",ti.currmode);
+    cprintf("screen height    %2d\r\n",ti.screenheight);
+    cprintf("screen width     %2d\r\n",ti.screenwidth);
+    cprintf("current x        %2d\r\n",ti.curx);
+    cprintf("current y        %2d\r\n",ti.cury);
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL26"></A> ========
+  gotoxy                            &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ========
+ Positions cursor in text window
+
+ Declaration:  void gotoxy(int x, int y);
+
+ Remarks:
+gotoxy moves the cursor to the given position
+in the current text window.
+
+If the coordinates are invalid, the call to
+gotoxy is ignored.
+
+Example of invalid coordinates:
+  gotoxy(40,30)  /* (35,25) = window's bottom right position */
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL52">wherex/wherey</A>
+  <A HREF="conio.htm#LBL53">window</A>       
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    clrscr();
+    gotoxy(35, 12);
+    cprintf("Hello world");
+    getch();
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL30"></A> ================================
+  highvideo, lowvideo, normvideo    &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ================================
+  * highvideo selects high-intensity text characters
+  * lowvideo selects low-intensity text characters
+  * normvideo selects normal-intensity text characters
+
+ Declaration:
+  * void highvideo(void);
+  * void lowvideo(void);
+  * void normvideo(void);
+
+ Remarks:
+* highvideo selects high-intensity characters
+by setting the high-intensity bit of the
+currently selected foreground color.
+
+* lowvideo selects low-intensity characters
+by clearing the high-intensity bit of the
+currently selected foreground color.
+
+* normvideo selects normal characters by
+returning the text attribute (foreground and
+background) to the value it had when the
+program started.
+
+These functions do not affect any characters
+currently on the screen.
+
+They only affect characters displayed by
+functions that perform text-mode, direct
+console output AFTER these ...video functions
+are called (such as cprintf).
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="stdio.htm#LBL106">cprintf</A>    
+  <A HREF="conio.htm#LBL13">cputs</A>      
+  <A HREF="conio.htm#LBL25">gettextinfo</A>
+  <A HREF="conio.htm#LBL44">textattr</A>   
+  <A HREF="conio.htm#LBL44">textcolor</A>  
+
+ Example (for all three functions):
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    normvideo();
+    cprintf("NORMAL Intensity Text\r\n");
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL31"></A> ========================
+  inp, inpw, outp, outpw            &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ========================
+  * inp reads a byte from a hardware port
+  * inpw reads a word from a hardware port
+  * outp outputs a byte to a hardware port
+  * outpw outputs a word to a hardware port
+
+ Declaration:
+  * int inp(unsigned portid);
+  * unsigned inpw(unsigned portid);
+  * int outp(unsigned portid, int value);
+  * unsigned outpw(unsigned portid, unsigned value);
+
+ Remarks
+Both inp and inpw are macros that read from
+the input port specified by portid.
+
+Both outp and outpw are macros that write to
+the output port specified by portid.
+
+  * inp reads a byte
+  * inpw reads a 16-bit word (the low byte of the word from portid,
+    the high byte from portid + 1)
+  * outp writes the low byte of value
+  * outpw writes the low byte of value to portid, and the high byte
+    to portid + 1, using a single 16-bit OUT instruction
+
+If you call any of these macros when CONIO.H
+has been included, they are treated as macros
+that expand to inline code.
+
+If you don't include CONIO.H, or if you do
+include CONIO.H and #undef the macro, you get
+the function of the same name.
+
+ Portability
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |   Yes   |        |          |
+ +-----+------+---------+--------+----------+
+
+ Return Value
+  * inp and inpw return the value read
+  * outp and outpw return the parameter "value"
+
+ See Also:
+  <A HREF="dos.htm#LBL161">inport, inportb</A>  
+  <A HREF="dos.htm#LBL161">outport, outportb</A>
+
+ Examples:
+  <A HREF="conio.htm#LBL32">inp example</A>  
+  <A HREF="conio.htm#LBL33">inpw example</A> 
+  <A HREF="conio.htm#LBL34">outp example</A> 
+  <A HREF="conio.htm#LBL35">outpw example</A>
+
+<HR><A NAME="LBL32"></A>
+  inp example
+ =============
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;dos.h&GT;
+
+ int main(void)
+ {
+    int result;
+    int port = 0;  /* serial port 0 */
+
+    result = inport(port);
+    printf("Word read from port %d = 0x%X\n", port, result);
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL33"></A>
+  inpw example
+ ==============
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+   unsigned result;
+   unsigned port = 0;
+   result = inpw(port);
+   printf("Word read from port %d = 0x%X\n", port, result);
+   return 0;
+ }
+
+</I>
+
+<HR><A NAME="LBL34"></A>
+  outp example
+ ==============
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+   unsigned port = 0;
+   int value;
+   value = outp(port, 'C');
+   printf("Value %c sent to port number %d\n", value, port);
+   return 0;
+ }
+
+</I>
+
+<HR><A NAME="LBL35"></A>
+  outp example
+ ==============
+</I>
+ #include &LT;stdio.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+   unsigned value;
+   unsigned port = 0;
+   value = outpw(port, 64);
+   printf("Value %d sent to port number %d\n", value, port);
+   return 0;
+ }
+
+<I>
+</I>
+<HR><A NAME="LBL36"></A> =========
+  insline                           &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =========
+ (Text mode): Inserts blank line in text window at cursor position
+
+ Declaration:  void insline(void);
+
+ Remarks:
+insline inserts an empty line in the text
+window at the cursor position using the
+current text background color.
+
+All lines below the empty one move down one
+line, and the bottom line scrolls off the
+bottom of the window.
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL11">clreol</A> 
+  <A HREF="conio.htm#LBL14">delline</A>
+  <A HREF="conio.htm#LBL53">window</A> 
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    clrscr();
+    cprintf("INSLINE inserts an empty line in the text window\r\n");
+    cprintf("at the cursor position using the current text\r\n");
+    cprintf("background color.  All lines below the empty one\r\n");
+    cprintf("move down one line and the bottom line scrolls\r\n");
+    cprintf("off the bottom of the window.\r\n");
+    cprintf("\r\nPress any key to continue:");
+    gotoxy(1, 3);
+    getch();
+    insline();
+    getch();
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL40"></A> =======
+  kbhit                             &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =======
+ Checks for currently available keystrokes
+
+ Declaration:  int kbhit(void);
+
+ Remarks:
+kbhit checks to see if a keystroke is
+currently available.
+
+Any available keystrokes can be retrieved
+with <A HREF="conio.htm#LBL15">getch</A> or <A HREF="conio.htm#LBL15">getche.</A>
+
+ Return Value:
+  * On success (if a keystroke is available),
+    returns a non-zero integer
+  * If a keystroke is not available, returns 0.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    cprintf("Press any key to continue:");
+    while (!kbhit()) /* do nothing */ ;
+    cprintf("\r\nA key was pressed...\r\n");
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL41"></A> ==========
+  movetext                          &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ==========
+ Copies text on screen from one rectangle to another
+
+ Declaration:
+   int movetext(int left, int top, int right,
+     int bottom, int destleft, int desttop);
+
+ Remarks:
+movetext copies the contents of the onscreen
+rectangle defined by left, top, right, and
+bottom to a new rectangle of the same
+dimensions.
+
+The new rectangle's upper left corner is
+position (destleft, desttop).
+
+All coordinates are absolute screen
+coordinates. Rectangles that overlap are
+moved correctly.
+
+movetext is a text mode function performing
+direct video output.
+
+ Return Value:
+movetext returns non-zero if the operation
+succeeded.
+
+If the operation failed (for example, if you
+gave coordinates outside the range of the
+current screen mode), movetext returns 0.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL22">gettext</A>
+  <A HREF="conio.htm#LBL22">puttext</A>
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+ #include &LT;string.h&GT;
+
+ int main(void)
+ {
+    char *str = "This is a test string";
+
+    clrscr();
+    cputs(str);
+    getch();
+
+    movetext(1, 1, strlen(str), 2, 10, 10);
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL42"></A> =======
+  putch                             &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =======
+ Oututs character to the text window on the screen
+
+ Declaration:  int putch(int ch);
+
+ Remarks:
+putch outputs the character c to the current
+text window. It is a text-mode function that
+performs direct video output to the console.
+
+putch does not translate linefeed characters
+(\n) into carriage-return/linefeed pairs.
+
+The string is written either directly to
+screen memory or by way of a BIOS call,
+depending on the value of <A HREF="conio.htm#LBL5">directvideo.</A>
+
+ Return Value
+  * On success, putch returns the character printed, c.
+  * On error, it returns EOF.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |  Yes |   Yes   |   Yes  |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="stdio.htm#LBL106">cprintf</A>
+  <A HREF="conio.htm#LBL13">cputs</A>  
+  <A HREF="conio.htm#LBL15">getch</A>  
+  <A HREF="conio.htm#LBL15">getche</A> 
+  <A HREF="stdio.htm#LBL60">putc</A>   
+  <A HREF="stdio.htm#LBL63">putchar</A>
+
+ Example:
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    char ch = 0;
+
+    printf("Input a string:");
+    while ((ch != '\r'))
+    {
+       ch = getch();
+       putch(ch);
+    }
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL43"></A>  ================ 
+   _setcursortype                   &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+  ================ 
+
+ Selects cursor appearance
+
+ Declaration:  void _setcursortype(int cur_t);
+
+ Remarks:
+Sets the cursor type to one of the following:
+  * _NOCURSOR     (turns off the cursor)
+  * _SOLIDCURSOR  (solid block cursor)
+  * _NORMALCURSOR (normal underscore cursor)
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    /* Display the normal cursor */
+    cprintf("\n\rNormal Cursor: "); getch();
+
+    /* Turn off the cursor */
+    _setcursortype(_NOCURSOR);
+    cprintf("\n\rNo Cursor    : "); getch();
+
+    /* Switch to a solid cursor */
+    _setcursortype(_SOLIDCURSOR);
+    cprintf("\n\rSolid Cursor : "); getch();
+
+    /* Switch back to the normal cursor */
+    _setcursortype(_NORMALCURSOR);
+    cprintf("\n\rNormal Cursor: "); getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL44"></A> =====================================
+  textattr, textbackground, textcolor  &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =====================================
+  * textattr sets text attributes for text-window functions
+  * textbackground selects a new text background color
+  * textcolor selects a new character color in text mode
+
+ Declaration:
+  * void textattr(int newattr);
+  * void textbackground(int newcolor);
+  * void textcolor(int newcolor);
+
+ Remarks:
+These functions work for functions that
+produce text-mode output directly to the
+screen (console output functions).
+
+* textattr sets both the foreground and
+background colors in a single call.
+
+(Normally, you set the attributes with
+textcolor and textbackground.)
+
+* textbackground selects the background color.
+
+* textcolor selects the foreground character
+color.
+
+These functions do not affect any characters
+currently on the screen. Once you have called
+one of these three functions, all subsequent
+functions using direct video output (such as
+cprintf) will use the new attributes or
+colors.
+
+If you use <A HREF="conio.htm#LBL3">symbolic color constants</A>, the
+following limitations apply to the background
+colors you select:
+  * You can only select one of the first eight colors (0--7).
+  * With textattr, you must shift the selected background color left by
+    4 bits to move it into the correct "bbb" bit positions.
+
+* NOTE: If you use the symbolic color
+constants, you must include CONIO.H.
+
+ newattr
+ =======
+This is how color information is encoded in
+the newattr argument of textattr:
+
+   7   6   5   4 | 3   2   1   0
+ +---+---+---+---+---+---+---+---+
+ | B | b | b | b | f | f | f | f |
+ +---------------+---------------+
+                 |
+
+In this 8-bit newattr parameter,
+  * ffff = 4-bit foreground color (0 to 15)
+  * bbb  = 3-bit background color (0 to 7)
+  * B    = blink-enable bit
+
+ Blinking characters
+ ===================
+If the blink-enable bit is on, the character
+blinks. To turn the bit on in a call to
+textattr, you add the constant BLINK to the
+attribute.
+
+To make the characters blink in a call to
+textcolor, you add 128 to the foreground
+color. The predefined constant BLINK exists
+for this purpose; for example,
+
+  textcolor(CYAN + BLINK);
+
+ Light colors
+ ============
+Some monitors do not recognize the intensity
+signal used to create the eight "light"
+colors (8-15). On such monitors, the light
+colors are displayed as their "dark"
+equivalents (0-7).
+
+Also, systems that do not display in color
+can treat these numbers as shades of one
+color, special patterns, or special
+attributes (such as underlined, bold,
+italics, etc.).
+
+Exactly what you'll see on such systems
+depends on your hardware.
+
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL25">gettextinfo</A>   
+  <A HREF="conio.htm#LBL30">highvideo</A>     
+  <A HREF="conio.htm#LBL30">lowvideo</A>      
+  <A HREF="conio.htm#LBL30">normvideo</A>     
+
+ Examples:
+  <A HREF="conio.htm#LBL45">textattr example</A>  
+  <A HREF="conio.htm#LBL46">textbackground and textcolor example</A>
+
+<HR><A NAME="LBL45"></A>
+  textattr example
+ ==================
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    int i;
+
+    clrscr();
+    for (i=0; i&LT;9; i++)
+    {
+        textattr(i + ((i+1) &LT;&LT; 4));
+        cprintf("This is a test\r\n");
+    }
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL46"></A>
+  textbackground and textcolor example
+ ======================================
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    int i, j;
+
+    clrscr();
+    for (i=0; i&LT;9; i++)
+    {
+        for (j=0; j&LT;80; j++)
+           cprintf("C");
+        cprintf("\r\n");
+        textcolor(i+1);
+        textbackground(i);
+    }
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL50"></A> ==========
+  textmode                          &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ==========
+ Changes screen mode (in text mode)
+
+ Declaration:  void textmode(int newmode);
+
+ Remarks:
+textmode selects a specific text mode.
+
+You can give the text mode (the argument
+newmode) by using a symbolic constant from
+the enumeration type <A HREF="conio.htm#LBL2">text_modes</A> (defined in
+CONIO.H).
+
+If you use these constants, you must include
+CONIO.H.
+
+When textmode is called, the current window
+is reset to the entire screen, and the
+current text attributes are reset to normal,
+corresponding to a call to normvideo.
+
+Specifying LASTMODE to textmode causes the
+most recently selected text mode to be
+reselected.
+
+textmode should be used only when the screen
+is in text mode (presumably to change to a
+different text mode).
+
+When the screen is in graphics mode, use
+<A HREF="graphics.htm#LBL156">restorecrtmode</A> to escape temporarily to text
+mode.
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL25">gettextinfo</A>
+  <A HREF="conio.htm#LBL53">window</A>     
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    textmode(BW40);
+    cprintf("ABC");
+    getch();
+
+    textmode(C40);
+    cprintf("ABC");
+    getch();
+
+    textmode(BW80);
+    cprintf("ABC");
+    getch();
+
+    textmode(C80);
+    cprintf("ABC");
+    getch();
+
+    textmode(MONO);
+    cprintf("ABC");
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL51"></A> =========
+  ungetch                           &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ =========
+ Pushes a character back to the keyboard
+
+ Declaration:  int ungetch(int ch);
+
+ Remarks:
+ungetch pushes the character ch back to the
+console, causing ch to be the next character
+read.
+
+ungetch fails if it is called more than once
+before the next read.
+
+ Return Value:
+  * On success, returns the character ch.
+  * On error, returns EOF.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |  Yes |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL15">getch</A> 
+  <A HREF="conio.htm#LBL15">getche</A>
+
+ Example:
+<I>
+ #include &LT;stdio.h&GT;
+ #include &LT;ctype.h&GT;
+ #include &LT;conio.h&GT;
+
+ int main( void )
+ {
+    int i=0;
+    char ch;
+
+    puts("Input an integer followed by a char:");
+
+    /* read chars until non digit or EOF */
+    while((ch = getche()) != EOF && isdigit(ch))
+       i = 10 * i + ch - 48; /* convert ASCII into int value */
+
+    /* if non digit char was read, push it back into input buffer */
+    if (ch != EOF)
+       ungetch(ch);
+
+    printf("\n\ni = %d, next char in buffer = %c\n", i, getch());
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL52"></A> ================
+  wherex, wherey                    &LT;<A HREF="conio.htm#LBL1">CONIO.H</A>&GT;
+ ================
+  * wherex gives current horizontal cursor position
+  * wherey gives current vertical cursor position
+
+ Declaration:
+  * int wherex(void);
+  * int wherey(void);
+
+ Remarks:
+* wherex returns the x-coordinate of the
+current cursor position (within the current
+text window).
+
+* wherey returns the y-coordinate of the
+current cursor position (within the current
+text window).
+
+ Return Value:
+  * wherex returns an integer in the range 1 to 80.
+  * wherey returns an integer in the range 1 to 25,
+    1 to 43, or 1 to 50.
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL25">gettextinfo</A>
+  <A HREF="conio.htm#LBL26">gotoxy</A>     
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+    clrscr();
+    gotoxy(10,10);
+    cprintf("Current location is X: %d  Y: %d\r\n", wherex(), wherey());
+    getch();
+
+    return 0;
+ }
+</I>
+
+<HR><A NAME="LBL53"></A> ========
+  window                            &LT;<A HREF="conio.htm#LBL1">conIO.H</A>&GT;
+ ========
+ Defines active text-mode window
+
+ Declaration:  void window(int left, int top, int right, int bottom);
+
+The top left corner of the screen is (1,1).
+
+ Remarks:
+window defines a text window onscreen. If the
+coordinates are in any way invalid, the call
+to window is ignored.
+
+(left, top) is the (x, y) position of the
+window's upper left corner.
+
+(right, bottom) is the (x, y) position of the
+window's lower right corner.
+
+The minimum size of the text window is one
+column by one line.
+
+The default window is full screen, with these
+coordinates:
+  * 80-column mode:  (1, 1, 80, 25)
+  * 40-column mode:  (1, 1, 40, 25)
+
+ Return Value:  None
+
+ Portability:
+ + DOS + UNIX + Windows + ANSI C + C++ Only +
+ | Yes |      |         |        |          |
+ +-----+------+---------+--------+----------+
+
+ See Also:
+  <A HREF="conio.htm#LBL11">clreol</A>     
+  <A HREF="conio.htm#LBL12">clrscr</A>     
+  <A HREF="conio.htm#LBL14">delline</A>    
+  <A HREF="conio.htm#LBL25">gettextinfo</A>
+  <A HREF="conio.htm#LBL26">gotoxy</A>     
+  <A HREF="conio.htm#LBL36">insline</A>    
+  <A HREF="conio.htm#LBL22">puttext</A>    
+  <A HREF="conio.htm#LBL50">textmode</A>   
+
+ Example:
+<I>
+ #include &LT;conio.h&GT;
+
+ int main(void)
+ {
+
+    window(10,10,40,11);
+    textcolor(BLACK);
+    textbackground(WHITE);
+    cprintf("This is a test\r\n");
+
+    return 0;
+ }
+</I>
+
+<HR></PRE></HTML>
