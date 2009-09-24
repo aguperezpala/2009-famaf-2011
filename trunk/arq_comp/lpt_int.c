@@ -98,8 +98,10 @@ void interrupt lptisr (__CPPARGS) {
 }
 
 
-int main(int argc,char* argv[]) {
-	int intno = 0, picmask = 0,i=0;
+int main(int argc,char* argv[])
+{
+	int intno = 0, picmask = 0;
+	char text[21];
 
 
 	intno = IRQn + 8;
@@ -127,15 +129,17 @@ int main(int argc,char* argv[]) {
 
 
 	/* --- Setup the string to print --- */
-
-	win_string = string_create (TEXT);
+	
+	printf ("Please enter your message (up to 20 letters): ");
+	scanf ("%s", text);
+	win_string = string_create (text);
 	ASSERT (win_string != NULL);
 
-	/* Generamos el TAD String con su ventanita */
+	/* Activamos el TAD String con su ventanita */
 	str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
 	free (str_to_print);
 
-	/* Generamos el timer que va a manejar el interrupt_handler */
+	/* Generamos el timer que va a ser manejado por el interrupt_handler */
 	timer_to_print = setup_timer (DELAY);
 	start_timer (timer_to_print);
 
@@ -145,7 +149,6 @@ int main(int argc,char* argv[]) {
 	  printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
 		 base,offset,map_ascii[base+offset]);
 	  printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
-
 	}
 
 	/* Disable parallel port IRQ's */
