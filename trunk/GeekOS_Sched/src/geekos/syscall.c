@@ -221,13 +221,13 @@ static int Sys_GetPID(struct Interrupt_State* state)
 }
 
 /* ###
- * Set the scheduling policy.
- * Params:
- *   state->ebx - policy,
- *   state->ecx - number of ticks in quantum
- * Returns: 0 if successful, -1 otherwise
- * ###
- */
+* Set the scheduling policy.
+* Params:
+*   state->ebx - policy,
+*   state->ecx - number of ticks in quantum
+* Returns: 0 if successful, -1 otherwise
+* ###
+*/
 static int Sys_SetSchedulingPolicy(struct Interrupt_State* state)
 {
 	/* ¿Necesitaría ser atómico? */
@@ -237,28 +237,30 @@ static int Sys_SetSchedulingPolicy(struct Interrupt_State* state)
 }
 
 /*
- * Get the time of day.
- * Params:
- *   state - processor registers from user mode
- *
- * Returns: value of the g_numTicks global variable
- */
+* Get the time of day.
+* Params:
+*   state - processor registers from user mode
+*
+* Returns: value of the g_numTicks global variable
+*/
 static int Sys_GetTimeOfDay(struct Interrupt_State* state)
 {
-    TODO("GetTimeOfDay system call");
+	return (int) Get_gNumTicks ();
+	TODO("GetTimeOfDay system call");
 }
 
+
 /* ###
- * Busca un semáforo libre en el arreglo global de semáforos.
- * Si (name) != NULL => busca semáforos con ese nombre y devuelve el primero
- * Si (name) == NULL => busca el 1º semáforo libre
- *
- *    SID = Find_Free_Semaphore (name)
- *
- * POS: SID >= 0 => En SID está el nº buscado
- *	SID <  0 => No hay semáforos libres
- * ###
- */
+* Busca un semáforo libre en el arreglo global de semáforos.
+* Si (name) != NULL => busca semáforos con ese nombre y devuelve el primero
+* Si (name) == NULL => busca el 1º semáforo libre
+*
+*    SID = Find_Free_Semaphore (name)
+*
+* POS: SID >= 0 => En SID está el nº buscado
+*	SID <  0 => No hay semáforos libres
+* ###
+*/
 static int Find_Free_Semaphore (const char *name)
 {
 	int i = 0, SID = 0;
@@ -276,15 +278,16 @@ static int Find_Free_Semaphore (const char *name)
 	return SID;
 }
 
+
 /* ###
- * Create a semaphore.
- * Params:
- *   state->ebx - user address of name of semaphore
- *   state->ecx - length of semaphore name
- *   state->edx - initial semaphore count
- * Returns: the global semaphore id
- * ###
- */
+* Create a semaphore.
+* Params:
+*   state->ebx - user address of name of semaphore
+*   state->ecx - length of semaphore name
+*   state->edx - initial semaphore count
+* Returns: the global semaphore id
+* ###
+*/
 static int Sys_CreateSemaphore(struct Interrupt_State* state)
 {
 	int size = 0, SID = 0;
@@ -309,20 +312,22 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
 		userSemaCnt = g_currentThread->userContext->activeSemaCnt;
 		userSemaList = (int *) Malloc (userSemaCnt * sizeof(int));
 		memcpy (userSemaList,
-			g_currentThread->userContext->semaphores,
-			userSemaCnt * sizeof(int));
-		
-		Free (g_currentThread->userContext->semaphores);
-		g_currentThread->userContext->semaphores = (int *)Malloc((userSemaCnt+1)*sizeof(int));
-		
-		memcpy (g_currentThread->userContext->semaphores,
-			userSemaList,
-			userSemaCnt * sizeof (int));
-		g_currentThread->userContext->semaphores[userSemaCnt] = SID;
-		
-		/* Seteamos valores del semáforo */
-		memcpy(Sema[SID].name, userSemaName, size);
-		Sema[SID].count = state->edx;
+			 g_currentThread->userContext->semaphores,
+			 userSemaCnt * sizeof(int));
+			 
+			 Free (g_currentThread->userContext->semaphores);
+			 g_currentThread->userContext->semaphores = (int
+			 *)Malloc((userSemaCnt+1)*sizeof(int));
+			 
+			 memcpy (g_currentThread->userContext->semaphores,
+				  userSemaList,
+				  userSemaCnt * sizeof (int));
+				 
+g_currentThread->userContext->semaphores[userSemaCnt] = SID;
+				  
+				  /* Seteamos valores del semáforo */
+				  memcpy(Sema[SID].name, userSemaName, size);
+				  Sema[SID].count = state->edx;
 	}
 	
 	if (SID >= 0) {
@@ -334,42 +339,186 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
 	TODO("CreateSemaphore system call");
 }
 
+/** Aca deberiamos crear una funcion "bool its_allowed (int SID)" que chequea
+* si el kernel_thread actual tiene al Semaphore ID en la lista (supongo
+* que se refiere a la lista del user_context) Y ademas chequea que este
+* creado (osea, active = true)
+*/
+/*### Funcion que chequea si el kthread actual tiene en su lista de semaforos
+* el sem con id SID.
+*	REQUIRES:
+*		SID € [0, MAX_NUM_SEMAPHORES-1 ]
+*	RETURNS:
+*		true <==> valid SID & Sema[SID].active == TRUE
+* 		false otherwise
+*###*/
+static bool its_allowed (int SID)
+{
+	bool result = false;
+	int listSize = 0, i = 0;
+	int * semList = NULL;
+	
+	/* si no esta dentro del rango valido devolvemos false */
+	if (SID < 0 || SID >= MAX_NUM_SEMAPHORES)
+		return false;
+	
+	/* si esta dentro del rango, pero... esta activado? */
+	if (Sema[SID].active == false)
+		return false;
+	
+	/* ahora obtenemos los valores del user_context */
+	listSize = g_currentThread->userContext->activeSemaCnt;
+	semList = g_currentThread->userContext->semaphores;
+	
+	/* lo buscamos en la lista */
+	for (i = 0; i < listSize; i++) {
+		if (semList[i] == SID) {
+			/* lo encontramos */
+			result = true;
+			break;
+		}
+	}
+	
+	return result;
+}
+
 /*
- * Acquire a semaphore.
- * Assume that the process has permission to access the semaphore,
- * the call will block until the semaphore count is >= 0.
- * Params:
- *   state->ebx - the semaphore id
- *
- * Returns: 0 if successful, error code (< 0) if unsuccessful
- */
+* Acquire a semaphore.
+* Assume that the process has permission to access the semaphore,
+* the call will block until the semaphore count is >= 0.
+* Params:
+*   state->ebx - the semaphore id
+*
+* Returns: 0 if successful, error code (< 0) if unsuccessful
+*/
 static int Sys_P(struct Interrupt_State* state)
 {
-    TODO("P (semaphore acquire) system call");
+	int SID = state->ebx;
+	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
+	
+	/* Primero que todo chequeamos si tenemos "permiso" (usando la funcion
+	* NO hecha y comentada arriba) para acceder al semaforo ese, si no 
+	* devolvemos con error */
+	if (!its_allowed (state->ebx))
+		return -1;
+	/* aca estamos porque SI estamos habilitados para tocar el semaforo, que
+	* en teoria es la posicion en el arreglo Sema[] */
+	
+	/* aumentamos en uno la cantidad de "threads" usando este semaforo */
+	Sema[SID].threads_using++;
+	
+	/* Debemos verificar si bloqueamos o no al thread */
+	if (Sema[SID].count < 0){	/* debemos bloquear */
+		/* Wait nos pide que sea sin interrupciones => para que sea
+		* atomica la llamada, pero, que pasa? que se ejecuta una vez
+		* que se duerme este thread? sigue ejecutando la siguiente
+		* instruccion? o que saca otro thread y no sigue debajo
+		* del Wait este?....
+		*/
+		Wait(Wait_Queue); /* esta lista esta definida kthread.h */
+		/* deshabilitamos interrupciones? sigue corriendo por aca? */
+		
+		/* decrementamos el semaforo */
+		Sema[SID].count--;
+	}
+	
+	
+	End_Int_Atomic(atom);
+	return 0;
+	
+	TODO("P (semaphore acquire) system call");
 }
 
 /*
- * Release a semaphore.
- * Params:
- *   state->ebx - the semaphore id
- *
- * Returns: 0 if successful, error code (< 0) if unsuccessful
- */
+* Release a semaphore.
+* Params:
+*   state->ebx - the semaphore id
+*
+* Returns: 0 if successful, error code (< 0) if unsuccessful
+*/
 static int Sys_V(struct Interrupt_State* state)
 {
-    TODO("V (semaphore release) system call");
+	int SID = state->ebx;
+	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
+	
+	/* Primero que todo chequeamos si tenemos "permiso" (usando la funcion
+	* NO hecha y comentada arriba) para acceder al semaforo ese, si no 
+	* devolvemos con error */
+	if (!its_allowed (state->ebx))
+		return -1;
+	/* aca estamos porque SI estamos habilitados para tocar el semaforo, que
+	* en teoria es la posicion en el arreglo Sema[] */
+	
+	/* decrementamos en uno la cantidad de threads que usan este sem */
+	Sema[SID].threads_using--;
+	
+	/* simplemente lo que hacemos es aumentar en uno el count y levantar
+	* algun thread dando en la Wait_Queue */
+	Sema[SID].count++;
+	/** Requiere interrupciones deshabilitadas :(... verificar esto */
+	Wake_Up_One(Wait_Queue);
+	
+	End_Int_Atomic(atom);
+	return 0;
+	TODO("V (semaphore release) system call");
 }
 
+/*### Que deberiamos hacer para destruir el semaforo:
+* Primero ver que esta intentando eliminar un semaforo correcto: (its_allowed).
+* Si esta habilitado para borrar chequear la cantidad de referencias de
+diferentes
+* threads que tienen el semaforo, si es mayor que uno NO se elimina el semaforo
+* ya que hay mas threads usandolo.
+* En cualquier caso debemos eliminarlo de la lista de semaforos del kthread 
+* (del User_Context->semaphores[]).
+* En caso de que sea el unico thread usando el semaforo => desactivamos el 
+* semaforo de Sem[SID].active = FALSE.
+*###*/
 /*
- * Destroy a semaphore.
- * Params:
- *   state->ebx - the semaphore id
- *
- * Returns: 0 if successful, error code (< 0) if unsuccessful
- */
+* Destroy a semaphore.
+* Params:
+*   state->ebx - the semaphore id
+*
+* Returns: 0 if successful, error code (< 0) if unsuccessful
+*/
 static int Sys_DestroySemaphore(struct Interrupt_State* state)
 {
-    TODO("DestroySemaphore system call");
+	/** verificar el tema de Atomic y las interrupciones... */
+	bool atom = Begin_Int_Atomic();	
+	int SID = state->ebx;
+	
+	/* verificamos si esta habilitado, si no devolvemos -1 */
+	if (!its_allowed(SID))
+		return -1;
+	
+	/* Ahora, como en cualquier caso tenemos que eliminarlo de nuestra lista
+	* de semaforos (osea del User_context) lo eliminamos */
+	del_sem_from_list (SID); /** NOTE: fucking FIXME :) (falta implementar).
+	* yo diria que usemos arreglos de tamaño constante (i.e: userContext->
+	* semaphores[MAX_NUM_SEMAPHORES] para evitarnos bastantes kilombos, 
+	* seteando en numeros negativos los semaforos deshabilitados del arreglo
+	* y listo :)
+	*/
+	/* ahora vemos la cantidad de threads que estan referenciando este
+	* semaforo */
+	if (Sema[SID].threads_using > 1) {
+		/* simplemente decrementamos en uno la cantidad de threads que
+		* referencian el sem */
+		Sema[SID].threads_using--;
+	} else {
+		/* tenemos que eliminarlo a la mierda porque es = 1 (osea es el
+		* ultimo thread que lo referencia */
+		Sema[SID].threads_using = 0;
+		Sema[SID].count = 0;	/* al pedo pero bueno, limpiamos :) */
+		Sema[SID].active = false;	/* con esto alcanzaria */
+		/* limpiamos el nombre */
+		memset (Sema[SID].name, '\0', MAX_NAME_LEN);
+	}
+	
+	
+	End_Int_Atomic(atom);
+	return 0;
+	TODO("DestroySemaphore system call");
 }
 
 
