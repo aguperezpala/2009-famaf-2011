@@ -219,23 +219,179 @@ static int Sys_GetPID(struct Interrupt_State* state)
     return pid;
 
 }
+/*
+* Set the scheduling policy.
+* Params:
+*   state->ebx - policy,
+*   state->ecx - number of ticks in quantum
+* Returns: 0 if successful, -1 otherwise
+*/
+static int Sys_SetSchedulingPolicy(struct Interrupt_State* state)
+{
+	KASSERT(!Interrupts_Enabled());
+	Enable_Interrupts();/* (?) Cuando es el momento adecuado para habilitar
+las	interrupciones? */
+	if (Set_SchedulingPolicy((*state).ebx) != 0)
+		return -1;
+	if (Set_Quantum((*state).ecx) != 0)
+		return -1;
+	return 0;
+	TODO("SetSchedulingPolicy system call");
+}
+
+/*
+* Get the time of day.
+* Params:
+*   state - processor registers from user mode
+*
+* Returns: value of the g_numTicks global variable
+*/
+static int Sys_GetTimeOfDay(struct Interrupt_State* state)
+{
+	ulong_t value = g_numTicks;
+	KASSERT(!Interrupts_Enabled());
+	Enable_Interrupts();/* (?) Cuando es el momento adecuado para habilitar
+las	interrupciones? */
+	return value;
+	TODO("GetTimeOfDay system call");
+}
+
+/*
+* Create a semaphore.
+* Params:
+*   state->ebx - user address of name of semaphore
+*   state->ecx - length of semaphore name
+*   state->edx - initial semaphore count
+* Returns: the global semaphore id
+*
+* Pre: 0<=state->ecx<MAX_SEM_NAME_LENGTH
+*     and 0<=state->edx
+*/
+static int Sys_CreateSemaphore(struct Interrupt_State* state)
+{
+	struct Kernel_Thread * kthread = g_currentThread; /* We ensure
+interrupts	don't bother us */
+	KASSERT(!Interrupts_Enabled());
+	
+	int sid;
+	KASSERT((0<=(*state).ecx) && ((*state).ecx < MAX_SEM_NAME_LENGTH) &&
+	(0<=(*state).edx)
+	);
+	/* Copy the semaphore's name to a kernel buffer */
+	char * buf = Malloc((*state).ecx * sizeof(char) + 1);
+	if(!buf)
+		return -1;
+	if(!Copy_From_User((void*) buf, (*state).ebx, (*state).ecx)){
+		Free(buf);
+		return -1;
+	}
+	Enable_Interrupts();
+	buf[(*state).ecx]='\0';
+	/* Create the semaphore */
+	sid = Create_Semaphore(buf, (*state).edx);
+	if (!Add_Semaphore(kthread, sid)){
+		Free(buf);
+		return -1;
+	}
+	/* Free the buffer */
+	Free(buf);
+	KASSERT(0<=sid);
+	return sid;
+}
+
+/*
+* Acquire a semaphore.
+* Assume that the process has permission to access the semaphore,
+* the call will block until the semaphore count is >= 0.
+* Params:
+*   state->ebx - the semaphore id
+*
+* Returns: 0 if successful, error code (< 0) if unsuccessful
+*/
+static int Sys_P(struct Interrupt_State* state)
+{
+	struct Kernel_Thread * kthread = g_currentThread;
+	KASSERT(!Interrupts_Enabled());
+	Enable_Interrupts();/* (?) Cuando es el momento adecuado para habilitar
+las	interrupciones? */
+	/* Check if the id is a valid one */
+	if (!((0<=state->ebx) && (state->ebx < MAX_SYS_SEMAPHORES)
+		)
+		)
+		return -1;
+	/* Check if the process has permission to make the call */
+	if (!Has_Semaphore(kthread, (*state).ebx))
+		return -1;
+	/* Now we can safely proceed */
+	return P((*state).ebx);
+}
+
+/*
+* Release a semaphore.
+* Params:
+*   state->ebx - the semaphore id
+*
+* Returns: 0 if successful, error code (< 0) if unsuccessful
+*/
+static int Sys_V(struct Interrupt_State* state)
+{
+	struct Kernel_Thread * kthread = g_currentThread;
+	KASSERT(!Interrupts_Enabled());
+	Enable_Interrupts();/* (?) Cuando es el momento adecuado para habilitar
+las	interrupciones? */
+	/* Check if the process has permission to make the call */
+	if (!Has_Semaphore(kthread, (*state).ebx))
+		return -1;
+	/* Now we can safely proceed */
+	return V((*state).ebx);
+	
+}
+
+/*
+* Destroy a semaphore.
+* Params:
+*   state->ebx - the semaphore id
+*
+* Returns: 0 if successful, error code (< 0) if unsuccessful
+*/
+static int Sys_DestroySemaphore(struct Interrupt_State* state)
+{
+	struct Kernel_Thread * kthread = g_currentThread;
+	KASSERT(!Interrupts_Enabled());
+	Enable_Interrupts();/* (?) Cuando es el momento adecuado para habilitar
+las	interrupciones? */
+	
+	if (!Remove_Semaphore(kthread, (*state).ebx))
+		return -1;
+	Destroy_Semaphore(state->ebx);
+	return 0;
+	TODO("DestroySemaphore system call");
+}
 
 
 /*
- * Global table of system call handler functions.
- */
+* Global table of system call handler functions.
+*/
 const Syscall g_syscallTable[] = {
-    Sys_Null,
-    Sys_Exit,
-    Sys_PrintString,
-    Sys_GetKey,
-    Sys_SetAttr,
-    Sys_GetCursor,
-    Sys_PutCursor,
-    Sys_Spawn,
-    Sys_Wait,
-    Sys_GetPID,
+	Sys_Null,
+	      Sys_Exit,
+	      Sys_PrintString,
+	      Sys_GetKey,
+	      Sys_SetAttr,
+	      Sys_GetCursor,
+	      Sys_PutCursor,
+	      Sys_Spawn,
+	      Sys_Wait,
+	      Sys_GetPID,
+	      /* Scheduling and semaphore system calls. */
+	      Sys_SetSchedulingPolicy,
+	      Sys_GetTimeOfDay,
+    Sys_CreateSemaphore,
+    Sys_P,
+    Sys_V,
+    Sys_DestroySemaphore,
 };
+
 
 /*
  * Number of system calls implemented.

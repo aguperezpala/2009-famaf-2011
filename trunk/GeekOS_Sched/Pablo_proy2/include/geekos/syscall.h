@@ -33,20 +33,27 @@ extern const Syscall g_syscallTable[];
 
 #define SYSCALL "int $0x90"	 /* Assembly instruction for the system call trap. */
 
+
 /*
- * System call numbers
- */
+* System call numbers
+*/
 enum {
-    SYS_NULL,		 /* Null (no-op) system call  */
-    SYS_EXIT,		 /* Exit system call  */
-    SYS_PRINTSTRING,	 /* Print string system call  */
-    SYS_GETKEY,		 /* Get key system call  */
-    SYS_SETATTR,	 /* Set screen attribute system call  */
-    SYS_GETCURSOR,	 /* Get current cursor position */
-    SYS_PUTCURSOR,	 /* Put current cursor position */
-    SYS_SPAWN,		 /* Spawn process system call  */
-    SYS_WAIT,		 /* Wait for child process to exit system call  */
-    SYS_GETPID,		 /* Get pid (process id) system call  */
+	SYS_NULL,		 /* Null (no-op) system call  */
+	SYS_EXIT,		 /* Exit system call  */
+	SYS_PRINTSTRING,	 /* Print string system call  */
+	SYS_GETKEY,		 /* Get key system call  */
+	SYS_SETATTR,	 /* Set screen attribute system call  */
+	SYS_GETCURSOR,	 /* Get current cursor position */
+	SYS_PUTCURSOR,	 /* Put current cursor position */
+	SYS_SPAWN,		 /* Spawn process system call  */
+	SYS_WAIT,		 /* Wait for child process to exit system call*/
+	SYS_GETPID,		 /* Get pid (process id) system call  */
+	SYS_SETSCHEDULINGPOLICY,  /* Set scheduler policy system call  */
+	SYS_GETTIMEOFDAY,	 /* Get time of day system call  */
+	SYS_CREATESEMAPHORE, /* Create semaphore system call  */
+	SYS_P,		 /* P (acquire semaphore) system call  */
+	SYS_V,		 /* V (release semaphore) system call  */
+	SYS_DESTROYSEMAPHORE,  /* Destroy semaphore system call  */
 };
 
 /*
