@@ -42,7 +42,7 @@ char* string_get_front (string *str, int pos ,int len){
   
   /* PRE: */
   ASSERT (str != NULL);
-  ASSERT (0 <= pos && pos <= str->len_data);
+  ASSERT (0 <= pos && pos < str->len_data);
   ASSERT (0 <= len);
   
   result = (char*) calloc (len + 1, sizeof (char));
@@ -61,29 +61,25 @@ char* string_get_front (string *str, int pos ,int len){
 
 
 char* string_get_back (string *str, int pos ,int len){
-  int i = 0;
-  int index = 0;
-  char* result = NULL;
+    int tmp = 0; 
+    char* result = NULL;
+
+    /* PRE: */
+    ASSERT (str != NULL);
+    ASSERT (0 <= pos && pos < str-> len_data);
+    ASSERT (0 <= len);
   
-  /* PRE: */
-  ASSERT (str != NULL);
-  ASSERT (0 <= pos && pos <= str->len_data);
-  ASSERT (0 <= len);
+    str-> pos = pos;
   
-  result = (char*) calloc (len + 1, sizeof (char));
-  ASSERT (result != NULL);
+    /* Ver definición de strin_get_back () */
+    tmp = pos - len + 1;
+  
+    /* tmp puede ser negativo */
+    tmp = (tmp + str-> len_data) % str-> len_data;
+  
+    result = string_get_front (str, tmp, len);
       
-  str-> initialized = 1;
-  str-> pos = pos;
-  
-  index = pos % str-> len_data;
-  for (i = 0; i < len; i++){
-    result[(len - 1) - i] = str->data[index];
-    index = (index - 1 + str-> len_data) % str-> len_data; /* No preguntar */
-  }
-  result[len] = '\0';
-  
-  return result;
+    return result;
 }
 
 
