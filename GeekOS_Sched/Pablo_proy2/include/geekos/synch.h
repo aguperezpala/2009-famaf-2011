@@ -38,6 +38,28 @@ void Cond_Wait(struct Condition* cond, struct Mutex* mutex);
 void Cond_Signal(struct Condition* cond);
 void Cond_Broadcast(struct Condition* cond);
 
+
+/** Semaphores public functions */
+/*
+* Creates a new semaphore if 'semaName' does not exist in the list of system
+semaphores,
+* sets its initial count to 'count' and return the new semaphore's id.
+* If there is already a semaphore named 'semaName' returns its id.
+*/
+int Create_Semaphore(char * semaName, unsigned int count);
+
+/*
+* Destroys the semaphore with id 'id' if there is not process wich references
+it.
+*/
+int Destroy_Semaphore(unsigned int id);
+
+int P(int id);
+
+int V(int id);
+
+
+
 #define IS_HELD(mutex) \
     ((mutex)->state == MUTEX_LOCKED && (mutex)->owner == g_currentThread)
 
