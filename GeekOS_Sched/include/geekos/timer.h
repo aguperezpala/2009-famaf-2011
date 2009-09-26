@@ -33,4 +33,7 @@ int Cancel_Timer(int id);
 
 void Micro_Delay(int us);
 
+/*### Modificador del quantum de Round Robin de estadía en CPU ###*/
+void Set_gQuantum (int quantum);
+
 #endif  /* GEEKOS_TIMER_H */
