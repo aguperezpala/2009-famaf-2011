@@ -20,6 +20,26 @@
 #include <geekos/user.h>
 #include <geekos/timer.h>
 #include <geekos/vfs.h>
+#include <geekos/synch.h>
+
+
+/*### Constantes y variables globales para los semáforos de kernel ###*/
+
+#define  MAX_NUM_SEMAPHORES  20  /* Podrían ser más... */
+#define  MAX_NAME_LEN  25
+
+struct Semaphore {
+	char	name[MAX_NAME_LEN];
+	uint_t	count;
+	bool	active;
+	uint_t	threads_using;
+};
+
+static struct Semaphore Sema[MAX_NUM_SEMAPHORES];
+
+
+/*### FIN costantes de semáforos ###*/
+
 
 /*
  * Null system call.
@@ -382,15 +402,16 @@ static bool its_allowed (int SID)
 	return result;
 }
 
-/*
-* Acquire a semaphore.
-* Assume that the process has permission to access the semaphore,
-* the call will block until the semaphore count is >= 0.
-* Params:
-*   state->ebx - the semaphore id
-*
-* Returns: 0 if successful, error code (< 0) if unsuccessful
-*/
+/* ###
+ * Acquire a semaphore.
+ * Assume that the process has permission to access the semaphore,
+ * the call will block until the semaphore count is >= 0.
+ * Params:
+ *   state->ebx - the semaphore id
+ *
+ * Returns: 0 if successful, error code (< 0) if unsuccessful
+ * ###
+ */
 static int Sys_P(struct Interrupt_State* state)
 {
 	int SID = state->ebx;
@@ -429,13 +450,14 @@ static int Sys_P(struct Interrupt_State* state)
 	TODO("P (semaphore acquire) system call");
 }
 
-/*
-* Release a semaphore.
-* Params:
-*   state->ebx - the semaphore id
-*
-* Returns: 0 if successful, error code (< 0) if unsuccessful
-*/
+/* ###
+ * Release a semaphore.
+ * Params:
+ *   state->ebx - the semaphore id
+ *
+ * Returns: 0 if successful, error code (< 0) if unsuccessful
+ * ###
+ */
 static int Sys_V(struct Interrupt_State* state)
 {
 	int SID = state->ebx;
@@ -464,23 +486,22 @@ static int Sys_V(struct Interrupt_State* state)
 }
 
 /*### Que deberiamos hacer para destruir el semaforo:
-* Primero ver que esta intentando eliminar un semaforo correcto: (its_allowed).
-* Si esta habilitado para borrar chequear la cantidad de referencias de
-diferentes
-* threads que tienen el semaforo, si es mayor que uno NO se elimina el semaforo
-* ya que hay mas threads usandolo.
-* En cualquier caso debemos eliminarlo de la lista de semaforos del kthread 
-* (del User_Context->semaphores[]).
-* En caso de que sea el unico thread usando el semaforo => desactivamos el 
-* semaforo de Sem[SID].active = FALSE.
-*###*/
+ * Primero ver que esta intentando eliminar un semaforo correcto: (its_allowed).
+ * Si esta habilitado para borrar chequear la cantidad de referencias de diferentes
+ * threads que tienen el semaforo, si es mayor que uno NO se elimina el semaforo
+ * ya que hay mas threads usandolo.
+ * En cualquier caso debemos eliminarlo de la lista de semaforos del kthread 
+ * (del User_Context->semaphores[]).
+ * En caso de que sea el unico thread usando el semaforo => desactivamos el 
+ * semaforo de Sem[SID].active = FALSE.
+ *###*/
 /*
-* Destroy a semaphore.
-* Params:
-*   state->ebx - the semaphore id
-*
-* Returns: 0 if successful, error code (< 0) if unsuccessful
-*/
+ * Destroy a semaphore.
+ * Params:
+ *   state->ebx - the semaphore id
+ *
+ * Returns: 0 if successful, error code (< 0) if unsuccessful
+ */
 static int Sys_DestroySemaphore(struct Interrupt_State* state)
 {
 	/** verificar el tema de Atomic y las interrupciones... */

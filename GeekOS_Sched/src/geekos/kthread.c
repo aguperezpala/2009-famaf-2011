@@ -17,7 +17,8 @@
 #include <geekos/kthread.h>
 #include <geekos/malloc.h>
 #include <geekos/user.h>
-
+#include <geekos/synch.h>
+#include <geekos/timer.h>
 
 /* ----------------------------------------------------------------------
  * Private data
