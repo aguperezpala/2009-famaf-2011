@@ -42,7 +42,7 @@ char* string_get_front (string *str, int pos ,int len){
   
   /* PRE: */
   ASSERT (str != NULL);
-  ASSERT (0 <= pos <= str->len_data);
+  ASSERT (0 <= pos && pos <= str->len_data);
   ASSERT (0 <= len);
   
   result = (char*) calloc (len + 1, sizeof (char));
@@ -67,7 +67,7 @@ char* string_get_back (string *str, int pos ,int len){
   
   /* PRE: */
   ASSERT (str != NULL);
-  ASSERT (0 <= pos <= str->len_data);
+  ASSERT (0 <= pos && pos <= str->len_data);
   ASSERT (0 <= len);
   
   result = (char*) calloc (len + 1, sizeof (char));
@@ -95,7 +95,7 @@ char* string_slice_right (string *str, int count, int len){
   /* PRE: */
   ASSERT (str != NULL);
   ASSERT (str-> initialized == 1);
-  ASSERT (0 <= count <= str-> len_data);
+  ASSERT (0 <= count && count <= str-> len_data);
   ASSERT (0 <= len);
   
   result = (char*) calloc (len + 1, sizeof (char));
@@ -121,7 +121,7 @@ char* string_slice_left (string *str, int count, int len){
   /* PRE: */
   ASSERT (str != NULL);
   ASSERT (str-> initialized == 1);
-  ASSERT (0 <= count <= str-> len_data);
+  ASSERT (0 <= count && count <= str-> len_data);
   ASSERT (0 <= len);
     
   result = (char*) calloc (len + 1, sizeof (char));

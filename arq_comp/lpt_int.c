@@ -31,18 +31,19 @@
 	#define __CPPARGS
 #endif
 
+/* char * ingresado por teclado */
+#define STRLEN  21
+char text[STRLEN];
 
-#define TEXT	"rodrigo puto "
-#define MODULO	strlen(TEXT)
-#define DELAY   100
-
-
+/* TAD que guarda el char * ingresado */
+string* win_string = NULL;
 char* str_to_print = NULL; /* Lo que se manda a los display */
-string* win_string = NULL; /* TAD que guarda el char * ingresado */
 
 int base = 0, offset = 0, picaddr = 0, nxt_to_pr = 0;
 
-timer *timer_to_print = NULL; /* Timer que regula la veloc. de "impresión" */
+/* TAD que regula la velocidad de impresión */
+timer *timer_to_print = NULL;
+#define DELAY   1000  /* Demora en la impresión */
 
 void interrupt (*oldhandler)(__CPPARGS);
 
@@ -88,7 +89,7 @@ void interrupt lptisr (__CPPARGS) {
 		/* Reinicializamos la cuenta */
 		start_timer (timer_to_print);
 
-		nxt_to_pr = (nxt_to_pr+1) % MODULO;
+		nxt_to_pr = (nxt_to_pr+1) % strlen(text);
 		str_to_print = string_slice_right (win_string, nxt_to_pr, DISPLAY_SIZE);
 	}
 
@@ -101,14 +102,16 @@ void interrupt lptisr (__CPPARGS) {
 int main(int argc,char* argv[])
 {
 	int intno = 0, picmask = 0;
-	char text[21];
-
 
 	intno = IRQn + 8;
 	picaddr = PIC1;
 	picmask = 1;
 	picmask = picmask << IRQn; /* 1000 0000 == 0x80 */
 
+	/* Para que no se queje el compilador */
+	argc = argc;
+	argv = argv;
+	
 	/* Make sure port is in forward direction */
 	outport (CONTROL, inp (CONTROL)&0xDF);
 	outport (DATA,0xFF);
@@ -129,9 +132,8 @@ int main(int argc,char* argv[])
 
 
 	/* --- Setup the string to print --- */
-	
 	printf ("Please enter your message (up to 20 letters): ");
-	scanf ("%s", text);
+	scanf ("%[^\n]", text);  /* Tomamos hasta el \n sin incluirlo */
 	win_string = string_create (text);
 	ASSERT (win_string != NULL);
 
