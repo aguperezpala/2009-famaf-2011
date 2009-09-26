@@ -220,16 +220,20 @@ static int Sys_GetPID(struct Interrupt_State* state)
 
 }
 
-/*
+/* ###
  * Set the scheduling policy.
  * Params:
  *   state->ebx - policy,
  *   state->ecx - number of ticks in quantum
  * Returns: 0 if successful, -1 otherwise
+ * ###
  */
 static int Sys_SetSchedulingPolicy(struct Interrupt_State* state)
 {
-    TODO("SetSchedulingPolicy system call");
+	/* ¿Necesitaría ser atómico? */
+	return Set_Scheduling_Policy (state->ebx, state->ecx);
+	
+	TODO("SetSchedulingPolicy system call");
 }
 
 /*
@@ -244,17 +248,90 @@ static int Sys_GetTimeOfDay(struct Interrupt_State* state)
     TODO("GetTimeOfDay system call");
 }
 
-/*
+/* ###
+ * Busca un semáforo libre en el arreglo global de semáforos.
+ * Si (name) != NULL => busca semáforos con ese nombre y devuelve el primero
+ * Si (name) == NULL => busca el 1º semáforo libre
+ *
+ *    SID = Find_Free_Semaphore (name)
+ *
+ * POS: SID >= 0 => En SID está el nº buscado
+ *	SID <  0 => No hay semáforos libres
+ * ###
+ */
+static int Find_Free_Semaphore (const char *name)
+{
+	int i = 0, SID = 0;
+	
+	for (i=0 ; i<MAX_NUM_SEMAPHORES ; i++) {
+		if (name == NULL && !Sema[i].active)
+			SID = i;
+		else if (!strncmp (name, Sema[i].name, 25))
+			SID = i;
+	}
+	
+	if (i == MAX_NUM_SEMAPHORES)
+		SID = -1;
+	
+	return SID;
+}
+
+/* ###
  * Create a semaphore.
  * Params:
  *   state->ebx - user address of name of semaphore
  *   state->ecx - length of semaphore name
  *   state->edx - initial semaphore count
  * Returns: the global semaphore id
+ * ###
  */
 static int Sys_CreateSemaphore(struct Interrupt_State* state)
 {
-    TODO("CreateSemaphore system call");
+	int size = 0, SID = 0;
+	int userSemaCnt = 0, *userSemaList = NULL;
+	char userSemaName[MAX_NAME_LEN];
+	bool valid = false;
+	
+	size = MIN (MAX_NAME_LEN, state->ecx);
+	/** GUARDA CON ESE MIN */
+	KASSERT (state->ecx != 0); /* No toleramos nombres vacíos */
+	
+	memset (userSemaName, '\0', MAX_NAME_LEN);
+	valid = Copy_From_User (userSemaName, (ulong_t) state->ebx, size);
+	
+	SID = Find_Free_Semaphore (userSemaName);
+	
+	if (SID < 0) {
+		/* No existía un semáforo con ese nombre => creamos uno */
+		SID = Find_Free_Semaphore (NULL);
+		
+		/* Actualizamos la lista de semáforos del usuario */
+		userSemaCnt = g_currentThread->userContext->activeSemaCnt;
+		userSemaList = (int *) Malloc (userSemaCnt * sizeof(int));
+		memcpy (userSemaList,
+			g_currentThread->userContext->semaphores,
+			userSemaCnt * sizeof(int));
+		
+		Free (g_currentThread->userContext->semaphores);
+		g_currentThread->userContext->semaphores = (int *)Malloc((userSemaCnt+1)*sizeof(int));
+		
+		memcpy (g_currentThread->userContext->semaphores,
+			userSemaList,
+			userSemaCnt * sizeof (int));
+		g_currentThread->userContext->semaphores[userSemaCnt] = SID;
+		
+		/* Seteamos valores del semáforo */
+		memcpy(Sema[SID].name, userSemaName, size);
+		Sema[SID].count = state->edx;
+	}
+	
+	if (SID >= 0) {
+		Sema[SID].threads_using++;
+		Sema[SID].active = true;
+	}
+	
+	return SID;
+	TODO("CreateSemaphore system call");
 }
 
 /*
