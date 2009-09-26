@@ -101,6 +101,17 @@ typedef void (*Thread_Start_Func)(ulong_t arg);
  */
 #define MAX_QUEUE_LEVEL 4
 
+/*###
+ * Selecciona la política de scheduling
+ * policy: 0 => Round Robin
+ *	   1 => Multilevel Feedback
+ *	   _ => Error
+ * quantum: [2..100] => Quantum switched
+ *	    [other]  => Error
+ *###
+ */
+int Set_Scheduling_Policy(uint_t policy, uint_t quantum);
+
 /*
  * Scheduler operations.
  */
