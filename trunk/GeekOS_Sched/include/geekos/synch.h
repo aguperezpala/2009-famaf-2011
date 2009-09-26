@@ -12,6 +12,11 @@
 
 #include <geekos/kthread.h>
 
+/** Macros */
+#define MAX_SEM_NAME_LENGTH 25
+
+#define MAX_SYS_SEMAPHORES 20
+/** End Macros */
 /*
  * mutex states
  */
