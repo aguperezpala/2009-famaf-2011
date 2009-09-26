@@ -436,7 +436,7 @@ static int Sys_P(struct Interrupt_State* state)
 		* instruccion? o que saca otro thread y no sigue debajo
 		* del Wait este?....
 		*/
-		Wait(Wait_Queue); /* esta lista esta definida kthread.h */
+// TODO		Wait(Wait_Queue); /* esta lista esta definida kthread.h */
 		/* deshabilitamos interrupciones? sigue corriendo por aca? */
 		
 		/* decrementamos el semaforo */
@@ -478,7 +478,7 @@ static int Sys_V(struct Interrupt_State* state)
 	* algun thread dando en la Wait_Queue */
 	Sema[SID].count++;
 	/** Requiere interrupciones deshabilitadas :(... verificar esto */
-	Wake_Up_One(Wait_Queue);
+// TODO	Wake_Up_One(Wait_Queue);
 	
 	End_Int_Atomic(atom);
 	return 0;
@@ -514,7 +514,7 @@ static int Sys_DestroySemaphore(struct Interrupt_State* state)
 	
 	/* Ahora, como en cualquier caso tenemos que eliminarlo de nuestra lista
 	* de semaforos (osea del User_context) lo eliminamos */
-	del_sem_from_list (SID); /** NOTE: fucking FIXME :) (falta implementar).
+	/* TODO del_sem_from_list (SID);*/ /** NOTE: fucking FIXME :) (falta implementar).
 	* yo diria que usemos arreglos de tamaño constante (i.e: userContext->
 	* semaphores[MAX_NUM_SEMAPHORES] para evitarnos bastantes kilombos, 
 	* seteando en numeros negativos los semaforos deshabilitados del arreglo
