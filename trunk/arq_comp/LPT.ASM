@@ -74,7 +74,7 @@ sseg    ENDS
 ;   /--------------------------------\
 ;   | INTERRUPT VECTOR TABLE SEGMENT |
 ;   \--------------------------------/
-iseg    SEGMENT AT 0	; /** ¿Esto sería el extra segment? */
+iseg    SEGMENT AT 0
 	ORG IRQvec
 IRQaddr LABEL DWORD
 iseg    ENDS
