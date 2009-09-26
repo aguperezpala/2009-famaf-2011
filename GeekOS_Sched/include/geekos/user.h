@@ -68,9 +68,12 @@ struct User_Context {
      */
     int refCount;
 
-#if 0
+
+// #if 0
+    /*### Activamos esto para habilitar los semáforos ###*/
+    int activeSemaCnt;
     int *semaphores;
-#endif
+// #endif
 };
 
 struct Kernel_Thread;
