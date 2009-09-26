@@ -33,6 +33,11 @@ static struct All_Thread_List s_allThreadList;
  */
 static struct Thread_Queue s_runQueue[MAX_QUEUE_LEVEL];
 
+typedef  enum { RR , MLF }  Sched_Pol;
+
+/*### La política por defecto es Multilevel Feedback ###*/
+Sched_Pol Scheduling_Policy = MLF;
+
 /*
  * Current thread.
  */
@@ -470,6 +475,36 @@ static void Tlocal_Exit(struct Kernel_Thread* curr) {
  * Public functions
  * ---------------------------------------------------------------------- */
 
+
+
+/*###
+ * Selecciona la política de scheduling
+ * policy: 0 => Round Robin
+ *	   1 => Multilevel Feedback
+ *	   _ => Error
+ * quantum: [2..100] => Quantum switched
+ *	    [other]  => Error
+ *###
+ */
+int Set_Scheduling_Policy(uint_t policy, uint_t quantum)
+{
+	if (policy == 0)
+		Scheduling_Policy = RR;
+	else if (policy == 1)
+		Scheduling_Policy = MLF;
+	else
+		return -1;
+	
+	if (quantum < 2 || quantum > 100)
+		return -1;
+	else
+		Set_gQuantum (quantum);
+	
+// 	Print ("Scheduling_Policy = %d\n", Scheduling_Policy);
+	return 0;
+}
+
+
 void Init_Scheduler(void)
 {
     struct Kernel_Thread* mainThread = (struct Kernel_Thread *) KERN_THREAD_OBJ;
@@ -597,21 +632,105 @@ struct Kernel_Thread* Get_Current(void)
     return g_currentThread;
 }
 
-/*
+
+/*###
+ * Encuentra el mejor thread (ejecutable, ie: no bloqueado) en la cola dada
+ * PRE: Q != NULL
+ *###
+ */
+static struct Kernel_Thread* Get_Runnable_In_Queue (struct Thread_Queue* Q)
+{
+	struct Kernel_Thread* best = NULL, *first = NULL;
+	
+	KASSERT (Q != NULL);
+	
+		
+	first = Remove_From_Front_Of_Thread_Queue (Q);
+	if (first != NULL)
+		Add_To_Back_Of_Thread_Queue (Q, first);
+	
+	
+	/* Find the best thread from this run queue */
+	do {		
+		best = NULL;
+		
+		if (!Is_Thread_Queue_Empty (Q)) {
+			
+			best = Remove_From_Front_Of_Thread_Queue (Q);
+			/* Cola no vacía => best != NULL */
+			KASSERT(best != NULL);
+			
+			if (!best->blocked)
+				/* Pescamos uno */
+				break;
+			/** GUARDA CON EL BREAK */
+			else
+				/* Lo metemos de vuelta para seguir buscando */
+				Add_To_Back_Of_Thread_Queue (Q, best);
+		}
+		
+		
+	} while (best != first);
+	
+	if (best == first && best != NULL && best->blocked) best = NULL;
+	
+	return best;
+}
+
+/* ### Debuggeo únicamente, leaks asegurados ### 
+static int Kernel_Queue_Size (struct Thread_Queue* Q)
+{
+	int cnt = 0;
+	struct Kernel_Thread* best = NULL;
+	
+	while (!Is_Thread_Queue_Empty (Q)) {
+		best = Remove_From_Front_Of_Thread_Queue (Q);
+		cnt++;
+}
+		
+	return cnt;
+}*/
+
+
+/* ###
  * Get the next runnable thread from the run queue.
  * This is the scheduler.
+ * ###
  */
 struct Kernel_Thread* Get_Next_Runnable(void)
 {
-    struct Kernel_Thread* best = 0;
-
-    /* Find the best thread from the highest-priority run queue */
-    TODO("Find a runnable thread from run queues");
+	struct Kernel_Thread* best = NULL;
+	int i = 0;
+	
+	if (Scheduling_Policy == RR) {
+		best = Get_Runnable_In_Queue (&s_runQueue[0]);
+		KASSERT (best != NULL); /* Sino está todo como el chori */
+		return best;
+	}
+	
+	/* Si llegamos acá estamos en política MLF */
+	
+	/* Find the best thread from the highest-priority run queue */
+	for (i = 0 ; i < MAX_QUEUE_LEVEL ; i++) {
+	
+		best = Get_Runnable_In_Queue (&s_runQueue[i]);
+		
+		if (best != NULL) break;
+	}
+	
+	KASSERT (best != NULL); /* Sino está todo como el chori */
+	
+/*	Print("Scheduling %x\n", (uint_t)best);
+	for (i=0 ; i<MAX_QUEUE_LEVEL ; i++)
+	Print("Queue nº %i size: %d\n", i, Kernel_Queue_Size (&s_runQueue[i]));
+	KASSERT (best != g_currentThread); ¿Hay un solo thread?
+*/	
+	return best;
+	TODO("Find a runnable thread from run queues");
 
 /*
  *    Print("Scheduling %x\n", best);
  */
-    return best;
 }
 
 /*
@@ -755,7 +874,7 @@ struct Kernel_Thread* Lookup_Thread(int pid)
 }
 
 
-/*
+/*###
  * Wait on given wait queue.
  * Must be called with interrupts disabled!
  * Note that the function will return with interrupts
@@ -764,19 +883,26 @@ struct Kernel_Thread* Lookup_Thread(int pid)
  * and wait for it to be satisfied (if necessary).
  * See the Wait_For_Key() function in keyboard.c
  * for an example.
+ *###
  */
 void Wait(struct Thread_Queue* waitQueue)
 {
-    struct Kernel_Thread* current = g_currentThread;
+	struct Kernel_Thread* current = g_currentThread;
 
-    KASSERT(!Interrupts_Enabled());
+	KASSERT(!Interrupts_Enabled());
 
-    /* Add the thread to the wait queue. */
-    current->blocked = true;
-    Enqueue_Thread(waitQueue, current);
+	/* Add the thread to the wait queue. */
+	current->blocked = true;
+	/* Vamos a decrementarle en uno la prioridad => Hacking GeekOS */
+	Print ("currentReadyQueue = %d\t BEFORE\n", current->currentReadyQueue);
+	if (current->currentReadyQueue > 0)
+		current->currentReadyQueue--;
+	Print ("currentReadyQueue = %d\t AFTER\n", current->currentReadyQueue);
+    
+	Enqueue_Thread(waitQueue, current);
 
-    /* Find another thread to run. */
-    Schedule();
+	/* Find another thread to run. */
+	Schedule();
 }
 
 /*
