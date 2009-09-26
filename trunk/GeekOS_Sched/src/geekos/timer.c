@@ -290,3 +290,9 @@ void Micro_Delay(int us)
 
     Spin(numSpins);
 }
+
+
+/*### Modificador del quantum de Round Robin de estadía en CPU ###*/
+void Set_gQuantum (int quantum) { g_Quantum = quantum; }
+
+
