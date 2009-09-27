@@ -1,0 +1,128 @@
+________________________________________________________________________________
+TAD String
+=== ======
+
+    String es una abstracción de datos sobre los C-string, que tiene la 
+siguiente interface:
+
+
+- Funciones de Creación y Destrucción:
+
+string* string_create (char* cstr)
+
+string* string_destroy (string* str)
+
+
+- Funciones Proyectoras:
+
+char* string_get_front (string *str, int pos ,int len)
+
+char* string_get_back (string *str, int pos ,int len)
+
+
+- Funciones Consultoras (Side-Effect Free):
+
+char* string_slice_right (const string *str, int count, int len)
+
+char* string_slice_left (const string *str, int count, int len)
+
+
+   Un objeto string se basa en un puntero, al que llamaremos 'string pointer' 
+que apunta a una posición dentro del c-string con el que fue creado.
+   Un objeto string se adueña del puntero cstr hasta su destrucción, que 
+cstr pasa a ser responsabilidad del usuario.
+  Todos los bloques de memorias devuelto por las funciones deben ser liberados
+por el llamador.
+  Notar string se comporta como un arreglo circular.
+
+   La función string_get_front (str, pos, len) establece el 'string pointer' 
+en la posición 'pos' y devuelve un puntero hacia un bloque de memoria 'result' 
+que satisface:
+
+	result [i] == str-> data[pos + i % data-> len_data]  para i = 0..len-1
+
+   La función 'string_get_back (srt, pos, len)' se define como:
+	
+	string_get_back (srt, pos, len) <=> string_get_front (str, tmp, len)
+	donde: 
+	tmp = ((pos - len + 1) + len_data) % len_data (Ver strin.h)
+	
+    Las funciones string_slice_* () se comportan de manera analóga a  
+string_get_* (), sólo que no modifican el string pointer.
+
+________________________________________________________________________________
+TAD Timer
+=== =====
+
+   Este TAD no simula un timer de conteo de ticks del sistema. Es decir que no
+corre su tiempo de manera asíncrona y paralalela a la ejecución del programa que
+lo generó, sino que requiere que tal programa explícitamente lo oblige a
+"aumentar su tiempo interno"
+
+   Básicamente el TAD timer consta de dos enteros: un contador del tiempo, y una
+referencia de fin del conteo (timeout)
+
+   La sinopsis de la función de creación es:
+
+1.      timer *setup_timer (unsigned int timeout);
+
+donde timeout es el valor para el cual el conteo de tiempo del timer finaliza.
+Por otro lado la función de destrucción y liberación es:
+
+2.      timer *stop_timer (timer *t);
+
+la cual requiere que el argumento pasado sea no nulo. Notar que esta función
+destruye la instancia de timer tomada como argumento.
+
+   La función de inicialización de un timer ya creado es:
+
+3.      void start_timer (timer *t);
+
+   Lo único que hace esa función es poner el contador interno de tiempo en 0.
+Para hacer que "corra el tiempo interno" del timer existe una función que
+aumenta en 1 el valor del mismo, como si hubiera transcurrido un tick del
+sistema en los timers verdaderos. La misma es:
+
+4.      void inc_timer (timer *t);
+
+   Para verificar si este contador ya alcanzó el tiempo de finalización con el
+que se generó la instancia de timer, existe una función cuya sinopsis es:
+
+5.      int timeout_timer (timer *t);
+
+   Si el valor de retorno es 1 => se ha ejecutado inc_timer al menos "timeout"
+veces, ya sea desde la creación de esta instancia de timer o desde el último
+llamado a start_timer. Aquí "timeout" hace referencia al argumento pasado a
+setup_timer al momento de la creación de la instacia de timer en cuestión.
+
+   Si en cambio el valor de retorno es 0 => inc_timer se ha ejecutado menos de
+"timeout" veces, ya sea desde el último start_timer o desde el setup_timer.
+
+________________________________________________________________________________
+Módulo Assert
+====== ======
+
+  no_std_assert.h contiene simplemente una macro:
+      
+      ASSERT(s)  !(s) ? abort () : 1	
+
+que utilizamos para verficar las precondiciones en las llamadas a funciones. Si
+no se satisface 's' el programa termina con una llamada a abort ().
+
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
