@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "timer.h"
-/* FIXME: implementar el uso de la macro ASSERT cuando ésta sea implementada
-#include "assert.h" */
+// #include "assert.h"
+/* FIXME: usar la macro ASSERT para chequear PRE y POS condiciones
+ *	  cuando ésta sea implementada
+ */
 
 
 struct __timer {
@@ -46,9 +48,10 @@ timer *setup_timer (unsigned int timeout)
  */
 timer *stop_timer (timer *t)
 {
-	if (t != NULL)
+	if (t != NULL) {
 		free (t);
-	t = NULL;
+		t = NULL;
+	}
 	
 	return t;
 }
@@ -60,7 +63,7 @@ timer *stop_timer (timer *t)
  *
  * PRE: t != NULL
  *    b = timeout_timer (t)
- * POS: 1 => el timer alcanzó el tiempo seteado con start_timer
+ * POS: 1 => el timer alcanzó el tiempo seteado con setup_timer
  *	0 => aún no se alcanzó ese tiempo
  */
 int timeout_timer (timer *t)
@@ -95,6 +98,8 @@ void start_timer (timer *t)
  */
 void inc_timer (timer *t)
 {
-	if (t != NULL)
-		t->ct++;
+	if (t != NULL) {
+		if (t->ct < t->to)
+			t->ct++;
+	}
 }

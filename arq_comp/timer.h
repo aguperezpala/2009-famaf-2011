@@ -37,7 +37,7 @@ timer *stop_timer (timer *t);
  *
  * PRE: t != NULL
  *    b = timeout_timer (t)
- * POS: 1 => el timer alcanzó el tiempo seteado con start_timer
+ * POS: 1 => el timer alcanzó el tiempo seteado con setup_timer
  *	0 => aún no se alcanzó ese tiempo
  */
 int timeout_timer (timer *t);
