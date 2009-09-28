@@ -7,8 +7,8 @@
 */
 
 
-#include <conio.h>
-#include <dos.h>
+/* #include <conio.h>
+ #include <dos.h> */
 #include <stdio.h>
 #include <string.h>
 
@@ -19,10 +19,14 @@
 
 
 #ifdef __cplusplus
-#define __CPPARGS ...
+  #define __CPPARGS ...
 #else
-#define __CPPARGS
+  #define __CPPARGS 
 #endif
+
+
+static void change_IVT (unsigned int int_type, void interrupt (*new_isr)(), 
+			void interrupt (*old_isr)() );
 
 
 /** ~~~~~~~~~~~~~~~~ Direcciones de puertos y registros ~~~~~~~~~~~~~~~~~~~~ **/
@@ -73,12 +77,6 @@
  *	   El bit 2 indica error de paridad (si fue habilitada en el LCR)
  */
 
-/** De acá para arriba ya fue revisado para UART */
-
-/** ### ~~~~~~~~~~~~~~~~~~~~ ### HASTA ACÁ TOQUÉ ### ~~~~~~~~~~~~~~~~~~~~ ### */
-
-/** De acá para abajo aún está en el modo LPT */
-
 
 /** ~~~~~~~~~~~~~~~ Variables y constantes globales ~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
@@ -111,7 +109,7 @@ void interrupt uartisr (__CPPARGS)
 	
 	if (!END_MSG) {
 		/* Guardamos el caracter que llegó */
-		text[last_char] = inportb (DATA);
+		text[last_char] = (char) inp (DATA);
 		
 		/* Revisamos si era fin de mensaje */
 		if (text[last_char] == '\0')
@@ -121,7 +119,7 @@ void interrupt uartisr (__CPPARGS)
 		last_char = (last_char + 1) % STRLEN;
 	}
 	
-	outport(PIC1,0x20); /* Avisamos al PIC con el EOI */
+	outport(PIC1,0x20); /* EOI hacia al PIC */
 	
 	enable (); /* Atomicidad OFF */
 }
@@ -149,7 +147,7 @@ void interrupt lptisr (__CPPARGS)
 	
 /* Selección del display por donde se muestra esa información: */
 	
-	ans = inport (CONTROL) & 0x10;	/* Modo "activar display indicado" */
+	ans = inp (CONTROL) & 0x10;	/* Modo "activar display indicado" */
 	outport (CONTROL, ans | dir_order[offset]); /* Activación del display */
 	
 /* Actualización de la información a mostrar por el display: */
@@ -191,29 +189,38 @@ int main (int argc, char *argv[])
 /* Manejo del puerto serie (uart) */
 	
 	/* Modo conservativo */
-	uart_ctrl = inportb (LCR);
-	uart_int  = inportb (IER);
+	uart_ctrl = inp (LCR);
+	uart_int  = inp (IER);
 	
 	/* Deshabilitamos la interrupciones del uart, para que no molesten */
-	outportb (IER, 0x00);
+	outport (IER, 0x00);
 	
 	/* Preparamos el IVT */
 	change_IVT ((unsigned int) int_uart, uartisr, oldhandler4);
 	
 	/* Escogemos baudeaje */
-	outportb (LCR, 0x80);		/* DLAB := 1 */
-	outportb (DATA_S, 0x18);	/* DLN LSB */	/* Baudeaje escogido: */
-	outportb (IER, 0x00);		/* DLN MSB */	/*      4800 BPS      */
+	outport (LCR, 0x80);		/* DLAB := 1 */
+	outport (DATA_S, 0x18); 	/* DLN LSB */	/* Baudeaje escogido: */
+	outport (IER, 0x00);		/* DLN MSB */	/*      4800 BPS      */
 	
 	/* Escogemos modo de trabajo */
-	outportb (LCR, 0x1F);	/* DLAB := 0 + Parity enabled + even parity +
+	outport (LCR, 0x1F);	/* DLAB := 0 + Parity enabled + even parity +
 				 * 2 stop bits + 8 bit word length */
 	
 	/* Desenmascaramos el PIC para que atienda los IRQ4 del uart */
 	outport (picaddr+1, inp (picaddr+1)&(0xFF-pic_mask_uart));
 	
 	/* Habilitamos sólo las recepciones (notar que DLAB == 0) */
-	outportb (IER, 0x01);
+	outport (IER, 0x01);
+	
+	printf ("Receiving message through serial port\n");
+	while (!END_MSG) ; /* Hasta recibir todo el mensaje por el uart
+			    * no imprimiremos nada por el lpt
+			    */
+	/* Deshabilitamos las recepciones para que no nos cambien el mensaje */
+	outport (IER, 0x00);
+// 	DEBUGGING INFO
+// 	printf ("Mensaje recibido por el puerto serie: %s\n", text);
 	
 /* Manejo del puerto paralelo (lpt) */
 	
@@ -223,13 +230,6 @@ int main (int argc, char *argv[])
 	
 	/* Preparamos el IVT */
 	change_IVT ((unsigned int) int_lpt, lptisr, oldhandler7);
-	
-	printf ("Receiving message through serial port\n");
-	while (!END_MSG) ; /* Hasta recibir todo el mensaje por el uart
-			    * no imprimiremos nada por el lpt
-			    */
-// 	DEBUGGING INFO
-// 	printf ("Mensaje recibido por el puerto serie: %s\n", text);
 	
 	/* Desenmascaramos el PIC para que atienda los IRQ7 del lpt */
 	outport (picaddr+1, inp (picaddr+1)&(0xFF-pic_mask_uart));
@@ -244,11 +244,12 @@ int main (int argc, char *argv[])
 	str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
 	free (str_to_print);
 
-	/* Generamos el timer para demora de impresión (ver lptisr) */
+	/* Generamos el timer para velocidad de impresión (ver lptisr) */
 	timer_to_print = setup_timer (DELAY);
 	start_timer (timer_to_print);
-
-	/* Main program */
+	
+/* Main program */
+	
 	printf ("Interrupt is enabled. Main program prints some values.\n");
 	for (;!kbhit();) {
 		printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
@@ -264,12 +265,20 @@ int main (int argc, char *argv[])
 	/* Re-enmascaramos el PIC para que ya no atienda los IRQ7 */
 	outport (picaddr+1, inp (picaddr+1)|pic_mask_lpt);
 	
+	/* Sacamos datos nulos por el lpt */
+	outport (DATA, 0x00);
+	
+	/* Restablecemos el uart a su estado original */
+	outport (IER, uart_int);
+	outport (LCR, uart_ctrl);
+	
+	/* Re-enmascaramos el PIC para que ya no atienda los IRQ4 */
+	outport (picaddr+1, inp (picaddr+1)|pic_mask_uart);
+	
 	/* Volvemos el IVT a su estado original */
 	change_IVT ((unsigned int) int_lpt, oldhandler7, lptisr);
-
-	/* Output null data */
-	outport (DATA, 0x00);
-
+	change_IVT ((unsigned int) int_lpt, oldhandler4, uartisr);
+	
 	/* Liberamos todos los recursos */
 	win_string = string_destroy (win_string);
 	free (str_to_print);
@@ -285,18 +294,18 @@ int main (int argc, char *argv[])
 /** ~~~~~~~~~~~~~~~~~~~~~~~ Subrutinas de ayuda ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
 /* Administrador del vector de interrupciones (IVT)
- * Setea el manejador de interrupciones new_int en la posición int_type.
- * El manejador que estaba previamente en IVT[int_type] es guardado en old_int
+ * Setea el manejador de interrupciones new_isr en la posición int_type.
+ * El manejador que estaba previamente en IVT[int_type] es guardado en old_isr
  */
-static void change_IVT (unsigned int int_type, void interrupt (*new_int)(), 
-			void interrupt (*old_int)() )
+static void change_IVT (unsigned int int_type, void interrupt (*new_isr)(), 
+			void interrupt (*old_isr)() )
 {
-	ASSERT (new_int != NULL);
-	ASSERT (old_int != NULL);
+	ASSERT (new_isr != NULL);
+	ASSERT (old_isr != NULL);
 	
-	old_int = getvect (int_type); /* Guardamos el viejo ISR */
+	old_isr = getvect (int_type); /* Guardamos el viejo ISR */
 	disable ();
-	setvect (int_type, new_int); /* Instalamos el nuevo ISR atómicamente */
+	setvect (int_type, new_isr); /* Instalamos el nuevo ISR atómicamente */
 	enable ();
 	
 	return;
