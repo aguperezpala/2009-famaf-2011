@@ -8,10 +8,16 @@
 
 #define IRQn	4		/* UART interrupt number */
 #define UART	0x3F8		/* UART base port address (COM1) */
-#define PIC1	0x20		/* PIC base port address */
+#define LPT1	0x378		/* LPT  base port address */
+#define PIC1	0x20		/* PIC  base port address */
 
+/* Registros del LPT1 */
+#define DATA_P	(LPT1+0)	/* Data Register */
+#define STATUS	(LPT1+1)	/* Status Register */
+#define CONTROL	(LPT1+2)	/* Control Register */
 
-#define DATA	(UART+0)	/* Rx buffer (rd only) */
+/* Registros del UART */
+#define DATA_S	(UART+0)	/* In this code: Rx buffer (rd only) */
 #define IER	(UART+1)	/* Interrupt Enable Register (NOTE 1) */
 #define IIR	(UART+2)	/* Interrupt Identification Register (NOTE 2) */
 #define LCR	(UART+3)	/* Line Control Register (NOTE 3) */
@@ -25,20 +31,24 @@
  *	   bit 1 del IER.
  *
  *	2. _Para indentificar a qué se debió la interrupción (Rx, Tx, etc)
+ *	   Es para lectura exclusivamente (sino se accede a otro registro)
  *	   _Si se desactivó el modo transimisón se facilita el trabajo de
- *	   recepción, pues sólo se recibirán interrupciones por recepción, y 
- *	   por ende no será necesario estudiar el IIR ante una interrupción 
- *	   para saber si fue por recepción o por transmisión.
+ *	   recepción, pues sólo se recibirán interrupciones por recepción, y
+ *	   por ende no será necesario estudiar el IIR ante una interrupción
+ *	   para averiguar si fue por recepción o por transmisión.
  *
  *	3. _Maneja el funcionamiento del puerto serie UART
  *	   _Si se escribe una palabra con el bit 7 (MSB) seteado se estará
- *	   accediendo a los "Divisor Latch Numbers"
+ *	   accediendo a los "Divisor Latch Numbers" (DLN) que controlan el
+ *	   baudeaje de Tx y Rx. El registro DATA se "transforma" en el DLN LSB y
+ *	   el registro IER en el DLN MSB.
  *	   _Si se escribe una palabra con el bit 7 (MSB) en 0 se trabajará luego
  *	   con los registros de Tx/Rx y el IER en las direcciones de puerto
- *	   0x3F8 y 0x3F9 respectivamente
+ *	   0x3F8 y 0x3F9 respectivamente (y no con los DLN)
  *
  *	4. _El registro de estado del UART. El bit 0 (LSB) en alto voltaje
  *	   indica que el registro de recepción está lleno (para polling)
+ *	   El bit 2 indica error de paridad (si fue habilitada en el LCR)
  */
 
 /** De acá para arriba ya fue revisado para UART */
@@ -64,9 +74,11 @@
 	#define __CPPARGS
 #endif
 
-/* char * ingresado por teclado */
+/* char * recibido por el UART */
 #define STRLEN  21
 char text[STRLEN];
+/* Bandera de fin de recepción (ver uartisr) */
+int END = 0;
 
 /* TAD que guarda el char * ingresado */
 string* win_string = NULL;
@@ -80,6 +92,22 @@ timer *timer_to_print = NULL;
 
 void interrupt (*oldhandler)(__CPPARGS);
 
+/* Manejador de interrupciones ante la recepción de un caracter en el UART 
+ * Se asume que el mensaje temrina cuando llega el caracter '\0'
+ */
+void interrupt uartisr (__CPPARGS)
+{
+	static unsigned int last_char = 0;
+	
+	/* Guardamos el char que llegó */
+	text[last_char] = inportb (DATA);
+	
+	/**/
+	
+	/* Nos movemos a la siguiente posición */
+	last_char = (last_char + 1) % STRLEN;
+	
+	
 
 void interrupt lptisr (__CPPARGS) {
 /* NOTE
