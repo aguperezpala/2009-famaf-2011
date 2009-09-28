@@ -192,14 +192,28 @@ int main (int argc, char *argv[])
 	outportb (IER, 0x00); /* Deshabilitamos la interrupciones del uart */
 	change_IVT ((unsigned int) int_uart, uartisr, oldhandler4);
 	
-	oldhandler4 = getvect (int_uart); /* Guardamos el viejo ISR */
-	disable ();
-	setvect (int_uart, uartisr); /* Instalamos el nuevo ISR */
-	enable ();
+	/* Escogemos baudeaje */
+	outportb (LCR, 0x80);		/* DLAB := 1 */
+	outportb (DATA_S, 0x18);	/* DLN LSB */	/* Baudeaje escogido: */
+	outportb (IER, 0x00);		/* DLN MSB */	/*      4800 BPS      */
 	
-	/* Preparamos el puerto */
-	outport (LCR, 0x80);	/* DLAB := 1 */
-	outport ();
+	/* Escogemos modo de trabajo */
+	outportb (LCR, 0x1F);	/* DLAB := 0 + Parity enabled + even parity +
+				 * 2 stop bits + 8 bit word length */
+	
+	/* Habilitamos sólo las recepciones (notar que DLAB == 0) */
+	outportb (IER, 0x01);
+	
+/* Manejo del puerto paralelo (lpt) */
+	
+	/* Make sure port is in forward direction */
+	outport (CONTROL, inp (CONTROL)&0xDF);
+	outport (DATA,0xFF);
+	
+	
+	while (!END_MSG) ; /* Hasta no terminar de recibir el mensaje no
+			    * imprimiremos nada por el display
+			    */
 	
 /* Manejo del puerto paralelo (lpt) */
 	
@@ -276,15 +290,15 @@ int main (int argc, char *argv[])
  * Setea el manejador de interrupciones new_int en la posición int_type.
  * El manejador que estaba previamente en IVT[int_type] es guardado en old_int
  */
-static void change_IVT (unsigned int int_type, void new_int (*isr)(), 
-			void old_int (*isr)() )
+static void change_IVT (unsigned int int_type, void interrupt (*new_int)(), 
+			void interrupt (*old_int)() )
 {
 	ASSERT (new_int != NULL);
 	ASSERT (old_int != NULL);
 	
-	old_int = getvect (int_uart); /* Guardamos el viejo ISR */
+	old_int = getvect (int_type); /* Guardamos el viejo ISR */
 	disable ();
-	setvect (int_uart, uartisr); /* Instalamos el nuevo ISR atómicamente */
+	setvect (int_type, new_int); /* Instalamos el nuevo ISR atómicamente */
 	enable ();
 	
 	return;
