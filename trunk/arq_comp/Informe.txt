@@ -50,6 +50,19 @@ que satisface:
     Las funciones string_slice_* () se comportan de manera analóga a  
 string_get_* (), sólo que no modifican el string pointer.
 
+Implementación
+--------------
+  Ya que las funciónes string_get_* () y string_slice_* () se diferencian en:
+- Inicializar el Tad
+- Refrescar la posición del string_pointer
+- Posición relativa del string pointer
+
+/** Continuará!!! **/
+  
+  
+  
+  
+
 ________________________________________________________________________________
 TAD Timer
 === =====
