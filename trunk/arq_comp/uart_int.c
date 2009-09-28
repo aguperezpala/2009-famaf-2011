@@ -175,6 +175,7 @@ int main (int argc, char *argv[])
 {
 	int int_lpt = 0, int_uart = 0;
 	int pic_mask_lpt = 0, pic_mask_uart = 0;
+	int uart_ctrl = 0, uart_int = 0;
 
 	int_lpt  = IRQ7 + 8;	/* int_lpt  == type 15 */
 	int_uart = IRQ4 + 8;	/* int_uart == type 12 */
@@ -185,11 +186,18 @@ int main (int argc, char *argv[])
 	pic_mask_uart = pic_mask_uart << IRQ4; /* 0001 0000 == 0x10 */
 
 	argc = argc; argv = argv; /* Para que no se queje el compilador */
+	memset (text, '\0', STRLEN);
 	
 /* Manejo del puerto serie (uart) */
 	
+	/* Modo conservativo */
+	uart_ctrl = inportb (LCR);
+	uart_int  = inportb (IER);
+	
+	/* Deshabilitamos la interrupciones del uart, para que no molesten */
+	outportb (IER, 0x00);
+	
 	/* Preparamos el IVT */
-	outportb (IER, 0x00); /* Deshabilitamos la interrupciones del uart */
 	change_IVT ((unsigned int) int_uart, uartisr, oldhandler4);
 	
 	/* Escogemos baudeaje */
@@ -201,6 +209,9 @@ int main (int argc, char *argv[])
 	outportb (LCR, 0x1F);	/* DLAB := 0 + Parity enabled + even parity +
 				 * 2 stop bits + 8 bit word length */
 	
+	/* Desenmascaramos el PIC para que atienda los IRQ4 del uart */
+	outport (picaddr+1, inp (picaddr+1)&(0xFF-pic_mask_uart));
+	
 	/* Habilitamos sólo las recepciones (notar que DLAB == 0) */
 	outportb (IER, 0x01);
 	
@@ -210,69 +221,56 @@ int main (int argc, char *argv[])
 	outport (CONTROL, inp (CONTROL)&0xDF);
 	outport (DATA,0xFF);
 	
+	/* Preparamos el IVT */
+	change_IVT ((unsigned int) int_lpt, lptisr, oldhandler7);
 	
-	while (!END_MSG) ; /* Hasta no terminar de recibir el mensaje no
-			    * imprimiremos nada por el display
+	printf ("Receiving message through serial port\n");
+	while (!END_MSG) ; /* Hasta recibir todo el mensaje por el uart
+			    * no imprimiremos nada por el lpt
 			    */
+// 	DEBUGGING INFO
+// 	printf ("Mensaje recibido por el puerto serie: %s\n", text);
 	
-/* Manejo del puerto paralelo (lpt) */
+	/* Desenmascaramos el PIC para que atienda los IRQ7 del lpt */
+	outport (picaddr+1, inp (picaddr+1)&(0xFF-pic_mask_uart));
 	
-	/* Make sure port is in forward direction */
-	outport (CONTROL, inp (CONTROL)&0xDF);
-	outport (DATA,0xFF);
-
-	/* Save old interrupt vector */
-	oldhandler4 = getvect (intno);
-
-	/* Set new interrupt vector entry */
-	disable ();
-	setvect (intno,lptisr);
-	enable ();
-
-	/* Un-Mask Pic */
-	outport (picaddr+1, inp (picaddr+1)&(0xFF-picmask));
-
-	/* Enable parallel port IRQ's */
+	/* Habilitamos las transmisiones del lpt */
 	outport (CONTROL, inp(CONTROL)|0x10);
-
-
-	/* --- Setup the string to print --- */
-	printf ("Please enter your message (up to 20 letters): ");
-	scanf ("%[^\n]", text);  /* Tomamos hasta el \n sin incluirlo */
+	
+/* Preparación de los TADs para impresión por el display */
+	
+	/* Encapsulamos el mensaje en el TAD String */
 	win_string = string_create (text);
-	ASSERT (win_string != NULL);
-
-	/* Activamos el TAD String con su ventanita */
 	str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
 	free (str_to_print);
 
-	/* Generamos el timer que va a ser manejado por el interrupt_handler */
+	/* Generamos el timer para demora de impresión (ver lptisr) */
 	timer_to_print = setup_timer (DELAY);
 	start_timer (timer_to_print);
 
 	/* Main program */
 	printf ("Interrupt is enabled. Main program prints some values.\n");
 	for (;!kbhit();) {
-	  printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
-		 base,offset,map_ascii[base+offset]);
-	  printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
+		printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
+			base,offset,map_ascii[base+offset]);
+		printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
 	}
-
-	/* Disable parallel port IRQ's */
+	
+/* Desinstalación de los puertos (paralelo y serie) */
+	
+	/* Deshabilitamos las transmisiones del lpt */
 	outport (CONTROL, inp (CONTROL)&0xEF);
-
-	/* Mask Pic */
-	outport (picaddr+1, inp (picaddr+1)|picmask);
-
-	/* Restore old interrupt vector before exit */
-	disable ();
-	setvect (intno, oldhandler);
-	enable ();
+	
+	/* Re-enmascaramos el PIC para que ya no atienda los IRQ7 */
+	outport (picaddr+1, inp (picaddr+1)|pic_mask_lpt);
+	
+	/* Volvemos el IVT a su estado original */
+	change_IVT ((unsigned int) int_lpt, oldhandler7, lptisr);
 
 	/* Output null data */
 	outport (DATA, 0x00);
 
-	/* Free all resources */
+	/* Liberamos todos los recursos */
 	win_string = string_destroy (win_string);
 	free (str_to_print);
 	timer_to_print = stop_timer (timer_to_print);
