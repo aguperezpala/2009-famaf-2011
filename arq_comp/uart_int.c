@@ -6,7 +6,29 @@
 * @version	1.0 - October 15th, 2004
 */
 
-#define IRQn	4		/* UART interrupt number */
+
+#include <conio.h>
+#include <dos.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "assert.h"
+#include "table.h"
+#include "strin.h"
+#include "timer.h"
+
+
+#ifdef __cplusplus
+#define __CPPARGS ...
+#else
+#define __CPPARGS
+#endif
+
+
+/** ~~~~~~~~~~~~~~~~ Direcciones de puertos y registros ~~~~~~~~~~~~~~~~~~~~ **/
+
+#define IRQ4	4		/* UART interrupt number */
+#define IRQ7	7		/* LPT  interrupt number */
 #define UART	0x3F8		/* UART base port address (COM1) */
 #define LPT1	0x378		/* LPT  base port address */
 #define PIC1	0x20		/* PIC  base port address */
@@ -40,11 +62,11 @@
  *	3. _Maneja el funcionamiento del puerto serie UART
  *	   _Si se escribe una palabra con el bit 7 (MSB) seteado se estará
  *	   accediendo a los "Divisor Latch Numbers" (DLN) que controlan el
- *	   baudeaje de Tx y Rx. El registro DATA se "transforma" en el DLN LSB y
- *	   el registro IER en el DLN MSB.
+ *	   baudeaje de Tx y Rx. El registro DATA_S se "transforma" en el DLN LSB
+ *	   y el registro IER en el DLN MSB.
  *	   _Si se escribe una palabra con el bit 7 (MSB) en 0 se trabajará luego
- *	   con los registros de Tx/Rx y el IER en las direcciones de puerto
- *	   0x3F8 y 0x3F9 respectivamente (y no con los DLN)
+ *	   con los registros de Tx/Rx y el IER en DATA_S e IER respectivamente
+ *	   (las direcciones de puerto 0x3F8 y 0x3F9), y *no* con los DLN.
  *
  *	4. _El registro de estado del UART. El bit 0 (LSB) en alto voltaje
  *	   indica que el registro de recepción está lleno (para polling)
@@ -57,68 +79,60 @@
 
 /** De acá para abajo aún está en el modo LPT */
 
-#include <conio.h>
-#include <dos.h>
-#include <stdio.h>
-#include <string.h>
 
-#include "assert.h"
-#include "table.h"
-#include "strin.h"
-#include "timer.h"
+/** ~~~~~~~~~~~~~~~ Variables y constantes globales ~~~~~~~~~~~~~~~~~~~~~~~~ **/
 
-
-#ifdef __cplusplus
-	#define __CPPARGS ...
-#else
-	#define __CPPARGS
-#endif
-
-/* char * recibido por el UART */
 #define STRLEN  21
-char text[STRLEN];
-/* Bandera de fin de recepción (ver uartisr) */
-int END = 0;
+char text[STRLEN];	/* char * recibido por el UART */
+int END_MSG = 0;	/* Bandera de fin de recepción (ver uartisr) */
 
-/* TAD que guarda el char * ingresado */
-string* win_string = NULL;
-char* str_to_print = NULL; /* Lo que se manda a los display */
+string* win_string = NULL;	/* TAD que guarda el char * recibido */
+char* str_to_print = NULL;	/* Lo que se manda a los display */
 
 int base = 0, offset = 0, picaddr = 0, nxt_to_pr = 0;
 
-/* TAD que regula la velocidad de impresión */
-timer *timer_to_print = NULL;
-#define DELAY   1000  /* Demora en la impresión */
+timer *timer_to_print = NULL;	/* TAD que regula la velocidad de impresión */
+#define DELAY   1000		/* Demora en la impresión */
 
-void interrupt (*oldhandler)(__CPPARGS);
+void interrupt (*oldhandler4)(__CPPARGS);
+void interrupt (*oldhandler7)(__CPPARGS);
+
+
+/** ~~~~~~~~~~~~~~~ ISR: rutinas de manejo de interrupciones ~~~~~~~~~~~~~~~~ */
 
 /* Manejador de interrupciones ante la recepción de un caracter en el UART 
- * Se asume que el mensaje temrina cuando llega el caracter '\0'
+ * Se asume que el mensaje termina cuando llega el caracter '\0'
  */
 void interrupt uartisr (__CPPARGS)
 {
 	static unsigned int last_char = 0;
 	
-	/* Guardamos el char que llegó */
-	text[last_char] = inportb (DATA);
+	disable (); /* Atomicidad ON */
 	
-	/**/
+	if (!END_MSG) {
+		/* Guardamos el caracter que llegó */
+		text[last_char] = inportb (DATA);
+		
+		/* Revisamos si era fin de mensaje */
+		if (text[last_char] == '\0')
+			END_MSG = 1;
+		
+		/* Nos movemos a la siguiente posición */
+		last_char = (last_char + 1) % STRLEN;
+	}
 	
-	/* Nos movemos a la siguiente posición */
-	last_char = (last_char + 1) % STRLEN;
+	outport(PIC1,0x20); /* Avisamos al PIC con el EOI */
 	
-	
+	enable (); /* Atomicidad OFF */
+}
 
-void interrupt lptisr (__CPPARGS) {
-/* NOTE
- * En DATA escribimos el dígito a imprimir
- * Con CONTROL seleccionamos el display donde imprimirlo
- * Ver table.h para más info sobre la selección del display
- */
+
+
+void interrupt lptisr (__CPPARGS)
+{
 	int ans = 0;
 	int ascii_code = 0;
 	int display_code = 0;
-
 
 	disable();
 
@@ -130,18 +144,13 @@ void interrupt lptisr (__CPPARGS) {
 	/* Traducimos ese caracter según la tablita */
 	display_code = map_ascii[ascii_code];
 
-	outport (DATA, display_code);		/* Output data */
+	outport (DATA_P, display_code);		/* Output data */
 	offset = (offset + 1) % DISPLAY_SIZE;	/* Update offset */
 	
 /* Selección del display por donde se muestra esa información: */
 	
-	/* NOTE
-	 * Lo que sigue es para activar con el reg. CONTROL el display indicado
-	 * El inport con la máscara se hace para no deshabilitar por error
-	 * la IRQ de la LPT --> ver "Enable parallel port IRQ" en el main
-	 */
-	ans = inport (CONTROL) & 0x10;
-	outport (CONTROL, ans | dir_order[offset]); /* See port02.c */
+	ans = inport (CONTROL) & 0x10;	/* Modo "activar display indicado" */
+	outport (CONTROL, ans | dir_order[offset]); /* Activación del display */
 	
 /* Actualización de la información a mostrar por el display: */
 	
@@ -160,25 +169,46 @@ void interrupt lptisr (__CPPARGS) {
 }
 
 
-int main(int argc,char* argv[])
+/** ~~~~~~~~~~~~~~~~~~~~~~~~ Programa principal ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+int main (int argc, char *argv[])
 {
-	int intno = 0, picmask = 0;
+	int int_lpt = 0, int_uart = 0;
+	int pic_mask_lpt = 0, pic_mask_uart = 0;
 
-	intno = IRQn + 8;
-	picaddr = PIC1;
-	picmask = 1;
-	picmask = picmask << IRQn; /* 1000 0000 == 0x80 */
+	int_lpt  = IRQ7 + 8;	/* int_lpt  == type 15 */
+	int_uart = IRQ4 + 8;	/* int_uart == type 12 */
+	picaddr  = PIC1;
+	pic_mask_lpt  = 1;
+	pic_mask_lpt  = pic_mask_lpt  << IRQ7; /* 1000 0000 == 0x80 */
+	pic_mask_uart = 1;
+	pic_mask_uart = pic_mask_uart << IRQ4; /* 0001 0000 == 0x10 */
 
-	/* Para que no se queje el compilador */
-	argc = argc;
-	argv = argv;
+	argc = argc; argv = argv; /* Para que no se queje el compilador */
+	
+/* Manejo del puerto serie (uart) */
+	
+	/* Preparamos el IVT */
+	outportb (IER, 0x00); /* Deshabilitamos la interrupciones del uart */
+	change_IVT ((unsigned int) int_uart, uartisr, oldhandler4);
+	
+	oldhandler4 = getvect (int_uart); /* Guardamos el viejo ISR */
+	disable ();
+	setvect (int_uart, uartisr); /* Instalamos el nuevo ISR */
+	enable ();
+	
+	/* Preparamos el puerto */
+	outport (LCR, 0x80);	/* DLAB := 1 */
+	outport ();
+	
+/* Manejo del puerto paralelo (lpt) */
 	
 	/* Make sure port is in forward direction */
 	outport (CONTROL, inp (CONTROL)&0xDF);
 	outport (DATA,0xFF);
 
 	/* Save old interrupt vector */
-	oldhandler = getvect (intno);
+	oldhandler4 = getvect (intno);
 
 	/* Set new interrupt vector entry */
 	disable ();
@@ -240,3 +270,22 @@ int main(int argc,char* argv[])
 }
 
 
+/** ~~~~~~~~~~~~~~~~~~~~~~~ Subrutinas de ayuda ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
+
+/* Administrador del vector de interrupciones (IVT)
+ * Setea el manejador de interrupciones new_int en la posición int_type.
+ * El manejador que estaba previamente en IVT[int_type] es guardado en old_int
+ */
+static void change_IVT (unsigned int int_type, void new_int (*isr)(), 
+			void old_int (*isr)() )
+{
+	ASSERT (new_int != NULL);
+	ASSERT (old_int != NULL);
+	
+	old_int = getvect (int_uart); /* Guardamos el viejo ISR */
+	disable ();
+	setvect (int_uart, uartisr); /* Instalamos el nuevo ISR atómicamente */
+	enable ();
+	
+	return;
+}
