@@ -700,41 +700,41 @@ static int Kernel_Queue_Size (struct Thread_Queue* Q)
  */
 struct Kernel_Thread* Get_Next_Runnable(void)
 {
-	struct Kernel_Thread* best = NULL;
-	int i = 0;
+	KASSERT(!Interrupts_Enabled());
+	struct Kernel_Thread* best = 0;
+	int i = -10;
 	
-	if (Scheduling_Policy == RR) {
-		best = Get_Runnable_In_Queue (&s_runQueue[0]);
-		KASSERT (best != NULL); /* Sino está todo como el chori */
-		return best;
-	}
-	
-	/* Si llegamos acá estamos en política MLF */
-	
-	/* Find the best thread from the highest-priority run queue */
-	for (i = 0 ; i < MAX_QUEUE_LEVEL ; i++) {
-	
-		best = Get_Runnable_In_Queue (&s_runQueue[i]);
+	if (schedulingPolicy == ML_FEEDBACK) {
+		i = 0;
+		while(best==0){
+			best = (s_runQueue[i]).head;
+			i++;
+		}
+		i--; /* Queue where the best come from */
 		
-		if (best != NULL) break;
+	} else if (schedulingPolicy == ROUND_ROBIN) {
+		int queue = 0;
+		best = Find_Best(&s_runQueue[0]);
+		i = 1;
+		while (i < MAX_QUEUE_LEVEL) {
+			struct Kernel_Thread *kthread =
+						Find_Best(&s_runQueue[i]);
+			if ((best == 0) || ((kthread != 0) &&
+				(best->priority < kthread->priority))){
+				queue = i;
+			best = kthread;
+			}
+			i++;
+		}
+		i = queue;
 	}
+	/* Todo mal si no */
+	KASSERT(best != 0);
+	Remove_Thread(&(s_runQueue[i]), best);
 	
-	KASSERT (best != NULL); /* Sino está todo como el chori */
-	/*! KASSERT (i >= 0 && i < MAX_QUEUE_LEVEL); OBVIO!!! */
-	/*! Esto nos falto, es sacar un thread de la cola, el cual se encuentra
-	 * en la cola i, y ademas es el thread best */	
-	Remove_Thread(&s_runQueue[i], best);
-/*	Print("Scheduling %x\n", (uint_t)best);
-	for (i=0 ; i<MAX_QUEUE_LEVEL ; i++)
-	Print("Queue nº %i size: %d\n", i, Kernel_Queue_Size (&s_runQueue[i]));
-	KASSERT (best != g_currentThread); ¿Hay un solo thread?
-*/	
-	return best;
-	TODO("Find a runnable thread from run queues");
-
-/*
- *    Print("Scheduling %x\n", best);
- */
+	/* Print("Scheduling %x\n", best); */
+	
+    return best;
 }
 
 /*
