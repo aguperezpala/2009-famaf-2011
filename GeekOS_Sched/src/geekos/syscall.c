@@ -23,22 +23,6 @@
 #include <geekos/synch.h>
 
 
-/*### Constantes y variables globales para los semáforos de kernel ###*/
-
-#define  MAX_NUM_SEMAPHORES  20  /* Podrían ser más... */
-#define  MAX_NAME_LEN  25
-
-struct Semaphore {
-	char	name[MAX_NAME_LEN];
-	uint_t	count;
-	bool	active;
-	uint_t	threads_using;
-};
-
-static struct Semaphore Sema[MAX_NUM_SEMAPHORES];
-
-
-/*### FIN costantes de semáforos ###*/
 
 
 /*
@@ -314,6 +298,7 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
 	int userSemaCnt = 0, *userSemaList = NULL;
 	char userSemaName[MAX_NAME_LEN];
 	bool valid = false;
+	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
 	
 	size = MIN (MAX_NAME_LEN, state->ecx);
 	/** GUARDA CON ESE MIN */
@@ -354,6 +339,9 @@ g_currentThread->userContext->semaphores[userSemaCnt] = SID;
 		Sema[SID].threads_using++;
 		Sema[SID].active = true;
 	}
+	/* vamos a limpiar algunos campos de la estructura nueva (Mutex) */
+	Mutex_Init(&Sema[SID].mutex);
+	End_Int_Atomic(atom);
 	
 	return SID;
 	TODO("CreateSemaphore system call");
@@ -415,7 +403,7 @@ static bool its_allowed (int SID)
 static int Sys_P(struct Interrupt_State* state)
 {
 	int SID = state->ebx;
-	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
+	bool atom = Begin_Int_Atomic();
 	
 	/* Primero que todo chequeamos si tenemos "permiso" (usando la funcion
 	* NO hecha y comentada arriba) para acceder al semaforo ese, si no 
@@ -427,7 +415,7 @@ static int Sys_P(struct Interrupt_State* state)
 	
 	/* aumentamos en uno la cantidad de "threads" usando este semaforo */
 	Sema[SID].threads_using++;
-	
+	atom = End_Int_Atomic;
 	/* Debemos verificar si bloqueamos o no al thread */
 	if (Sema[SID].count < 0){	/* debemos bloquear */
 		/* Wait nos pide que sea sin interrupciones => para que sea
@@ -436,15 +424,15 @@ static int Sys_P(struct Interrupt_State* state)
 		* instruccion? o que saca otro thread y no sigue debajo
 		* del Wait este?....
 		*/
-// TODO		Wait(Wait_Queue); /* esta lista esta definida kthread.h */
-		/* deshabilitamos interrupciones? sigue corriendo por aca? */
-		
-		/* decrementamos el semaforo */
-		Sema[SID].count--;
+		atom = Begin_Int_Atomic();
+		Wait(&(Sema[SID].mutex->waitQueue));
+		End_Int_Atomic(atom);
+		Mutex_Lock(&(Sema[SID].mutex));
 	}
-	
-	
+	atom = Begin_Int_Atomic();
+	Sema[SID].count--;
 	End_Int_Atomic(atom);
+	
 	return 0;
 	
 	TODO("P (semaphore acquire) system call");
@@ -479,8 +467,9 @@ static int Sys_V(struct Interrupt_State* state)
 	Sema[SID].count++;
 	/** Requiere interrupciones deshabilitadas :(... verificar esto */
 // TODO	Wake_Up_One(Wait_Queue);
-	
-	End_Int_Atomic(atom);
+	Mutex_Unlock(&(Sema[SID].mutex));
+	Disable_Interrupts();
+	Wake_Up_One(&(Sema[SID].mutex->queue));
 	return 0;
 	TODO("V (semaphore release) system call");
 }
