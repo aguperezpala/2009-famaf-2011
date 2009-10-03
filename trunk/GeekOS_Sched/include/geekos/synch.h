@@ -31,14 +31,14 @@ struct Mutex {
 /*### Constantes y variables globales para los semáforos de kernel ###*/
 
 struct Semaphore {
-	char	name[MAX_NAME_LEN];
+	char	name[MAX_SEM_NAME_LENGTH];
 	uint_t	count;
 	bool	active;
 	uint_t	threads_using;
 	struct Mutex mutex;	/* va a tener un mutex */
 };
 
-static struct Semaphore Sema[MAX_NUM_SEMAPHORES];
+static struct Semaphore Sema[MAX_SYS_SEMAPHORES];
 
 
 /*### FIN costantes de semáforos ###*/

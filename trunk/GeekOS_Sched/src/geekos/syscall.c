@@ -7,7 +7,7 @@
  * This is free software.  You are permitted to use,
  * redistribute, and modify it as specified in the file "COPYING".
  */
-
+#include <geekos/synch.h>
 #include <geekos/syscall.h>
 #include <geekos/errno.h>
 #include <geekos/kthread.h>
@@ -20,7 +20,7 @@
 #include <geekos/user.h>
 #include <geekos/timer.h>
 #include <geekos/vfs.h>
-#include <geekos/synch.h>
+
 
 
 
@@ -269,14 +269,14 @@ static int Find_Free_Semaphore (const char *name)
 {
 	int i = 0, SID = 0;
 	
-	for (i=0 ; i<MAX_NUM_SEMAPHORES ; i++) {
+	for (i=0 ; i<MAX_SYS_SEMAPHORES ; i++) {
 		if (name == NULL && !Sema[i].active)
 			SID = i;
 		else if (!strncmp (name, Sema[i].name, 25))
 			SID = i;
 	}
 	
-	if (i == MAX_NUM_SEMAPHORES)
+	if (i == MAX_SYS_SEMAPHORES)
 		SID = -1;
 	
 	return SID;
@@ -296,15 +296,15 @@ static int Sys_CreateSemaphore(struct Interrupt_State* state)
 {
 	int size = 0, SID = 0;
 	int userSemaCnt = 0, *userSemaList = NULL;
-	char userSemaName[MAX_NAME_LEN];
+	char userSemaName[MAX_SEM_NAME_LENGTH];
 	bool valid = false;
 	bool atom = Begin_Int_Atomic();	/** lo hacemos atomico ....? */
 	
-	size = MIN (MAX_NAME_LEN, state->ecx);
+	size = MIN (MAX_SEM_NAME_LENGTH, state->ecx);
 	/** GUARDA CON ESE MIN */
 	KASSERT (state->ecx != 0); /* No toleramos nombres vacíos */
 	
-	memset (userSemaName, '\0', MAX_NAME_LEN);
+	memset (userSemaName, '\0', MAX_SEM_NAME_LENGTH);
 	valid = Copy_From_User (userSemaName, (ulong_t) state->ebx, size);
 	
 	SID = Find_Free_Semaphore (userSemaName);
@@ -367,7 +367,7 @@ static bool its_allowed (int SID)
 	int * semList = NULL;
 	
 	/* si no esta dentro del rango valido devolvemos false */
-	if (SID < 0 || SID >= MAX_NUM_SEMAPHORES)
+	if (SID < 0 || SID >= MAX_SYS_SEMAPHORES)
 		return false;
 	
 	/* si esta dentro del rango, pero... esta activado? */
@@ -415,7 +415,7 @@ static int Sys_P(struct Interrupt_State* state)
 	
 	/* aumentamos en uno la cantidad de "threads" usando este semaforo */
 	Sema[SID].threads_using++;
-	atom = End_Int_Atomic;
+	End_Int_Atomic(atom);
 	/* Debemos verificar si bloqueamos o no al thread */
 	if (Sema[SID].count < 0){	/* debemos bloquear */
 		/* Wait nos pide que sea sin interrupciones => para que sea
@@ -425,7 +425,7 @@ static int Sys_P(struct Interrupt_State* state)
 		* del Wait este?....
 		*/
 		atom = Begin_Int_Atomic();
-		Wait(&(Sema[SID].mutex->waitQueue));
+		Wait(&(Sema[SID].mutex.waitQueue));
 		End_Int_Atomic(atom);
 		Mutex_Lock(&(Sema[SID].mutex));
 	}
@@ -465,11 +465,12 @@ static int Sys_V(struct Interrupt_State* state)
 	/* simplemente lo que hacemos es aumentar en uno el count y levantar
 	* algun thread dando en la Wait_Queue */
 	Sema[SID].count++;
+	End_Int_Atomic(atom);
 	/** Requiere interrupciones deshabilitadas :(... verificar esto */
 // TODO	Wake_Up_One(Wait_Queue);
 	Mutex_Unlock(&(Sema[SID].mutex));
 	Disable_Interrupts();
-	Wake_Up_One(&(Sema[SID].mutex->queue));
+	Wake_Up_One(&(Sema[SID].mutex.waitQueue));
 	return 0;
 	TODO("V (semaphore release) system call");
 }
@@ -522,7 +523,7 @@ static int Sys_DestroySemaphore(struct Interrupt_State* state)
 		Sema[SID].count = 0;	/* al pedo pero bueno, limpiamos :) */
 		Sema[SID].active = false;	/* con esto alcanzaria */
 		/* limpiamos el nombre */
-		memset (Sema[SID].name, '\0', MAX_NAME_LEN);
+		memset (Sema[SID].name, '\0', MAX_SEM_NAME_LENGTH);
 	}
 	
 	
