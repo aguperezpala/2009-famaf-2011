@@ -28,6 +28,22 @@ struct Mutex {
     struct Thread_Queue waitQueue;
 };
 
+/*### Constantes y variables globales para los semáforos de kernel ###*/
+
+struct Semaphore {
+	char	name[MAX_NAME_LEN];
+	uint_t	count;
+	bool	active;
+	uint_t	threads_using;
+	struct Mutex mutex;	/* va a tener un mutex */
+};
+
+static struct Semaphore Sema[MAX_NUM_SEMAPHORES];
+
+
+/*### FIN costantes de semáforos ###*/
+
+
 #define MUTEX_INITIALIZER { MUTEX_UNLOCKED, 0, THREAD_QUEUE_INITIALIZER }
 
 struct Condition {
