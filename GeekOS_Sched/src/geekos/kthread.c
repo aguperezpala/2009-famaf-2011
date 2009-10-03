@@ -634,50 +634,6 @@ struct Kernel_Thread* Get_Current(void)
 }
 
 
-/*###
- * Encuentra el mejor thread (ejecutable, ie: no bloqueado) en la cola dada
- * PRE: Q != NULL
- *###
- */
-static struct Kernel_Thread* Get_Runnable_In_Queue (struct Thread_Queue* Q)
-{
-	struct Kernel_Thread* best = NULL, *first = NULL;
-	
-	KASSERT (Q != NULL);
-	
-		
-	first = Remove_From_Front_Of_Thread_Queue (Q);
-	if (first != NULL)
-		Add_To_Back_Of_Thread_Queue (Q, first);
-	
-	
-	/* Find the best thread from this run queue */
-	do {		
-		best = NULL;
-		
-		if (!Is_Thread_Queue_Empty (Q)) {
-			
-			best = Remove_From_Front_Of_Thread_Queue (Q);
-			/* Cola no vacía => best != NULL */
-			KASSERT(best != NULL);
-			
-			if (!best->blocked)
-				/* Pescamos uno */
-				break;
-			/** GUARDA CON EL BREAK */
-			else
-				/* Lo metemos de vuelta para seguir buscando */
-				Add_To_Back_Of_Thread_Queue (Q, best);
-		}
-		
-		
-	} while (best != first);
-	
-	if (best == first && best != NULL && best->blocked) best = NULL;
-	
-	return best;
-}
-
 /* ### Debuggeo únicamente, leaks asegurados ### 
 static int Kernel_Queue_Size (struct Thread_Queue* Q)
 {
@@ -704,7 +660,7 @@ struct Kernel_Thread* Get_Next_Runnable(void)
 	struct Kernel_Thread* best = 0;
 	int i = -10;
 	
-	if (schedulingPolicy == ML_FEEDBACK) {
+	if (Scheduling_Policy == MLF) {
 		i = 0;
 		while(best==0){
 			best = (s_runQueue[i]).head;
@@ -712,7 +668,7 @@ struct Kernel_Thread* Get_Next_Runnable(void)
 		}
 		i--; /* Queue where the best come from */
 		
-	} else if (schedulingPolicy == ROUND_ROBIN) {
+	} else if (Scheduling_Policy == RR) {
 		int queue = 0;
 		best = Find_Best(&s_runQueue[0]);
 		i = 1;
@@ -898,10 +854,12 @@ void Wait(struct Thread_Queue* waitQueue)
 	/* Add the thread to the wait queue. */
 	current->blocked = true;
 	/* Vamos a decrementarle en uno la prioridad => Hacking GeekOS */
-	Print ("currentReadyQueue = %d\t BEFORE\n", current->currentReadyQueue);
+	/*Print ("currentReadyQueue = %d\t BEFORE\n",
+current->currentReadyQueue);*/
 	if (current->currentReadyQueue > 0)
 		current->currentReadyQueue--;
-	Print ("currentReadyQueue = %d\t AFTER\n", current->currentReadyQueue);
+	/*Print ("currentReadyQueue = %d\t AFTER\n",
+current->currentReadyQueue);*/
     
 	Enqueue_Thread(waitQueue, current);
 
