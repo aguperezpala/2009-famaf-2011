@@ -720,7 +720,10 @@ struct Kernel_Thread* Get_Next_Runnable(void)
 	}
 	
 	KASSERT (best != NULL); /* Sino está todo como el chori */
-	
+	/*! KASSERT (i >= 0 && i < MAX_QUEUE_LEVEL); OBVIO!!! */
+	/*! Esto nos falto, es sacar un thread de la cola, el cual se encuentra
+	 * en la cola i, y ademas es el thread best */	
+	Remove_Thread(&s_runQueue[i], best);
 /*	Print("Scheduling %x\n", (uint_t)best);
 	for (i=0 ; i<MAX_QUEUE_LEVEL ; i++)
 	Print("Queue nº %i size: %d\n", i, Kernel_Queue_Size (&s_runQueue[i]));
