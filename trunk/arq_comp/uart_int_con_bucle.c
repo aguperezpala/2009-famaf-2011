@@ -278,10 +278,12 @@ int main (int argc, char *argv[])
 	
 		/* Si hay un mensaje nuevo, lo encapsulamos en el TAD String*/
 		if (NEW_MESSAGE){
+			desable();
 			win_string = string_create (text);
 			str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
 			free (str_to_print);
 			NEW_MESSAGE = 0;
+			enable();
 		}
 
 		printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
