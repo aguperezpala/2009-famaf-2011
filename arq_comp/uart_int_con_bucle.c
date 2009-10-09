@@ -7,8 +7,8 @@
 */
 
 
-/* #include <conio.h>
- #include <dos.h> */
+#include <conio.h>
+#include <dos.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -106,16 +106,15 @@ void interrupt (*oldhandler7)(__CPPARGS);
 void interrupt uartisr (__CPPARGS)
 {
 	static unsigned int last_char = 0;
-	
-	printf ("Receiving message through serial port\n"); /** ¿no hay problema con esto no? **/
-	
+
+
 	disable (); /* Atomicidad ON */
-	
-	END_MSG = 0;		/* Con esto el main program se queda esperando  */
-					/* a que se termine de recibir el mensaje antes */ 
-					/* de seguir imprimiendo (ahora imprimirá un    */
-					/* nuevo mensaje) 						   */
-	
+
+	END_MSG = 0;	/* Con esto el main program se queda esperando  */
+			/* a que se termine de recibir el mensaje antes */
+			/* de seguir imprimiendo (ahora imprimirá un    */
+			/* nuevo mensaje) 						   */
+
 	if (!END_MSG) {
 		/* Guardamos el caracter que llegó */
 		text[last_char] = (char) inp (DATA_S);/	
@@ -145,7 +144,7 @@ void interrupt lptisr (__CPPARGS)
 	disable();
 
 /* Cálculo de la información a mostrar por el display: */
-	
+
 	/* Obtenemos el código ascii del caracter a imprimir */
 	ascii_code = str_to_print[base + offset];
 
@@ -154,20 +153,22 @@ void interrupt lptisr (__CPPARGS)
 
 	outport (DATA_P, display_code);		/* Output data */
 	offset = (offset + 1) % DISPLAY_SIZE;	/* Update offset */
-	
+
 /* Selección del display por donde se muestra esa información: */
-	
+
 	ans = inp (CONTROL) & 0x10;	/* Modo "activar display indicado" */
 	outport (CONTROL, ans | dir_order[offset]); /* Activación del display */
-	
+
 /* Actualización de la información a mostrar por el display: */
-	
+
 	inc_timer (timer_to_print);
 	if (timeout_timer (timer_to_print)) {
 		/* Reinicializamos la cuenta */
 		start_timer (timer_to_print);
 
 		nxt_to_pr = (nxt_to_pr+1) % strlen(text);
+		if (str_to_print != NULL)
+			free (str_to_print);
 		str_to_print = string_slice_right (win_string, nxt_to_pr, DISPLAY_SIZE);
 	}
 
@@ -197,14 +198,12 @@ int main (int argc, char *argv[])
 	memset (text, '\0', STRLEN);
 	
 	
-	
-	
 /* Manejo del puerto serie (uart) */
 	
 	/* Modo conservativo */
 	uart_ctrl = inp (LCR);
 	uart_int  = inp (IER);
-	
+
 	/* Deshabilitamos la interrupciones del uart, para que no molesten */
 	outport (IER, 0x00); 
 	
@@ -213,88 +212,76 @@ int main (int argc, char *argv[])
 	
 	/* Escogemos baudeaje */
 	outport (LCR, 0x80);		/* DLAB := 1 */
-	outport (DATA_S, 0x18); 		/* DLN LSB */	/* Baudeaje escogido: */
+	outport (DATA_S, 0x18); 	/* DLN LSB */	/* Baudeaje escogido: */
 	outport (IER, 0x00);		/* DLN MSB */	/*      4800 BPS      */
 	
 	/* Escogemos modo de trabajo */
 	outport (LCR, 0x1F);	/* DLAB := 0 + Parity enabled + even parity +
-				 		 * 2 stop bits + 8 bit word length */
-	
-				
+				 * 2 stop bits + 8 bit word length */
+		
 	/* Desenmascaramos el PIC para que atienda los IRQ4 del uart */
 	outport (picaddr+1, inp (picaddr+1)&(0xFF - pic_mask_uart));
 	
 	/* Habilitamos sólo las recepciones (notar que DLAB == 0) */
 	outport (IER, 0x01);
-	
-	
-	
-	
-	
-	
+
+
 /* Manejo del puerto paralelo (lpt) */
-	
+
 	/* Make sure port is in forward direction */
 	outport (CONTROL, inp (CONTROL)&0xDF);
 	outport (DATA,0xFF);
-	
+
 	/* Preparamos el IVT */
 	change_IVT ((unsigned int) int_lpt, lptisr, oldhandler7);
-	
+
 	/* Desenmascaramos el PIC para que atienda los IRQ7 del lpt */
 	outport (picaddr+1, inp (picaddr+1)&(0xFF-pic_mask_uart));
-	
+
 	/* Habilitamos las transmisiones del lpt */
 	outport (CONTROL, inp(CONTROL)|0x10);
-	
-	
-	
-	
-	
+
+
 /* Manejo del timer de impresión */
-	
+
 	/* Generamos el timer para velocidad de impresión (ver lptisr) */
 	timer_to_print = setup_timer (DELAY);
 	start_timer (timer_to_print);
-	
-	
-	
-			
-	
+
+
 /* Main program */
-	
+
 	printf ("Interrupt is enabled. Main program prints some values.\n");
-	
+
 			/**	CICLO DE RECEPCIÓN E IMPRESIÓN **/
-			
-			
-	for (;!kbhit();) {	
-	
-		while (!END_MSG) ; /* Hasta recibir todo el mensaje por el uart
-				    		* no imprimiremos nada por el lpt
-				    		*/   		
-	
-	/* Preparación de los TADs para impresión por el display */
-	
+
+
+	for (;!kbhit();) {
+
+		while (!END_MSG) { /* Hasta recibir todo el mensaje por el uart
+				    * no imprimiremos nada por el lpt */
+			printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
+				base,offset,map_ascii[base+offset]);
+			printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
+		}
+
 		/* Si hay un mensaje nuevo, lo encapsulamos en el TAD String*/
 		if (NEW_MESSAGE){
-			desable();
+			outport (CONTROL, inp (CONTROL)&0xEF); /* frenamos la lpt */
+			string_destroy (win_string);
 			win_string = string_create (text);
 			str_to_print = string_get_front (win_string, 0, DISPLAY_SIZE);
 			free (str_to_print);
 			NEW_MESSAGE = 0;
-			enable();
+			END_MSG = 0;
+			outport (CONTROL, inp(CONTROL)|0x10); /* reactivamos la lpt */
 		}
 
-		printf("base = %i\toffset = %i\tvalue[b+o] = 0x%02X\t",
-			base,offset,map_ascii[base+offset]);
-		printf("STATUS = 0x%X\r",inp(STATUS)&0x40);
 	}
-	
-	
+
 
 /* Desinstalación de los puertos (paralelo y serie) */
-	
+
 	/* Deshabilitamos las transmisiones del lpt */
 	outport (CONTROL, inp (CONTROL)&0xEF);
 	
@@ -323,7 +310,7 @@ int main (int argc, char *argv[])
 	/* Quit program */
 	printf ("\nExit interrupt successfully. To quit program press any key\n");
 
-	while (!kbhit())
+	for (;!kbhit(););
 
 	return 0;
 }
@@ -348,17 +335,5 @@ static void change_IVT (unsigned int int_type, void interrupt (*new_isr)(),
 	
 	return;
 }
-
-
-
-
-
-
-	// 	DEBUGGING INFO
-	// 	printf ("Mensaje recibido por el puerto serie: %s\n", text);
-
-	/* Deshabilitamos las recepciones para que no nos cambien el mensaje */
-	/*outport (IER, 0x00);*/
-
-
+
 
