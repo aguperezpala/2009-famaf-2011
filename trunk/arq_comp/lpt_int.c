@@ -90,6 +90,8 @@ void interrupt lptisr (__CPPARGS) {
 		start_timer (timer_to_print);
 
 		nxt_to_pr = (nxt_to_pr+1) % strlen(text);
+		if (str_to_print != NULL)
+			free (str_to_print);
 		str_to_print = string_slice_right (win_string, nxt_to_pr, DISPLAY_SIZE);
 	}
 
@@ -133,6 +135,7 @@ int main(int argc,char* argv[])
 
 	/* --- Setup the string to print --- */
 	printf ("Please enter your message (up to 20 letters): ");
+	memset ((void *) text, '\0', STRLEN);
 	scanf ("%[^\n]", text);  /* Tomamos hasta el \n sin incluirlo */
 	win_string = string_create (text);
 	ASSERT (win_string != NULL);
