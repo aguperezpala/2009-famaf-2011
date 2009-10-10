@@ -1,0 +1,19 @@
+Bases de Datos
+
+Tareas 2º entrega
+
+    * Un T.A.D. "atributo": implementado con una cadena de caracteres.
+    * Un T.A.D. "conjunto de atributos": implementado con un "set" de python.
+    * Un T.A.D. "d.f.": se implementará sobre un par ordenado.
+    * Un T.A.D. "conjunto de d.f.": será un conjunto de tads "d.f.".
+    * Un T.A.D. "esquema de relaciones": implementado con una tupla de python.
+    * Procedimiento para calcular el cierre de atributos.
+      Nota: vamos a descartar aquellos atributos cuyo cierre solo los contenga a
+      ellos mismos. Esto es fuertemente dependiente de nuestro problema.
+    * Procedimiento para calcular F`: cierre de F sin d.f. triviales.
+    * Procedimiento para obtener las claves candidatas de nuestro esquema.
+    * Implementación del algoritmo para llevar a FNBC.
+    * Implementación del algoritmo para llevar a 3FN.
+    * Investigar sobre algoritmo para determinar si un esquema preserva las dep.
+
+
