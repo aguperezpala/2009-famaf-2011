@@ -6,11 +6,11 @@ def calcular_FNBC (conjRi, Fpri):
 	   conjunto de esquemas relacionales, para un F+ dado"""
 	
 	if (not (type(conjRi) is set)):
-		return "El 1º parametro debe ser un 'set' de 'sets'"
+		return "El primer parametro debe ser un 'set' de 'sets'"
 	elif (not (type(Fpri) is set)):
-		return "El 2º parametro debe ser un 'set' de 'tuplas'"
+		return "El segundo parametro debe ser un 'set' de 'tuplas'"
 	
-	# ¿Revisamos los tipos del contenido de conjRi y Fpri?
+	# Revisamos los tipos del contenido de conjRi y Fpri?
 	
 	# conjRi es modificable => se pasa por referencia => lo
 	# modificaremos hasta dejarlo en FNBC
@@ -45,7 +45,7 @@ def viola_FNBC (Ri, dep):
 	
 	attr = dep[0].union(dep[1]) # atributos en la dependencia
 	
-	if (dep[1].issubset(dep[0]))
+	if (dep[1].issubset(dep[0])):
 		# dependencia trivial => no hay violacion FNBC
 		return False
 	
