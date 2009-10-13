@@ -1,0 +1,16 @@
+Corriendo el programa
+
+Lo primero que hacemos es asegurarnos que el puerto parelelo este en direccion de salida (forward).Dado que vamos a cambiar la rutina de interrupcion, primero salvamos la actual, y luego activamos la nuestra. Después desenmascaramos el pic ,para que las interrupciones no puedan ser ignoradas y activamos la peticion de  interrupciones del puerto paralelo para que cada interrupcion ejecute nuestra rutina, pues de lo contrario las interrupciones del puerto paralelo serán ignoradas.
+Ahora le pedimos al usuario la cadena de caracteres que desea imprimir en el display (como maximo 20 caracteres), con esta creamos nuestro TAD strin, e iniciamos y creamos nuestro TAD timer, quien será manejado por nuestra rutina de interrupción.
+ Apartir de aqui se empieza a mostrar por el display la cadena que el usuario ingreso, gracias a las interrupciones generadas por el display (y aqui es a donde participa nuestra rutina), y esto continúa hasta que el usuario presione una tecla.
+Cuando esto ocurre desactivamos la petición de interrupción del puerto paralelo (por esto el display dejará de mostrar el mensaje tal como lo estaba haciendo), volvemos enmascarar el pic, restauramos el vector de inerrupciones anteriormente salvado, ponemos el registro DATA en null para pisar lo que haya quedado y finalmente liberamos los recursos de memoria pedidos por nuestros TADs.
+
+¿Que hace nuestra rutina de interrupción?
+
+
+Lo primero que hace nuestra interrupción, es desactivar las interrupciones (con el objeto de que queden desactivadas durante la corrida de nuestra rutina). Luego tomamos un caracter de un char* que es un pedaso (de tamaño 7) de la cadena ingresada por el usuario,  el cual va a ser impreso por un display, para esto obtenemos su código ascii, y traducimos ese código según la tablita que nos dio la cátedra. A este carácter traducido lo copiamos en el registro DATA de nuestro puerto paralelo para que sea leído a través del puerto. Después, seleccionamos el display por el que el byte será impreso, para esto, activamos el registro CONTROL del display indicado. Finalmente, debemos actualizar la información a mostrar por el display, y es aquí donde interviene nuestro timer. Cada vez que nuestro timer llega al timeout, cambiamos el mensaje a mostrar por el display de la siguiete manera: si "c" es la cadena que se imprime en el display, entonces c[i] = c[i+1] para 0 <= i <= 6, y c[7] = "el siguiente caracter a c[6] en la cadena ingresada por el usuario (la cual la tratamos como circular)" , y reiniciamos la cuenta del timer. Finalmente, avisamos al PIC que nuestra rutina de interrupción ha terminado, y activamos las interrupciones (dado que al inicio de la rutina la habíamos desactivado).
+
+Problemas:
+
+El único problema que posee nuestro programa es que inicialmente el display imprime cualquier cosa, y luego comienza a andar bien. La posible solución es obtener de la cadena que el usuario desea imprimir antes de acivar nuestra rutina de interrupciones, pues de lo contrario, nuestra rutina lee basura de la memoria, y por consiguiente el display imprime basura
+
