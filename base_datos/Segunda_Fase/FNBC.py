@@ -35,6 +35,9 @@ def calcular_FNBC (conjRi, Fpri):
 
 def es_violac_FNBC (conjRi, dep):
 	
+	""" Indica si dep es violación de la descomposición conjRi.
+	    Si así es devuelve el Ri violado. Sino regresa None """
+	
 	for Ri in conjRi:
 		if (viola_FNBC (Ri,dep)):
 			return Ri
@@ -42,6 +45,8 @@ def es_violac_FNBC (conjRi, dep):
 
 
 def viola_FNBC (Ri, dep):
+	
+	""" Informa si la d.f. dep es violación FNBC para el esquema Ri """
 	
 	if (dep[1].issubset(dep[0])):
 		# dependencia trivial => no hay violación FNBC
@@ -62,6 +67,10 @@ def viola_FNBC (Ri, dep):
 
 def convertir_FNBC (conjRi, Ri, dep):
 	
+	""" Descompone Ri según la dependencia dep
+	    para que deje de haber violación FNBC """
+	
+	#assert viola_FNBC (Ri, dep)
 	conjRi.remove(Ri)
 	
 	Rj = dep[0].union(dep[1]) # atributos en la dependencia ({a,b})
@@ -69,6 +78,6 @@ def convertir_FNBC (conjRi, Ri, dep):
 	Ri = Ri.difference(dep[1]) # quitamos la parte derecha (Ri - {b})
 	
 	conjRi.add(Ri)
-	conjRi.add(Rj)	
+	conjRi.add(Rj)
 
 
