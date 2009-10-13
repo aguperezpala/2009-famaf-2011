@@ -12,5 +12,6 @@ Lo primero que hace nuestra interrupción, es desactivar las interrupciones (con
 
 Problemas:
 
-El único problema que posee nuestro programa es que inicialmente el display imprime cualquier cosa, y luego comienza a andar bien. La posible solución es obtener de la cadena que el usuario desea imprimir antes de acivar nuestra rutina de interrupciones, pues de lo contrario, nuestra rutina lee basura de la memoria, y por consiguiente el display imprime basura
+El problema que posee nuestro programa es que hasta el primer timeout el display imprime cualquier cosa, y luego comienza a andar bien salvo por una cosa: el últmo display no imprime el caracter que debería, sino que a veces no imprime nada, otras veces imprime cualquier cosa.
+La posible solución al problema de que hasta el primer timeout imprime cualquier cosa es obtener la cadena que el usuario desea imprimir antes de acivar nuestra rutina de interrupciones, pues de lo contrario, nuestra rutina lee basura de la memoria, y por consiguiente el display imprime basura, recordemos que a partir de cualquier timeout, se actualiza la información que mandamos a los display.
 
