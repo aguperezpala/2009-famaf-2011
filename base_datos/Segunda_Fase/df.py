@@ -19,14 +19,24 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
+from sys import *
 
 class df:
 	alfa = set()
 	beta = set()
+	def __hash__(self):
+		return 0
+	def __repr__(self):
+		return str(self.alfa)+","+str(self.beta)
+	def __str__(self):
+		return str(self.alfa)+","+str(self.beta)
+	def __cmp__(self,otro):
+		assert type(otro) == df
+		return self.alfa ==	otro.alfa and self.beta == otro.beta
 	def __init__(self,x,y):
 		assert type(x) == set and type(y) == set 
-		alfa.union(x)
-		beta.union(y)
+		self.alfa = x.copy()
+		self.beta = y.copy()
 	def trans (self,df2):
 		assert type(df2) == df
 		if df2.alfa == self.beta:
