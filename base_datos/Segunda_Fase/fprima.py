@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+
+from df import *
+
 def cierreAtributos (f, eu):
 	"""Usando el conjunto de d.f. y el esquema universal construimos el
        cierre de atributos de cada atributo. Lo representaremos como un
        par ordenado donde la primer componente es el atributo y la segunda
        componente es el cierre mismo."""
-	global cierreAtr #¡acá tenés tu variable global!...
+	cierreAtr = set ()
 	
 	""" Dadas las observaciones que hicimos sobre nuestras d.f., tomamos
 		cada atributo del esquema universal y calculamos su cierre, en vez
@@ -19,10 +22,13 @@ def cierreAtributos (f, eu):
 		"""Tenemos el cierre del conjunto de atributos "setAtr". Lo guardamos
        	   en la dichosa variable global "cierreAtr" """
 		cierreAtr.add((setAtr,cierreSetAtr))
+	
+	return cierreAtr
 
-def elimTrivial (cierreAtr):
+def elimTrivial (cierreAtributos):
 	""" Eliminamos las depedencias triviales """
 	
+	cierreAtr = cierreAtributos.copy()
 	for (a,b) in cierreAtr:
 		""" Como no se si el tipo "tupla" de python permite modificación alguna, 
 			apelo al recurso de borrar el par (a,b) para luego agregar el
@@ -40,11 +46,14 @@ def elimTrivial (cierreAtr):
 def genDep (cierreAtr):
 	""" Ya se acaba. Con el conjunto de cierres de atributos construimos
 		las d.f. """
-	global Fprima #¡acá está tu otra variable global!
+	Fprima = set()
 	""" Como queremos tener a->b,c en vez de a->b y a->c => no hace falta 
-		obtener todos los subconjuntos del cierre de un atributo. Podemos ver 
-		las tuplas del conjunto cierreAtr como las d.f. del conjunto F'. """
-	Fprima = cierreAtr
+	    obtener todos los subconjuntos del cierre de un atributo. Podemos ver 
+	    las tuplas del conjunto cierreAtr como las d.f. del conjunto F'. """
+	for (a,b) in cierreAtr:
+		Fprima.add(df(a,b))
+	
+	return Fprima
 	
 	
 				
