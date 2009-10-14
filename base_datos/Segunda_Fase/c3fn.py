@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from df import *
+import copy
 #Vamos a hacer la parte primero del foreach
 
 #Esta funcion va a chequear si algun Ri contiene a la dep. func. a->b

@@ -9,7 +9,7 @@
 # Returns:
 #	CCC	= Conjunto de Claves Candidatas
 def getCCC(R, CCA):
-	CCC = Set()
+	CCC = set()
 	for ca in CCA:
 		# verificamos si el cierre (ca[1]) es igual a R
 		if ca[1] <= R <= ca[1]:
