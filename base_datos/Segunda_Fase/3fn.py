@@ -8,17 +8,13 @@
 #	True 	si encontramos
 #	False 	caso contrario
 def isDepInRi(CRi, dep):
-	found = False
 	cdep = dep[0] | dep[1] # hacemos una union de a U b = {a,b}
 	# ahora vamos a buscar si encontramos en alguno de los Ri cdep
 	for c in CRi:
 		if cdep <= c:
 			# si lo encontramos salimos
-			found = True
-			break
-	return found
-
-
+			return True
+	return False	
 
 # Esta es la la funcion que corresponderia al ciclo foreach
 # Requires:
@@ -29,7 +25,7 @@ def isDepInRi(CRi, dep):
 # En caso de que no exista => agrega automaticamente un Ri al conjunto CRi
 def firstLoop (Fc, CRi):
 	for depF in Fc:
-		if isDepInRi(CRi, depF) == False:
+		if not isDepInRi(CRi, depF):
 			#tenemos que agregar el nuevo Ri = {a,b}
 			CRi.add(depF[0] | depF[1])
 
