@@ -24,6 +24,8 @@
 #	{|,&,-} == {unión,intersección,diferencia} las cuales solo devuelven
 #	un valor pero no modifican a los conjuntos sobre los que operan.
 
+import copy
+
 def union_partes_izq(R,alfa,F):
 	
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
@@ -62,7 +64,7 @@ def atrib_raros_izq(alfa,beta,R,F):
 	return raros
 						
 def FC(F,R):
-	res = F.copy() # Copio F para modificarlo a gusto.
+	res = copy.copy(F) # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 

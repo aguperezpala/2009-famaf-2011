@@ -24,7 +24,7 @@ def mainProg():
 	# contenga simplemente EU
 	RiList = list()
 	RiList.append (EU)
-	descFNBC = calcular_FNBC (RiList, FPrima)
+	descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrs)
 	
 	# Ahora vamos a obtener el conjunto de claves candidatas
 	clavesCandidatas = getCCC (EU, cierreAttrs)
@@ -35,10 +35,10 @@ def mainProg():
 	# Obtenemos 3FN
 	RiList2 = list()
 	RiList2.append (EU)
-	desc3FN = calculate3FN (Fcanonica, RiList, clavesCandidatas)
+	desc3FN = calculate3FN (FCanonica, RiList, clavesCandidatas)
 	
 	
 	# deberiamos hacer algo aca con todos los datos que tenemos...
 	
 
-
+mainProg()
