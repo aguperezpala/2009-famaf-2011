@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from attrs import *
+from df import *
+from clcncr import getCCC
 from fprima import *
+from c3fn import calculate3FN
+from FC import FC
+from FNBC import calcular_FNBC
 
 
 
@@ -35,5 +40,5 @@ def mainProg():
 	
 	# deberiamos hacer algo aca con todos los datos que tenemos...
 	
-	
-	
+
+

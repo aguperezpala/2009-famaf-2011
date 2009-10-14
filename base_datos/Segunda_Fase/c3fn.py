@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from df import *
 #Vamos a hacer la parte primero del foreach
 
 #Esta funcion va a chequear si algun Ri contiene a la dep. func. a->b
@@ -8,7 +9,7 @@
 #	True 	si encontramos
 #	False 	caso contrario
 def isDepInRi(CRi, dep):
-	cdep = dep[0] | dep[1] # hacemos una union de a U b = {a,b}
+	cdep = dep.alfa | dep.beta # hacemos una union de a U b = {a,b}
 	# ahora vamos a buscar si encontramos en alguno de los Ri cdep
 	for c in CRi:
 		if cdep <= c:
@@ -27,7 +28,7 @@ def firstLoop (Fc, CRi):
 	for depF in Fc:
 		if not isDepInRi(CRi, depF):
 			#tenemos que agregar el nuevo Ri = {a,b}
-			CRi.add(depF[0] | depF[1])
+			CRi.add(depF.alfa | depF.beta)
 
 
 # Ahora vamos a la 2º parte, vamos a verificar si existe Ri con clave Candidata
