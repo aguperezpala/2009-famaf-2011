@@ -45,9 +45,9 @@ class df:
 	def asoc (self,atrib):
 		assert type(atrib) == set
 		return df (self.alfa|atrib,self.beta|atrib)
-	def a (self):
+	def alfa (self):
 		return self.alfa
-	def b (self):
+	def beta (self):
 		return self.beta
 
 
