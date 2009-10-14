@@ -24,9 +24,9 @@ class df:
 	alfa = set()
 	beta = set()
 	def __init__(self,x,y):
-		assert type(x),type(x) == set,set 
-		alfa = x
-		beta = y
+		assert type(x) == set and type(y) == set 
+		alfa.union(x)
+		beta.union(y)
 	def trans (self,df2):
 		assert type(df2) == df
 		if df2.alfa == self.beta:
