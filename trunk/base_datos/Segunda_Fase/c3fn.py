@@ -39,15 +39,15 @@ def firstLoop (Fc, LRi):
 # Funcion que hace esta comparacion (Asegura la reunion sin perdida).
 # Requires:
 #	LRi = conjunto de Ri's
-#	CCC = Conjunto de Claves Candidatas :) 
+#	LCC = Lista de Claves Candidatas :) 
 # Retuns:
 #	True	si se agrego alguna nueva Ri
 #	False	caso contrario (ya existia Clave Ca. € Ri)
 # Esta funcion modifica el LRi en caso de que tengamos que generar una nueva Ri
 # (osea que clave_candidata(R) !€ algun Ri para todo Ri)
 # clavale un nombre a la funcion XD
-def reunionWithoutLoss(LRi, CCC):
-	for cc in CCC:
+def reunionWithoutLoss(LRi, LCC):
+	for cc in LCC:
 		for ri in LRi:
 			if cc <= ri:
 				# No hay que hacer naranja
@@ -56,7 +56,7 @@ def reunionWithoutLoss(LRi, CCC):
 	# cualquier Clave Candidata ==> Ri+1 = CCC[0]....
 	# Aca podriamos fijarnos si influye en algo tomar cualquiera, la mas
 	# chica, la mas grande, etc... Para optimizar en algo..?
-	LRi.append(CCC[0])
+	LRi.append(LCC[0])
 	return True
 
 
@@ -67,14 +67,14 @@ def reunionWithoutLoss(LRi, CCC):
 # Requires:
 #	Fc 	= Fcanonico
 #	LRi 	= Conjunto de Ri inicial (R universal....)
-#	CCC 	= Conjunto Claves Candidatas
+#	LCC 	= Lista Claves Candidatas
 # Returns:
 #	LRi's (Descomposicion 3FN)
 # TENER EN CUENTA QUE SE MODIFICAN LOS VALORES, NO SE TRABAJA SOBRE COPIA DE LOS
 # MISMOS. (SI NO SE QUIEREN MODIFICAR => trabajar conFc.copy(), LRi.copy()...
-def calculate3FN (Fc, LRi, CCC):
+def calculate3FN (Fc, LRi, LCC):
 	firstLoop(Fc, LRi)
-	reunionWithoutLoss(LRi, CCC)
+	reunionWithoutLoss(LRi, LCC)
 	return LRi
 	
 	

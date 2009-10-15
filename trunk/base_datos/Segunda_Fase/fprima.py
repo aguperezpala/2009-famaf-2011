@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from df import *
+from ca import *
 
 def cierreAtributos (f, eu):
 	"""Usando el conjunto de d.f. y el esquema universal construimos el
@@ -18,8 +19,8 @@ def cierreAtributos (f, eu):
 		for d in f:
 			if d.alfa.issubset(cierreSetAtr):
 				cierreSetAtr |= d.beta
-		"""Tenemos el cierre del conjunto de atributos "setAtr".
-		   Lo guardamos en "cierreAtr" """
+		"""Tenemos el cierre del conjunto de atributos set(atr).
+		   Lo guardamos en cierreAtr """
 		cierreAtr.add(ca(set(atr),cierreSetAtr))
 		
 	return cierreAtr
