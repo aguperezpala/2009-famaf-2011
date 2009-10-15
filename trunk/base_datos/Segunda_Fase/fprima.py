@@ -19,8 +19,8 @@ def cierreAtributos (f, eu):
 		for (a,b) in f:
 			if a.issubset(cierreSetAtr):
 				cierreSetAtr.add(b)
-		"""Tenemos el cierre del conjunto de atributos "setAtr". Lo guardamos
-       	   en la dichosa variable global "cierreAtr" """
+		"""Tenemos el cierre del conjunto de atributos "setAtr".
+		   Lo guardamos en "cierreAtr" """
 		cierreAtr.add((setAtr,cierreSetAtr))
 	
 	return cierreAtr
@@ -30,13 +30,13 @@ def elimTrivial (cierreAtributos):
 	
 	cierreAtr = cierreAtributos.copy()
 	for (a,b) in cierreAtr:
-		""" Como no se si el tipo "tupla" de python permite modificación alguna, 
-			apelo al recurso de borrar el par (a,b) para luego agregar el
-			par (a,b-a).
-				Luego, si el cierre de un atributo es un singletón cuyo único
-			elemento es el atributo mismo => es uno de los atributos que 
-			aparecen del lado derecho en nuestras d.f. => podemos descartar su 
-			cierre.  """
+		""" Como no se si el tipo "tupla" de python permite modificación 
+		    alguna, apelo al recurso de borrar el par (a,b) para luego
+		    agregar el par (a,b-a).
+			Luego, si el cierre de un atributo es un singletón cuyo 
+		    único elemento es el atributo mismo => es uno de los
+		    atributos que aparecen del lado derecho en nuestras d.f. =>
+		    podemos descartar su cierre.  """
 		cierreAtr.delete((a,b))
 		if b-a != set([]):
 			cierreAtr.add((a,b-a))
@@ -44,8 +44,7 @@ def elimTrivial (cierreAtributos):
 	return cierreAtr
 
 def genDep (cierreAtr):
-	""" Ya se acaba. Con el conjunto de cierres de atributos construimos
-		las d.f. """
+	""" Con el conjunto de cierres de atributos construimos las d.f. """
 	Fprima = set()
 	""" Como queremos tener a->b,c en vez de a->b y a->c => no hace falta 
 	    obtener todos los subconjuntos del cierre de un atributo. Podemos ver 
