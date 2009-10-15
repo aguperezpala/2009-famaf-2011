@@ -12,7 +12,8 @@ def getEsquemaUniversal():
 	
 # Funcion que devuelve el conjunto de dependencias funcionales
 def getDepFunc ():
-	s = set(df(set('AB'),set('E')))
-	s.add  (df(set('D'),set('C')))
-	s.add  (df(set('AC'),set('B')))
+	s = set()
+	s.add (df(set('AB'),set('E')))
+	s.add (df(set('D'),set('C')))
+	s.add (df(set('AC'),set('B')))
 	return s
