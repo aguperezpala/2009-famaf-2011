@@ -16,9 +16,9 @@ def cierreAtributos (f, eu):
 	for atr in eu:
 		setAtr = set(atr)
 		cierreSetAtr = setAtr
-		for (a,b) in f:
-			if a.issubset(cierreSetAtr):
-				cierreSetAtr.add(b)
+		for d in f:
+			if d.alfa.issubset(cierreSetAtr):
+				cierreSetAtr.add(d.beta)
 		"""Tenemos el cierre del conjunto de atributos "setAtr".
 		   Lo guardamos en "cierreAtr" """
 		cierreAtr.add((setAtr,cierreSetAtr))
