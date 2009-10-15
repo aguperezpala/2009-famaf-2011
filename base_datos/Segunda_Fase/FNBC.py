@@ -30,8 +30,7 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 			if Ri is not None: # Si hay violación en algun Ri
 				stop = False
 				convertir_FNBC (FNBC, Ri, dep)
-			else:
-				F = F.remove(dep) # ya usamos esta dependencia
+	
 	return FNBC
 
 
@@ -58,7 +57,7 @@ def viola_FNBC (Ri, dep, cierreAtr):
 	
 	for atr in cierreAtr:
 		# revisamos si la parte izquierda de la dep es superclave
-		if (dep.alfa == atr[0] and Ri.issubset(atr[1]) ):
+		if (dep.alfa == atr.a and Ri.issubset(atr.am) ):
 			return False # es superclave => no hay violación FNBC
 	
 	# si llegamos acá la dep no era trivial, ni superclave de Ri

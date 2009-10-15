@@ -9,11 +9,11 @@
 # Returns:
 #	LCC	= List. de Claves Candidatas
 def getCCC(R, LCA):
-	LCC = set()
+	LCC = []
 	for ca in LCA:
 		# verificamos si el cierre (ca[1]) es igual a R
-		if ca[1] <= R <= ca[1]:
+		if ca.am <= R <= ca.am:
 			#si son iguales => la agregamos al conjunto
 			# agregamos una copia por las dudas...
-			LCC.add(ca[0].copy())
+			LCC.append(ca.a.copy())
 	return LCC
