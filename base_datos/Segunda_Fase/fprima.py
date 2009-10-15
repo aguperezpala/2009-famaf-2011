@@ -14,21 +14,21 @@ def cierreAtributos (f, eu):
 		de considerar cada subconjunto de atributos del esquema. """
 
 	for atr in eu:
-		cierreSetAtr = frozenset(atr)
+		cierreSetAtr = set(atr)
 		for d in f:
 			if d.alfa.issubset(cierreSetAtr):
 				cierreSetAtr |= d.beta
 		"""Tenemos el cierre del conjunto de atributos "setAtr".
 		   Lo guardamos en "cierreAtr" """
-		cierreAtr.add((frozenset(atr),cierreSetAtr))
-	
+		cierreAtr.add(ca(set(atr),cierreSetAtr))
+		
 	return cierreAtr
 
 def elimTrivial (cierreAtributos):
 	""" Eliminamos las depedencias triviales """
 	
 	cierreAtr = cierreAtributos.copy()
-	for (a,b) in cierreAtr:
+	for cierre in cierreAtr:
 		""" Como no se si el tipo "tupla" de python permite modificación 
 		    alguna, apelo al recurso de borrar el par (a,b) para luego
 		    agregar el par (a,b-a).
@@ -36,12 +36,10 @@ def elimTrivial (cierreAtributos):
 		    único elemento es el atributo mismo => es uno de los
 		    atributos que aparecen del lado derecho en nuestras d.f. =>
 		    podemos descartar su cierre.  """
-		#cierreAtr.delete((a,b))
-		#if b-a != set([]):
-		#	cierreAtr.add((a,b-a))
-		cierreAtr.remove((a,b))
-		if b-a != frozenset():
-			cierreAtr.add((a,b-a))
+		cierreAtr.remove(cierre)
+		if cierre.am-cierre.a != set([]): # si no es trivial
+			cierreAtr.add(ca(cierre.a , cierre.am-cierre.a))
+			
 	return cierreAtr
 
 def genDep (cierreAtr):
@@ -50,8 +48,8 @@ def genDep (cierreAtr):
 	""" Como queremos tener a->b,c en vez de a->b y a->c => no hace falta 
 	    obtener todos los subconjuntos del cierre de un atributo. Podemos ver 
 	    las tuplas del conjunto cierreAtr como las d.f. del conjunto F'. """
-	for (a,b) in cierreAtr:
-		Fprima.add(df(a,b))
+	for cierre in cierreAtr:
+		Fprima.add(df(cierre.a,cierre.am))
 	
 	return Fprima
 	
