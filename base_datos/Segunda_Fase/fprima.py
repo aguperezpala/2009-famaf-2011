@@ -14,14 +14,13 @@ def cierreAtributos (f, eu):
 		de considerar cada subconjunto de atributos del esquema. """
 
 	for atr in eu:
-		setAtr = set(atr)
-		cierreSetAtr = setAtr
+		cierreSetAtr = frozenset(atr)
 		for d in f:
 			if d.alfa.issubset(cierreSetAtr):
-				cierreSetAtr.add(d.beta)
+				cierreSetAtr |= d.beta
 		"""Tenemos el cierre del conjunto de atributos "setAtr".
 		   Lo guardamos en "cierreAtr" """
-		cierreAtr.add((setAtr,cierreSetAtr))
+		cierreAtr.add((frozenset(atr),cierreSetAtr))
 	
 	return cierreAtr
 
@@ -37,10 +36,12 @@ def elimTrivial (cierreAtributos):
 		    único elemento es el atributo mismo => es uno de los
 		    atributos que aparecen del lado derecho en nuestras d.f. =>
 		    podemos descartar su cierre.  """
-		cierreAtr.delete((a,b))
-		if b-a != set([]):
+		#cierreAtr.delete((a,b))
+		#if b-a != set([]):
+		#	cierreAtr.add((a,b-a))
+		cierreAtr.remove((a,b))
+		if b-a != frozenset():
 			cierreAtr.add((a,b-a))
-
 	return cierreAtr
 
 def genDep (cierreAtr):

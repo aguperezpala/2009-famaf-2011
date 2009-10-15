@@ -12,15 +12,9 @@ def getEsquemaUniversal():
 	
 # Funcion que devuelve el conjunto de dependencias funcionales
 def getDepFunc ():
-<<<<<<< .mine
 	s = set()
 	for a in "ABCDE":
 		for b in "ABCDE":
 			s.add(df(set(a),set(b)))
-=======
-	s = set()
-	s.add (df(set('AB'),set('E')))
-	s.add (df(set('D'),set('C')))
-	s.add (df(set('AC'),set('B')))
->>>>>>> .r124
+
 	return s
