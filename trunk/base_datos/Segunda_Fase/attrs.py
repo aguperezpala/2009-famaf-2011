@@ -7,13 +7,12 @@ from df import *
 
 # TODO
 def getEsquemaUniversal():
-	return set("ABC")
+	return set("ABCDE")
 	
 	
 # Funcion que devuelve el conjunto de dependencias funcionales
 def getDepFunc ():
-	s = set(df(set('A'),set('')))
-	s.add ()
-	return set(
-		df(set(),set())
-		)
+	s = set(df(set('AB'),set('E')))
+	s.add  (df(set('D'),set('C')))
+	s.add  (df(set('AC'),set('B')))
+	return s
