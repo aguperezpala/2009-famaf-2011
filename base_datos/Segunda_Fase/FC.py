@@ -30,7 +30,15 @@ def union_partes_izq(R,alfa,F):
 	
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
 		como parte izquierda de la misma """
-		
+	
+	
+	# KONDRA: se queja de que pedimos 2 valores para iterar sobre
+	# R-set(alfa) No le veo nada de malo, incluso añadí esta guarda
+	# por si las dudas, pero parece que es un error en tiempo de
+	# compilación o algo así. Fijate si lo podés solucionar.
+	if R.__len__() - set(alfa).__len__() < 2: return
+	
+	
 	for b1,b2 in R - set(alfa):
 		if (alfa,b1) in F and (alfa,b2) in F:
 			F.remove((alfa,b1))
