@@ -27,9 +27,9 @@ class df:
 	def __hash__(self):
 		return 0
 	def __repr__(self):
-		return str(self.alfa)+""+str(self.beta)
+		return str(self.alfa)+"->"+str(self.beta)
 	def __str__(self):
-		return str(self.alfa)+","+str(self.beta)
+		return str(self.alfa)+"->"+str(self.beta)
 	def __cmp__(self,other):
 		assert type(other) == type(self)
 		#hay que retornar la negación aunque paresca loco
