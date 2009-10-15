@@ -64,7 +64,7 @@ def atrib_raros_izq(alfa,beta,R,F):
 	return raros
 						
 def FC(F,R):
-	res = copy.copy(F) # Copio F para modificarlo a gusto.
+	res = copy.deepcopy(F) # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 

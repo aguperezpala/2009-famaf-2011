@@ -27,43 +27,23 @@ class df:
 	def __hash__(self):
 		return 0
 	def __repr__(self):
-		return str(self.alfa)+","+str(self.beta)
+		return str(self.alfa)+""+str(self.beta)
 	def __str__(self):
 		return str(self.alfa)+","+str(self.beta)
-# Kondra: toda instancia 'dep' de 'df' hace que type(dep) == instance
-#	def __cmp__(self,otro):
-#		assert type(otro) == df
-#		return self.alfa ==	otro.alfa and self.beta == otro.beta
+	def __cmp__(self,other):
+		assert type(other) == type(self)
+		#hay que retornar la negación aunque paresca loco
+		return (not(self.alfa == other.alfa and self.beta == other.beta))
+			
 	def __init__(self,x,y):
 		assert type(x) == set and type(y) == set 
 		self.alfa = x.copy()
 		self.beta = y.copy()
 	def trans (self,df2):
-		assert type(df2) == df
+		assert type(df2) == type(self)
 		if df2.alfa == self.beta:
 			return df(self.alfa,df2.beta)
 	def asoc (self,atrib):
 		assert type(atrib) == set
 		return df (self.alfa|atrib,self.beta|atrib)
-	def alfa (self):
-		return self.alfa
-	def beta (self):
-		return self.beta
 
-
-
-
-
-
-""" DEBUG 
-d1 = df(set("a"), set("abc"))
-d2 = df(set("d"), set("a"))
-
-print d2.beta.issubset(d1.beta)
-
-s = set ()
-s.add(d1)
-s.add(d2)
-
-print s		
-"""
