@@ -300,7 +300,7 @@ int main (int argc, char *argv[])
 	
 	/* Volvemos el IVT a su estado original */
 	change_IVT ((unsigned int) int_lpt, oldhandler7, lptisr);
-	change_IVT ((unsigned int) int_lpt, oldhandler4, uartisr);
+	change_IVT ((unsigned int) int_uart, oldhandler4, uartisr);
 	
 	/* Liberamos todos los recursos */
 	win_string = string_destroy (win_string);
@@ -335,5 +335,6 @@ static void change_IVT (unsigned int int_type, void interrupt (*new_isr)(),
 	
 	return;
 }
-
+
+
 
