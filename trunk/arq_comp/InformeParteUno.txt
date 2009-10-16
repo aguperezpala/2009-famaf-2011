@@ -1,3 +1,12 @@
+Diseño
+
+Nosotros pensamos resolver el problema de esta manera:
+La idea general es mostrar un char* de cualquier tamaño en el display, como el display posee sólo 7 segmentos, debemos partir ese char* en pedasos de tamaño 7, y convinar esos pedasos de manera que el char* pueda ser leido a través del display. Para ello desarrollaremos dos TADs:
+Un TAD string, que se ocupara de manejar el char* a imprimir por el display, es decir, de partir ese char* adecuadamente, y otro TAD timer, que regulara la velocidad con el que ese char* es actualizado según el TAD string.
+Siguiendo con esta línea de pensamiento, desarrollaremos una rutina de interrupción del puerto paralelo, la cual se encargará de tomar un caracter del char* obtenido a partir del TAD string, seleccionar un display y imprimir ese caracter en el dispay seleccionado, y en base al TAD timer, decidir si actualizamos el "pedaso" de char* a través del TAD string o dejarlo como está.
+
+
+
 Corriendo el programa
 
 Lo primero que hacemos es asegurarnos que el puerto parelelo este en direccion de salida (forward).Dado que vamos a cambiar la rutina de interrupcion, primero salvamos la actual, y luego activamos la nuestra. Después desenmascaramos el pic ,para que las interrupciones no puedan ser ignoradas y activamos la peticion de  interrupciones del puerto paralelo para que cada interrupcion ejecute nuestra rutina, pues de lo contrario las interrupciones del puerto paralelo serán ignoradas.
