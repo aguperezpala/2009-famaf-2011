@@ -37,13 +37,14 @@ def union_partes_izq(R,alfa,F):
 	# por si las dudas, pero parece que es un error en tiempo de
 	# compilación o algo así. Fijate si lo podés solucionar.
 	if R.__len__() - set(alfa).__len__() < 2: return
+	print R
 	
-	
-	for b1,b2 in R - set(alfa):
-		if (alfa,b1) in F and (alfa,b2) in F:
+	for b1 in (R - set(alfa)):
+		print b1
+		"""if df(set(alfa),set(b1)) in F and df(set(alfa),set(b2)) in F:
 			F.remove((alfa,b1))
 			F.remove((alfa,b2))
-			F.add((alfa,b1|b2))
+			F.add((alfa,b1|b2))"""
 				 
 def atrib_raros_der(alfa,beta,R,F):
 	
