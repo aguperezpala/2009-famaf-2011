@@ -31,7 +31,7 @@ class df:
 	def __str__(self):
 		return str(self.alfa)+"->"+str(self.beta)
 	def __cmp__(self,other):
-		assert type(other) == type(self)
+		assert  self.__class__ == other.__class__
 		#hay que retornar la negación aunque paresca loco
 		return (not(self.alfa == other.alfa and self.beta == other.beta))
 			
@@ -39,10 +39,10 @@ class df:
 		assert type(x) == set and type(y) == set 
 		self.alfa = x.copy()
 		self.beta = y.copy()
-	def trans (self,df2):
-		assert type(df2) == type(self)
-		if df2.alfa == self.beta:
-			return df(self.alfa,df2.beta)
+	def trans (self,df):
+		assert df.__class__ == self.__class__
+		if df.alfa == self.beta:
+			return df(self.alfa,df.beta)
 	def asoc (self,atrib):
 		assert type(atrib) == set
 		return df (self.alfa|atrib,self.beta|atrib)

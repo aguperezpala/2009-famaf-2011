@@ -26,49 +26,40 @@
 
 import copy
 
-def union_partes_izq(R,alfa,F):
+def union_partes_izq(d1,F):
 	
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
 		como parte izquierda de la misma """
-	
-	
-	# KONDRA: se queja de que pedimos 2 valores para iterar sobre
-	# R-set(alfa) No le veo nada de malo, incluso añadí esta guarda
-	# por si las dudas, pero parece que es un error en tiempo de
-	# compilación o algo así. Fijate si lo podés solucionar.
-	if R.__len__() - set(alfa).__len__() < 2: return
-	print R
-	
-	for b1 in (R - set(alfa)):
-		print b1
-		"""if df(set(alfa),set(b1)) in F and df(set(alfa),set(b2)) in F:
-			F.remove((alfa,b1))
-			F.remove((alfa,b2))
-			F.add((alfa,b1|b2))"""
-				 
-def atrib_raros_der(alfa,beta,R,F):
+	assert d1.__class__ == df and df == F.pop()
+	for d2 in F - d1:
+		if d1.alfa == d2.alfa:
+			F.remove(d1)
+			F.remove(d2)
+			F.add(df(d1.alfa,d1.beta|d2.beta))
+ 
+def atrib_raros_der(df,R,F):
 	
 	""" Elimina y devuelve una lista de los atributos raros de beta """
 	  
 	raros = []
-	for A in beta:
+	for A in df.beta:
 		# Parecera largo pero mas variables solo complica su escritura.
-		if A in cierre_atrib(alfa,(F-set((alfa,beta)))|set((alfa,beta-A)),R):
-			F.remove((alfa,beta))
-			F.add((alfa,beta-set(A)))
+		if A in cierre_atrib(df.alfa,(F-df)|set((df.alfa,df.beta - A)),R):
+			F.add((df.alfa,df.beta - set(A)))
+			F.remove(df)
 			raros += [A]
 	return raros
 	
-def atrib_raros_izq(alfa,beta,R,F):
+def atrib_raros_izq(df,R,F):
 	
 	""" Elimina y devuelve una lista de los atributos raros de alfa """
 	
 	raros = []
-	for A in alfa:
+	for A in df.alfa:
 		# Chequeamos beta subconjunto del cierre de atributos de alfa-A
-		if beta.issubset(cierre_atrib(alfa-set(A),F,R)):
-			F.remove((alfa,beta))
-			F.add((alfa-set(A),beta))
+		if df.beta.issubset(cierre_atrib(df.alfa-set(A),F,R)):
+			F.add(df(df.alfa-set(A),df.beta))
+			F.remove(df)
 			raros += [A]
 	return raros
 						
@@ -78,9 +69,7 @@ def FC(F,R):
 	
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
 		raros = []
-		for alfa in R: # Realizo todas las uniones para cada alfa
-			union_partes_izq(R,alfa,res)
-			for beta in R: # Agrego los atributos raros de cada beta
-				raros += atrib_raros_izq(alfa,beta,R,res)+atrib_raros_der(alfa,beta,R,res)
-
+		for df in F:
+			union_partes_izq(df,res)
+			raros += atrib_raros_izq(df,R,res)+atrib_raros_der(df,R,res)
 	return res
