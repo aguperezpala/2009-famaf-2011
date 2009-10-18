@@ -23,6 +23,8 @@ def cierreAtributos (f, eu):
 		   Lo guardamos en cierreAtr """
 		cierreAtr.add(ca(set([atr]),cierreSetAtr))
 		
+	printCierre(cierreAtr)
+	
 	return cierreAtr
 
 def elimTrivial (cierreAtributos):
@@ -40,6 +42,8 @@ def elimTrivial (cierreAtributos):
 		if cierre.am-cierre.a != set([]): # si no es trivial
 			cierresDic.setdefault(frozenset(cierre.a.copy()),cierre.am-cierre.a)
 			
+	printElimTrivial(cierresDic)
+
 	return cierresDic
 
 def genDep (cierreAtr):
@@ -51,14 +55,31 @@ def genDep (cierreAtr):
 	for cierre in cierreAtr:
 		Fprima.add(df(cierre,cierreAtr[cierre]))
 	
+	printFprima(Fprima)
+	
 	return Fprima
 	
-"""eu = set(['hola','chau','adios'])
+def printCierre (cierreAtr):
+	print "Cierre de atributos:\n{"
+	for cierre in cierreAtr:
+		print "(" + str(cierre.a) + " , " + str(cierre.am) + "),\n"
+	print "}"
+
+def printElimTrivial (cierresDic):
+	print "Cierre de atributos sin trivialidades:\n{"
+	for cierre in cierresDic:
+		print "(" + str(cierre) + " , " + str(cierresDic[cierre]) + "), \n"
+	print "}"
+
+def printFprima (Fprima):
+	print "F':\n{"
+	for dep in Fprima:
+		print "(" + str(dep.alfa) + " , " + str(dep.beta) + "), \n"
+	print "}"
+
+eu = set(['hola','chau','adios'])
 f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
 ca = cierreAtributos(f,eu)
 et = elimTrivial(ca)				
 df = genDep (et)
-			
-print ca
-print et
-print df"""
+
