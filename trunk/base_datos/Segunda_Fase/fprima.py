@@ -23,7 +23,7 @@ def cierreAtributos (f, eu):
 		   Lo guardamos en cierreAtr """
 		cierreAtr.add(ca(set([atr]),cierreSetAtr))
 		
-	printCierre(cierreAtr)
+	"""printCierre(cierreAtr)"""
 	
 	return cierreAtr
 
@@ -42,7 +42,7 @@ def elimTrivial (cierreAtributos):
 		if cierre.am-cierre.a != set([]): # si no es trivial
 			cierresDic.setdefault(frozenset(cierre.a.copy()),cierre.am-cierre.a)
 			
-	printElimTrivial(cierresDic)
+	"""printElimTrivial(cierresDic)"""
 
 	return cierresDic
 
@@ -55,7 +55,7 @@ def genDep (cierreAtr):
 	for cierre in cierreAtr:
 		Fprima.add(df(cierre,cierreAtr[cierre]))
 	
-	printFprima(Fprima)
+	"""printFprima(Fprima)"""
 	
 	return Fprima
 	
