@@ -32,7 +32,7 @@ class df:
 			rep += elem+' '
 		rep += "-->"
 		for elem in self.beta:
-			rep += elem+' '
+			rep += ' '+elem
 		rep += ')'
 		return rep
 	def __str__(self):
