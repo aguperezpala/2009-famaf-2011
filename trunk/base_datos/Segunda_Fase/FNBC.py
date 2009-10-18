@@ -32,7 +32,6 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 			if Ri is not None: # Si hay violación en algun Ri
 				stop = False
 				#print "convertir_FNBC Ri :" + str (Ri) + "\nsegun dep: " + str (dep)
-				wait=raw_input()
 				convertir_FNBC (FNBC, Ri, dep)
 	
 	return FNBC
@@ -47,10 +46,12 @@ def es_violac_FNBC (conjRi, dep, cierreAtr):
 	
 	for Ri in conjRi:
 		if (viola_FNBC (Ri, dep, cierreAtr)):
+			"""  DEBUG
+			print ("Violación encontrada\n")
+			print ("Ri: ") + str(Ri) + '\n'
+			print ("dep: ") + str(dep.alfa) + "->" + str(dep.beta) + '\n' """
 			return Ri
 	# si no encontramos violación se retorna 'None'
-	#print "es_violac_FNBC: Devolvemos none"
-	return None
 
 
 def viola_FNBC (Ri, dep, cierreAtr):
@@ -66,10 +67,7 @@ def viola_FNBC (Ri, dep, cierreAtr):
 	
 	for atr in cierreAtr:
 		# revisamos si la parte izquierda de la dep es superclave
-		print ("atr: ") + str(atr)
-		print ("dep.alfa: ") + str(dep.alfa)
-		if (dep.alfa == atr and Ri.issubset(cierreAtr[atr]) ):
-			print ("Entramos")
+		if (dep.alfa == atr and Ri.issubset(cierreAtr[atr].union(atr)) ):
 			return False # es superclave => no hay violación FNBC
 	
 	# si llegamos acá la dep no era trivial, ni superclave de Ri
@@ -84,10 +82,9 @@ def convertir_FNBC (conjRi, Ri, dep):
 	""" Descompone Ri según la dependencia dep
 	    para que deje de haber violación FNBC """
 	
-	#assert viola_FNBC (Ri, dep)
-	print "\nConjRi antes: " + str (conjRi)
+	#print "ConjRi antes: " + str (conjRi)
+	
 	conjRi.remove(Ri)
-	print "\nConjRi desp: " + str (conjRi)
 	
 	Rj = dep.alfa.union(dep.beta) #  {a} U {b}
 	
@@ -95,7 +92,9 @@ def convertir_FNBC (conjRi, Ri, dep):
 	
 	conjRi.append(Ri)
 	conjRi.append(Rj)
-	print "\nNuevos Conjuntos\nRi: " + str(Ri)
-	print "\nRj: " + str (Rj)
 
+	#print "\nNuevos Conjuntos\nRi: " + str(Ri)
+	#print "\nRj: " + str (Rj)
+	#print ("\n***************\n")
+	
 
