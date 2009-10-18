@@ -79,7 +79,7 @@ def convertir_FNBC (conjRi, Ri, dep):
 	
 	Ri = Ri.difference(dep.beta) # quitamos la parte derecha (Ri - {b})
 	
-	conjRi.add(Ri)
-	conjRi.add(Rj)
+	conjRi.append(Ri)
+	conjRi.append(Rj)
 
 
