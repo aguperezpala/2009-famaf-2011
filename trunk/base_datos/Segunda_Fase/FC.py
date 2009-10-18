@@ -27,84 +27,141 @@ import copy
 from df import *
 from fprima import *
 
+
 def union_partes_izq(d1,F):
-	#new = F.copy()
+	
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
 		como parte izquierda de la misma """
-	#d = copy.deepcopy(d1)
-	l = []
-	for d2 in F:
-		if d1.alfa == d2.alfa and d1 != d2:
-			#new.remove(d1)
-			d1.beta.union (d2.beta)
-			l.append (d2)
-			#F.remove(d2)
-			#c = df(d1.alfa,d1.beta|d2.beta)
-			#new.add(c)
-			#print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
 	
-	for d2 in l:
+	trash = []
+	for d2 in F:
+		if d1.alfa == d2.alfa and not (d1 == d2):
+			d1.beta |= (d2.beta)
+			trash.append (d2)
+	
+	for d2 in trash:
 		F.remove (d2)
-	#F = new.copy()
-	#F.remove (d1)
-	#F.add(d)
+	#print "d1: "+str(d1)+'\n'
  
-def atrib_raros_der(dep,R,F):
+ 
+def atrib_raros_der(dep,F):
 
 	""" Elimina y devuelve una lista de los atributos raros de beta """
 	
-	#print "\n\nF: " + str (F) + "\n\ndep: " + str(dep) + "\n\n"
 	raros = []
-	F.remove(dep)
-	for A in dep.beta:
-		# Parecera largo pero mas variables solo complica su escritura.
-		#Desglozamiento fulero
-		h = dep.beta.copy()
-		h.remove(A)
-		mierda = df(dep.alfa,h)
-		F.add(mierda)
-		b = cierreAtributosAlfa(dep.alfa,F)
-		#b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
-		if A in b:	
-			F.add(df(dep.alfa,dep.beta - set(A)))
-			F.discard(dep)
-			#print "Eliminamos "+A+" de "+str(dep)+" en el lado derecho\n"
-			raros += [A]
-	return raros
+	FNew = F.copy()
+	tested = set()
 	
+	i = len(dep.beta)
+	while (0<i and 0<len(dep.beta())):
+		
+		# Parecera largo pero mas variables solo complica su escritura.
+		#b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
+		
+		A = (dep.beta-tested).pop() # obtenemos cualquier elemento aún no evaluado
+		tested.add(A)
+		
+		depNew = df(dep.alfa,(dep.beta.copy())-set(A))
+		FNew.remove(dep)
+		FNew.add(depNew)
+		
+		b = cierreAtributosAlfa(dep.alfa,FNew)
+		
+		if A in b:
+			raros += [A]
+			dep.beta.remove(A)
+			if (len(dep.beta)==0): # la dependencia quedó vacía
+				F.remove(dep)
+		
+		i-=1
+		
+	return raros
+
+
 def atrib_raros_izq(df,R,F):
 	
-	""" Elimina y devuelve una lista de los atributos raros de alfa """
-	
+	""" Elimina y devuelve una lista de los atributos raros de alfa
+	 FIXME: no sabemos si funciona, nunca fue testeada """
 	raros = []
 	for A in df.alfa:
 		# Chequeamos beta subconjunto del cierre de atributos de alfa-A
 		if df.beta.issubset(cierreAtributos[df.alfa-set(A)]):
 			F.add(df(df.alfa-set(A),df.beta))
 			F.remove(df)
-			#print "Eliminamos "+A+" de "+str(df)+"en el lado izquierdo\n"
 			raros += [A]
 	return raros
-						
+
+
 def calcular_FC(F,R):
 	res = F.copy() # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
-	print "Calculando F Canonico!\n"
+#	print "Calculando F Canonico!\n"
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
+		F1 = res.copy()
+		
+		
+		#i = 0
+		#print "F ANTES de las uniones\n{",
+		#for dep in res:
+			#print "df"+str(i)+": "+str(dep)+'\n'
+			#i+=1
+		#print '}'+'\n\n'
+		
+		
+		i = len(res)
+		unidas = []
+		
+		while (i>0 and 0<len(res)):
+			dep = res.pop()
+			union_partes_izq(dep,res)
+			unidas.append(dep)
+			i-=1
+			
+		res = set()
+		for dep in unidas:
+			res.add(dep)
+		
+		#for df1 in F1:
+			##print "\ndf1 antes: "+str(df1)
+			#union_partes_izq(df1,res)
+			##print "\ndf1 después: "+str(df1)+'\n'
+		##print "\n\n\nDespues: res = " + str (res)
+		
+		
+		
+		F1 = res.copy()
+		
+		
+		i = 0
+		print "F DESPUÉS de las uniones\n{",
+		for dep in res:
+			print "df"+str(i)+": "+str(dep)+'\n'
+			i+=1
+		print '}'
+		
+		
 		raros = []
-		F1 = res.copy()
-		print "\n\n\nAntes: F1 = " + str (F1)
-		for df1 in F1:
-			union_partes_izq(df1,res)
-		print "\n\n\nDespues: res = " + str (res)
-		wait = raw_input()
-		F1 = res.copy()
-		for df1 in F1:
+		tested = set()
+		i = len(res)
+		while (i>0):
+			assert 0<len(res)
+			dep = (res-tested).pop()
+			raros += atrib_raros_der(dep,res)
+			
+			
+			
+			dep = res.pop()
+			union_partes_izq(dep,res)
+			unidas.append(dep)
+			i-=1
+		
+		
+		for df1 in res:
 			raros += atrib_raros_der(df1,R,res)
 			if not (raros == []):
-				#print ("Encontrados atributos raros: ")
-				#print str(raros) + '\n'
+				print ("Encontrados atributos raros: ")
+				print str(raros) + '\n'
 				break
 
 	return res
