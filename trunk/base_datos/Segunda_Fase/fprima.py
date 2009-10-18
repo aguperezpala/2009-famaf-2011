@@ -13,15 +13,22 @@ def cierreAtributos (f, eu):
 	""" Dadas las observaciones que hicimos sobre nuestras d.f., tomamos
 		cada atributo del esquema universal y calculamos su cierre, en vez
 		de considerar cada subconjunto de atributos del esquema. """
-
+	
 	for atr in eu:
+		stop = False
 		cierreSetAtr = set([atr])
-		for d in f:
-			if d.alfa.issubset(cierreSetAtr):
-				cierreSetAtr |= d.beta
-		"""Tenemos el cierre del conjunto de atributos set(atr).
-		   Lo guardamos en cierreAtr """
-		cierreAtr.add(ca(set([atr]),cierreSetAtr))
+		while (not stop):
+			stop = True
+			for d in f:
+				if d.alfa.issubset(cierreSetAtr):
+					temp = cierreSetAtr | d.beta
+					if not (cierreSetAtr == temp):
+						stop = False
+						cierreSetAtr = temp
+						
+			"""Tenemos el cierre del conjunto de atributos set(atr).
+				Lo guardamos en cierreAtr """
+			cierreAtr.add(ca(set([atr]),cierreSetAtr))
 		
 	"""printCierre(cierreAtr)"""
 	
