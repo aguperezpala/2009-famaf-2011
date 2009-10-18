@@ -28,9 +28,12 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 		stop = True
 		for dep in F:	
 			Ri = es_violac_FNBC (FNBC, dep, cierreAtr)
+			
+			print "\nSe halló que dep viola un Ri..."
+			print "dep = "+str(dep)+'\n'
+			
 			if Ri is not None: # Si hay violación en algun Ri
 				stop = False
-				#print "convertir_FNBC Ri :" + str (Ri) + "\nsegun dep: " + str (dep)
 				convertir_FNBC (FNBC, Ri, dep)
 	
 	return FNBC
@@ -81,13 +84,16 @@ def convertir_FNBC (conjRi, Ri, dep):
 	""" Descompone Ri según la dependencia dep
 	    para que deje de haber violación FNBC """
 	
-	#print "ConjRi antes: " + str (conjRi)
+	print "Descomponiendo Ri: " + str (conjRi) + '\n'
 	
 	conjRi.remove(Ri)
 	
 	Rj = dep.alfa.union(dep.beta) #  {a} U {b}
 	
 	Ri = Ri.difference(dep.beta) # Ri - {b}
+	
+	print "Descomposición obtenida:"
+	print "\tRj1 "+str(Rj)+'\n\tRj2'+str(Ri)+'\n'
 	
 	conjRi.append(Ri)
 	conjRi.append(Rj)
