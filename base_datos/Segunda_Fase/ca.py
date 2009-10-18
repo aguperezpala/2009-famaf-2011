@@ -8,9 +8,23 @@ class ca:
 	def __hash__(self):
 		return 0
 	def __repr__(self):
-		return "("+str(self.a)+","+str(self.am)+")"
+		rep = "(ATRIBUTO: "
+		for elem in self.alfa:
+			rep += elem+' '
+		rep += ", CIERRE:"
+		for elem in self.beta:
+			rep += ' '+elem
+		rep += ')'
+		return rep
 	def __str__(self):
-		return "("+str(self.a)+","+str(self.am)+")"
+		rep = "(ATRIBUTO: "
+		for elem in self.alfa:
+			rep += elem+' '
+		rep += ", CIERRE:"
+		for elem in self.beta:
+			rep += ' '+elem
+		rep += ')'
+		return rep
 	def __cmp__(self,other):
 		assert type(other) == type(self)
 		#hay que retornar la negación aunque paresca loco
