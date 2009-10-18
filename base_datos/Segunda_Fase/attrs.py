@@ -8,11 +8,10 @@ from df import *
 # TODO
 
 def getEsquemaUniversal():
-	return set(['a', 'b', 'c', 'd'])
+	return set(['a', 'b', 'c', 'd', 'e', 'f'])
 	
 	
 # Funcion que devuelve el conjunto de dependencias funcionales
 def getDepFunc ():
-	s = set ([df (set("ab"),set("c")), df(set("ad"),set("b")),df(set("d"),set("a"))])
-	
+	s = set ([df (set("a"),set("c")), df(set("a"),set("b")),df(set("d"),set("a")),df(set("a"),set("d")),df(set("c"),set("e")),df(set("e"),set("f")),df(set("f"),set("a"))])
 	return s

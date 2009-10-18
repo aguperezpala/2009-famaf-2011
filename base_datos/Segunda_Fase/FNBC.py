@@ -26,7 +26,6 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 	
 	while (not stop):
 		stop = True
-		#print "****\n"
 		for dep in F:	
 			Ri = es_violac_FNBC (FNBC, dep, cierreAtr)
 			if Ri is not None: # Si hay violación en algun Ri

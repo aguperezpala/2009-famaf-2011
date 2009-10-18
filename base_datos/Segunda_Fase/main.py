@@ -34,12 +34,13 @@ def mainProg():
 	print "conseguimos descFNBC"
 	# Ahora vamos a obtener el conjunto de claves candidatas
 	clavesCandidatas = getCCC (EU, cierreAttrs)
-	print "conseguimos clavesCandidatas"
+	print "conseguimos clavesCandidatas:\n" + str(clavesCandidatas)
+	
 	
 	# Obtenemos 3FN
 	RiList2 = list()
 	RiList2.append (EU)
-	desc3FN = calculate3FN (FCanonica, RiList, clavesCandidatas)
+	desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
 	print "conseguimos desc3FN"
 	
 	# deberiamos hacer algo aca con todos los datos que tenemos...
