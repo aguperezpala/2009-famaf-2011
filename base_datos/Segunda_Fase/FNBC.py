@@ -28,12 +28,10 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 		stop = True
 		for dep in F:	
 			Ri = es_violac_FNBC (FNBC, dep, cierreAtr)
-			
-			print "\nSe halló que dep viola un Ri..."
-			print "dep = "+str(dep)+'\n'
-			
 			if Ri is not None: # Si hay violación en algun Ri
 				stop = False
+				print "\nSe halló que dep viola un Ri..."
+				print "dep = "+str(dep)+'\n'
 				convertir_FNBC (FNBC, Ri, dep)
 	
 	return FNBC
