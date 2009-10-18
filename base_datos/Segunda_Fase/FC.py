@@ -39,18 +39,18 @@ def union_partes_izq(d1,F):
 			c = df(d1.alfa,d1.beta|d2.beta)
 			new.add(c)
 			print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
-	wait = raw_input()
 	F = new
  
 def atrib_raros_der(dep,R,F):
 
 	""" Elimina y devuelve una lista de los atributos raros de beta """
-	  
+	
+	#print "\n\nF: " + str (F) + "\n\ndep: " + str(dep) + "\n\n"
 	raros = []
+	F.remove(dep)
 	for A in dep.beta:
 		# Parecera largo pero mas variables solo complica su escritura.
 		#Desglozamiento fulero
-		F.discard(dep)
 		h = dep.beta.copy()
 		h.remove(A)
 		mierda = df(dep.alfa,h)
@@ -87,5 +87,11 @@ def calcular_FC(F,R):
 		raros = []
 		for df in F:
 			union_partes_izq(df,res)
+		F = res
+		for df in F:
 			raros += atrib_raros_der(df,R,res)
+			if not (raros == []):
+				break
+		F = res
+
 	return res
