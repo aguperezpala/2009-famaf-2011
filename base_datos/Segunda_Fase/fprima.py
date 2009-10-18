@@ -49,15 +49,16 @@ def genDep (cierreAtr):
 	    obtener todos los subconjuntos del cierre de un atributo. Podemos ver 
 	    las tuplas del conjunto cierreAtr como las d.f. del conjunto F'. """
 	for cierre in cierreAtr:
-		Fprima.add(df(cierre.a,cierre.am))
+		Fprima.add(df(cierre,cierreAtr[cierre]))
 	
 	return Fprima
 	
-"""eu = set(['hola','chau','adios'])
+eu = set(['hola','chau','adios'])
 f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
 ca = cierreAtributos(f,eu)
 et = elimTrivial(ca)				
+df = genDep (et)
 			
 print ca
 print et
-"""
+print df
