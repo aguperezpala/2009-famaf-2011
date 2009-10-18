@@ -28,18 +28,26 @@ from df import *
 from fprima import *
 
 def union_partes_izq(d1,F):
-	new = F.copy()
+	#new = F.copy()
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
 		como parte izquierda de la misma """
-	
+	#d = copy.deepcopy(d1)
+	l = []
 	for d2 in F:
 		if d1.alfa == d2.alfa and d1 != d2:
-			new.discard(d1)
-			new.discard(d2)
-			c = df(d1.alfa,d1.beta|d2.beta)
-			new.add(c)
+			#new.remove(d1)
+			d1.beta.union (d2.beta)
+			l.append (d2)
+			#F.remove(d2)
+			#c = df(d1.alfa,d1.beta|d2.beta)
+			#new.add(c)
 			#print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
-	F = new
+	
+	for d2 in l:
+		F.remove (d2)
+	#F = new.copy()
+	#F.remove (d1)
+	#F.add(d)
  
 def atrib_raros_der(dep,R,F):
 
@@ -86,14 +94,17 @@ def calcular_FC(F,R):
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
 		raros = []
 		F1 = res.copy()
-		for df in F1:
-			union_partes_izq(df,res)
+		print "\n\n\nAntes: F1 = " + str (F1)
+		for df1 in F1:
+			union_partes_izq(df1,res)
+		print "\n\n\nDespues: res = " + str (res)
+		wait = raw_input()
 		F1 = res.copy()
-		for df in F1:
-			raros += atrib_raros_der(df,R,res)
+		for df1 in F1:
+			raros += atrib_raros_der(df1,R,res)
 			if not (raros == []):
-				print ("Encontrados atributos raros: ")
-				print str(raros) + '\n'
+				#print ("Encontrados atributos raros: ")
+				#print str(raros) + '\n'
 				break
 
 	return res
