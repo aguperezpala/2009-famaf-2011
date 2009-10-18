@@ -27,8 +27,8 @@ def mainProg():
 	# contenga simplemente EU
 	RiList = list()
 	RiList.append (EU)
-	#descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
-	#print "conseguimos descFNBC"
+	descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
+	print "conseguimos descFNBC"
 	# Ahora vamos a obtener el conjunto de claves candidatas
 	clavesCandidatas = getCCC (EU, cierreAttrs)
 	print "conseguimos clavesCandidatas"
