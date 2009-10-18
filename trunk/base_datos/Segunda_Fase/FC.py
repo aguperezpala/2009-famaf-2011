@@ -62,14 +62,19 @@ def atrib_raros_der(dep,F):
 		
 		depNew = df(dep.alfa.copy(),dep.beta-set(A))
 		
+		print "dep: "+str(dep)
+		
 		assert dep in FNew
 		FNew.remove(dep)
 		FNew.add(depNew)
+		
+		print "depNew: "+str(depNew)
 		
 		b = cierreAtributosAlfa(dep.alfa,FNew)
 		
 		if A in b:
 			raros += [A]
+			print "Atributo raro: "+A
 			if (len(dep.beta)==1):  # la dependencia quedó vacía
 				F.remove(dep)
 			else:			# actualizamos los cambios
@@ -132,12 +137,12 @@ def calcular_FC(F,R):
 			##print "\ndf1 después: "+str(df1)+'\n'
 		##print "\n\n\nDespues: res = " + str (res)
 		
-		i = 0
-		print "F DESPUÉS de las uniones\n{",
-		for dep in res:
-			print "df"+str(i)+": "+str(dep)+'\n'
-			i+=1
-		print '}'
+		#i = 0
+		#print "F DESPUÉS de las uniones\n{",
+		#for dep in res:
+			#print "df"+str(i)+": "+str(dep)+'\n'
+			#i+=1
+		#print '}'
 		
 		raros = []
 		tested = set()
