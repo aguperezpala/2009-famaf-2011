@@ -53,7 +53,7 @@ def genDep (cierreAtr):
 	
 	return Fprima
 	
-eu = set(['hola','chau','adios'])
+"""eu = set(['hola','chau','adios'])
 f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
 ca = cierreAtributos(f,eu)
 et = elimTrivial(ca)				
@@ -61,4 +61,4 @@ df = genDep (et)
 			
 print ca
 print et
-print df
+print df"""
