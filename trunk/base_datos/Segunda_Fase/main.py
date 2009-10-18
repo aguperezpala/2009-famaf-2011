@@ -42,7 +42,7 @@ def mainProg():
 	
 	op = ""
 	while not (op == "0"):
-		print "Seleccione opcion a imprimir"
+		print "\n\nSeleccione opcion a imprimir"
 		print "\t1) Cierre de atributos sin trivialidades"
 		print "\t2) F Canonica"
 		print "\t3) F Prima"
