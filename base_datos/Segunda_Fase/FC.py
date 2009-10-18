@@ -58,23 +58,17 @@ def atrib_raros_der(dep,F):
 		A = (dep.beta-tested).pop() # obtenemos cualquier elemento aún no evaluado
 		tested.add(A)
 		
-		print ("i: ")+str(i)+'\n'
-		
-		depNew = df(dep.alfa.copy(),dep.beta-set(A))
-		
-		print "dep: "+str(dep)
+		depNew = copy.deepcopy(dep)
+		depNew.beta.remove(A)
 		
 		assert dep in FNew
 		FNew.remove(dep)
 		FNew.add(depNew)
 		
-		print "depNew: "+str(depNew)
-		
 		b = cierreAtributosAlfa(dep.alfa,FNew)
 		
 		if A in b:
 			raros += [A]
-			print "Atributo raro: "+A
 			if (len(dep.beta)==1):  # la dependencia quedó vacía
 				F.remove(dep)
 			else:			# actualizamos los cambios
@@ -108,7 +102,7 @@ def calcular_FC(F,R):
 	res = F.copy() # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
-#	print "Calculando F Canonico!\n"
+	print "Calculando F Canonico!\n"
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
 		
 		#i = 0
@@ -137,12 +131,12 @@ def calcular_FC(F,R):
 			##print "\ndf1 después: "+str(df1)+'\n'
 		##print "\n\n\nDespues: res = " + str (res)
 		
-		#i = 0
-		#print "F DESPUÉS de las uniones\n{",
-		#for dep in res:
-			#print "df"+str(i)+": "+str(dep)+'\n'
-			#i+=1
-		#print '}'
+		i = 0
+		print "F DESPUÉS de las uniones\n{",
+		for dep in res:
+			print "df"+str(i)+": "+str(dep)+'\n'
+			i+=1
+		print '}'
 		
 		raros = []
 		tested = set()
