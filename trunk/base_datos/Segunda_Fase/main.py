@@ -20,6 +20,9 @@ def mainProg():
 	# calculamos el cierre minimal
 	cierreAttrsMin = elimTrivial(cierreAttrs)
 	print "conseguimos cierreAttrsMin"
+	# Calculamos F canonica
+	FCanonica = calcular_FC(depFun,EU)
+	print "conseguimos FCanonica"
 	# obtenemos FPrima
 	FPrima = genDep (cierreAttrsMin)
 	print "conseguimos FPrima"
@@ -32,9 +35,7 @@ def mainProg():
 	# Ahora vamos a obtener el conjunto de claves candidatas
 	clavesCandidatas = getCCC (EU, cierreAttrs)
 	print "conseguimos clavesCandidatas"
-	# Calculamos F canonica
-	FCanonica = calcular_FC(cierreAttrsMin,depFun,EU)
-	print "conseguimos FCanonica"
+	
 	# Obtenemos 3FN
 	RiList2 = list()
 	RiList2.append (EU)

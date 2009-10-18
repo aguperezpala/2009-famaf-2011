@@ -30,6 +30,8 @@ class df:
 		return str(self.alfa)+"->"+str(self.beta)
 	def __str__(self):
 		return str(self.alfa)+"->"+str(self.beta)
+	def __call__(self):
+		return "MIERDA\!"
 	def __cmp__(self,other):
 		assert  self.__class__ == other.__class__
 		#hay que retornar la negación aunque paresca loco
