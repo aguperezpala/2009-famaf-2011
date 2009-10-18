@@ -27,6 +27,14 @@ def cierreAtributos (f, eu):
 	
 	return cierreAtr
 
+def cierreAtributosAlfa (alfa,f):
+	cierreAtr = set([alfa])
+	for d in f:
+		if d.alfa.issubset(cierreAtr):
+			cierreAtr |= d.beta
+
+	return cierreAtr
+
 def elimTrivial (cierreAtributos):
 	""" Eliminamos las depedencias triviales """
 	global cierresDic
@@ -82,4 +90,7 @@ f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
 ca = cierreAtributos(f,eu)
 et = elimTrivial(ca)				
 df = genDep (et)
+ca2 = cierreAtributosAlfa('hola',f)
+print ca2
+
 """
