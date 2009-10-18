@@ -10,40 +10,47 @@ from FC import *
 
 
 def mainProg():
-	# obtenemos el esquema universal
+	print "\nObteniendo el Esquema Uiversal"
 	EU = getEsquemaUniversal()
-	# Obtenemos las dep.func.
+	print "Esquema Universal obtenido\n"
+	
+	print "Obteniendo conjunto de depFunc inicial"
 	depFun = getDepFunc()
-	print "conseguimos depFun"
-	# calculamos el cierre de atributos
+	print "Conjunto depFun obtenido\n"
+	
+	print "Calculando cierre de atributos"
 	cierreAttrs = cierreAtributos (depFun, EU)
-	# calculamos el cierre minimal
+	print "Cierre de atributos calculado\n"
+	
+	print "Eliminando dependencias triviales del cierre de atributos"
 	cierreAttrsMin = elimTrivial(cierreAttrs)
-	print "conseguimos cierreAttrsMin"
-	# Calculamos F canonica
+	print "Dependencias triviales eliminadas\n"
+	
+	print "Calculando F Canonica"
 	FCanonica = calcular_FC(depFun,EU)
-	print "conseguimos FCanonica"
-	# obtenemos FPrima
+	print "Conseguimos F Canonica\n"
+	
+	print "Calculando F+ sin las dependencias triviales (F prima)"
 	FPrima = genDep (cierreAttrsMin)
-	print "conseguimos FPrima"
+	print "Conseguimos FPrima\n"
+	
 	# calculamos FNBC ahora, que nos pide una lista de Ri, creamos una que
 	# contenga simplemente EU
 	RiList = list()
 	RiList.append (EU)
+	print "Calculando FNBC del esquema universal"
 	descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
-	print "conseguimos descFNBC"
-	# Ahora vamos a obtener el conjunto de claves candidatas
-	clavesCandidatas = getCCC (EU, cierreAttrs)
-	print "conseguimos clavesCandidatas:\n" + str(clavesCandidatas)
+	print "Conseguimos FNBC\n"
 	
+	print "Calcualndo claves candidatas"
+	clavesCandidatas = getCCC (EU, cierreAttrs)
+	print "Conseguimos clavesCandidatas\n"
 	
 	# Obtenemos 3FN
 	RiList2 = list()
 	RiList2.append (EU)
+	print "Calculando 3FN del esquema universal"
 	desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
-	print "conseguimos desc3FN"
-	
-	# deberiamos hacer algo aca con todos los datos que tenemos...
-	
+	print "Conseguimos 3FN\n"
 
 mainProg()
