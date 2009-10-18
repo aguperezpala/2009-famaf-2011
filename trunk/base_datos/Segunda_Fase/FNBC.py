@@ -38,7 +38,6 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 
 
 
-
 def es_violac_FNBC (conjRi, dep, cierreAtr):
 	
 	""" Indica si dep es violación de la descomposición conjRi.
@@ -91,13 +90,8 @@ def convertir_FNBC (conjRi, Ri, dep):
 	Ri = Ri.difference(dep.beta) # Ri - {b}
 	
 	print "Descomposición obtenida:"
-	print "\tRj1 "+str(Rj)+'\n\tRj2'+str(Ri)+'\n'
+	print "\tRj1 = "+str(Rj)+'\n\tRj2 = '+str(Ri)+'\n'
 	
 	conjRi.append(Ri)
 	conjRi.append(Rj)
-
-	#print "\nNuevos Conjuntos\nRi: " + str(Ri)
-	#print "\nRj: " + str (Rj)
-	#print ("\n***************\n")
-	
 
