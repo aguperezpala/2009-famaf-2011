@@ -98,8 +98,6 @@ def calcular_FC(F,R):
 	
 #	print "Calculando F Canonico!\n"
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
-		F1 = res.copy()
-		
 		
 		#i = 0
 		#print "F ANTES de las uniones\n{",
@@ -107,7 +105,6 @@ def calcular_FC(F,R):
 			#print "df"+str(i)+": "+str(dep)+'\n'
 			#i+=1
 		#print '}'+'\n\n'
-		
 		
 		i = len(res)
 		unidas = []
@@ -117,7 +114,7 @@ def calcular_FC(F,R):
 			union_partes_izq(dep,res)
 			unidas.append(dep)
 			i-=1
-			
+		
 		res = set()
 		for dep in unidas:
 			res.add(dep)
@@ -128,11 +125,6 @@ def calcular_FC(F,R):
 			##print "\ndf1 después: "+str(df1)+'\n'
 		##print "\n\n\nDespues: res = " + str (res)
 		
-		
-		
-		F1 = res.copy()
-		
-		
 		i = 0
 		print "F DESPUÉS de las uniones\n{",
 		for dep in res:
@@ -140,28 +132,18 @@ def calcular_FC(F,R):
 			i+=1
 		print '}'
 		
-		
 		raros = []
 		tested = set()
 		i = len(res)
 		while (i>0):
 			assert 0<len(res)
-			dep = (res-tested).pop()
-			raros += atrib_raros_der(dep,res)
-			
-			
-			
-			dep = res.pop()
-			union_partes_izq(dep,res)
-			unidas.append(dep)
-			i-=1
-		
-		
-		for df1 in res:
-			raros += atrib_raros_der(df1,R,res)
-			if not (raros == []):
-				print ("Encontrados atributos raros: ")
-				print str(raros) + '\n'
-				break
+			untested = res-tested
+			if len (untested) == 0:
+				i=0
+			else:
+				dep = untested.pop()
+				tested.add(dep)
+				raros += atrib_raros_der(dep,res)
+				i-=1
 
 	return res
