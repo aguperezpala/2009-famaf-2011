@@ -28,17 +28,18 @@ from df import *
 from fprima import *
 
 def union_partes_izq(d1,F):
-	new = set()
+	new = F.copy()
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
 		como parte izquierda de la misma """
+	
 	for d2 in F:
 		if d1.alfa == d2.alfa and d1 != d2:
-			F.remove(d1)
-			F.remove(d2)
+			new.discard(d1)
+			new.discard(d2)
 			c = df(d1.alfa,d1.beta|d2.beta)
 			new.add(c)
 			print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
-			
+	F = new
  
 def atrib_raros_der(dep,R,F):
 
