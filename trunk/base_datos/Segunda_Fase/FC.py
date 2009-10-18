@@ -53,15 +53,16 @@ def atrib_raros_der(dep,F):
 	tested = set()
 	
 	i = len(dep.beta)
-	while (0<i and 0<len(dep.beta())):
-		
-		# Parecera largo pero mas variables solo complica su escritura.
-		#b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
+	while (0<i and 0<len(dep.beta)):
 		
 		A = (dep.beta-tested).pop() # obtenemos cualquier elemento aún no evaluado
 		tested.add(A)
 		
-		depNew = df(dep.alfa,(dep.beta.copy())-set(A))
+		print ("i: ")+str(i)+'\n'
+		
+		depNew = df(dep.alfa.copy(),dep.beta-set(A))
+		
+		assert dep in FNew
 		FNew.remove(dep)
 		FNew.add(depNew)
 		
@@ -69,10 +70,16 @@ def atrib_raros_der(dep,F):
 		
 		if A in b:
 			raros += [A]
-			dep.beta.remove(A)
-			if (len(dep.beta)==0): # la dependencia quedó vacía
+			if (len(dep.beta)==1):  # la dependencia quedó vacía
 				F.remove(dep)
-		
+			else:			# actualizamos los cambios
+				F.remove(dep)
+				F.add(depNew)
+				dep.beta.remove(A)
+		else:
+			# no era raro => no había que tocar ese atributo
+			FNew.remove(depNew)
+			FNew.add(dep)
 		i-=1
 		
 	return raros

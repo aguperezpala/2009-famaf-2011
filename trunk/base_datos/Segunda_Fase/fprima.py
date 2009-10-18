@@ -34,13 +34,20 @@ def cierreAtributos (f, eu):
 	
 	return cierreAtr
 
+
 def cierreAtributosAlfa (alfa,f):
 	cierreAtr = alfa.copy()
-	for d in f:
-		if d.alfa.issubset(cierreAtr):
-			cierreAtr |= d.beta
-
+	stop = False
+	while (not stop):
+		stop = True
+		for d in f:
+			if d.alfa.issubset(cierreAtr):
+				temp = cierreAtr | d.beta
+				if cierreAtr != temp:
+					stop = False
+					cierreAtr |= d.beta
 	return cierreAtr
+
 
 def elimTrivial (cierreAtributos):
 	""" Eliminamos las depedencias triviales """
