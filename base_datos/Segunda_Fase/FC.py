@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 #       FC.py
@@ -25,6 +24,8 @@
 #	un valor pero no modifican a los conjuntos sobre los que operan.
 
 import copy
+from df import *
+from fprima import elimTrivial
 
 def union_partes_izq(d1,F):
 	
@@ -44,7 +45,7 @@ def atrib_raros_der(df,R,F):
 	raros = []
 	for A in df.beta:
 		# Parecera largo pero mas variables solo complica su escritura.
-		if A in cierre_atrib(df.alfa,(F-df)|set((df.alfa,df.beta - A)),R):
+		if A in cierreAtributos(df.alfa,(F-df)|set((df.alfa,df.beta - A)),R):
 			F.add((df.alfa,df.beta - set(A)))
 			F.remove(df)
 			raros += [A]
@@ -57,13 +58,13 @@ def atrib_raros_izq(df,R,F):
 	raros = []
 	for A in df.alfa:
 		# Chequeamos beta subconjunto del cierre de atributos de alfa-A
-		if df.beta.issubset(cierre_atrib(df.alfa-set(A),F,R)):
+		if df.beta.issubset(cierreAtributos(df.alfa-set(A),F,R)):
 			F.add(df(df.alfa-set(A),df.beta))
 			F.remove(df)
 			raros += [A]
 	return raros
 						
-def FC(F,R):
+def calcular_FC(F,R):
 	res = copy.deepcopy(F) # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	

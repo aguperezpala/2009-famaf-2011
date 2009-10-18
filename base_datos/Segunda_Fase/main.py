@@ -4,8 +4,8 @@ from df import *
 from clcncr import getCCC
 from fprima import *
 from c3fn import calculate3FN
-from FC import FC
 from FNBC import calcular_FNBC
+from FC import *
 
 
 
@@ -30,7 +30,7 @@ def mainProg():
 	clavesCandidatas = getCCC (EU, cierreAttrs)
 	
 	# Calculamos F canonica
-	FCanonica = FC(depFun,EU)
+	FCanonica = calcular_FC(depFun,EU)
 	
 	# Obtenemos 3FN
 	RiList2 = list()
