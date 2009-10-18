@@ -11,7 +11,7 @@ def getEsquemaUniversal():
 	return set(['Planilla.Numero', 'Planilla.Fecha', 'Encuestado.Edad', \
 	'Encuestado.sexo', 'Encuestado.Ingreso_Mensual', \
 	'Encuestado.Profesion', 'Encuestado.Instruccion', \
-	'Encuestado.Nº_C.I.', 'Encuestado.Nombre_y_Apellido', \
+	'Encuestado.No_C.I.', 'Encuestado.Nombre_y_Apellido', \
 	'Jefe_de_Grupo_Familiar.Fecha_de_nacimiento', \
 	'Jefe_de_Grupo_Familiar.Forma_de_Cobro', \
 	'Jefe_de_Grupo_Familiar.¿Trabaja_actualmente?', \
@@ -65,7 +65,7 @@ def getEsquemaUniversal():
 	
 # Funcion que devuelve el conjunto de dependencias funcionales
 def getDepFunc ():
-	s = set ([df(set(['Planilla.Numero']),set(['Situacion_Laboral.Trabajo','Situacion_Laboral.Comercio_en_casa','Situacion_Laboral.Ingreso_familiar','Situacion_Laboral.Cta._banco','Situacion_Laboral.Tarjeta','Situacion_Laboral.Ticket'])),
+	s = set ([df(set(['Planilla.Numero']),set(['Situacion_Laboral.Trabajo','Situacion_Laboral.Comercio_en_casa','Situacion_Laboral.Ingreso_familiar','Situacion_Laboral.Cta_banco','Situacion_Laboral.Tarjeta','Situacion_Laboral.Ticket'])),
 		  df(set(['Planilla.Numero']),set(['Vivienda.Tipo','Vivienda.Forma_tenecia','Vivienda.Terreno_propio','Vivienda.OCV','Vivienda.Techo','Vivienda.Paredes','Vivienda.Enseres','Vivienda.Cond._salubridad','Vivienda.Plagas','Vivienda.Mascotas'])), \
 	  df(set(['Planilla.Numero']),set(['Servicios.Aguas_blancas','Servicios.Aguas_servidas','Servicios.Gas','Servicios.Electricidad','Servicios.Recoleccion_basura','Servicios.Telefonia','Servicios.Transporte','Servicios.Mecanismo_de_informacion','Servicios.Servicios_comunales'])), \
 	  df(set(['Planilla.Numero']),set(['Participacion_comunitaria.Org_comunitarias','Participacion_comunitaria.Administracion','Participacion_comunitaria.Constitucion','Participacion_comunitaria.Propia','Participacion_comunitaria.Familia','Participacion_comunitaria.Misiones','Participacion_comunitaria.Sabe','Participacion_comunitaria.Apoya','Participacion_comunitaria.Área'])), \
@@ -80,8 +80,8 @@ def getDepFunc ():
 	  df(set(['Parroquia.Nombre']),set(['Municipio.Nombre'])), \
 	  df(set(['Planilla.Numero']),set(['Encuestado.No_C.I.'])), \
 	  df(set(['Encuestado.No_C.I.']),set(['Planilla.Numero'])), \
-	  df(set(['Participacion_comunitaria']),set(['Constitucion'])), \
-	  df(set(['Situacion_laboral.Tarjeta']),set(['Situacion_laboral.Cta._banco'])) \
+	  df(set(['Participacion_comunitaria.Constitucion']),set(['Participacion_Comunitaria.Sabe'])), \
+	  df(set(['Situacion_Laboral.Tarjeta']),set(['Situacion_Laboral.Cta_banco'])) \
 	  ])
 	
 	return s
