@@ -34,7 +34,7 @@ def getEsquemaUniversal():
 	'Situacion_Laboral.Comercio_en_casa', \
 	'Situacion_Laboral.Trabajo', 'Vivienda.Mascotas', \
 	'Vivienda.Plagas', \
-	'Vivienda.cond-Cond_salubridad', 'Vivienda.Enseres', \
+	'Vivienda.Cond_salubridad', 'Vivienda.Enseres', \
 	'Vivienda.Techo', \
 	'Vivienda.Paredes', 'Vivienda.Terreno_propio', \
 	'Vivienda.Forma_tenencia', \
@@ -66,7 +66,7 @@ def getEsquemaUniversal():
 # Funcion que devuelve el conjunto de dependencias funcionales
 def getDepFunc ():
 	s = set ([df(set(['Planilla.Numero']),set(['Situacion_Laboral.Trabajo','Situacion_Laboral.Comercio_en_casa','Situacion_Laboral.Ingreso_familiar','Situacion_Laboral.Cta_banco','Situacion_Laboral.Tarjeta','Situacion_Laboral.Ticket'])),
-		  df(set(['Planilla.Numero']),set(['Vivienda.Tipo','Vivienda.Forma_tenecia','Vivienda.Terreno_propio','Vivienda.OCV','Vivienda.Techo','Vivienda.Paredes','Vivienda.Enseres','Vivienda.Cond._salubridad','Vivienda.Plagas','Vivienda.Mascotas'])), \
+		  df(set(['Planilla.Numero']),set(['Vivienda.Tipo','Vivienda.Forma_tenencia','Vivienda.Terreno_propio','Vivienda.OCV','Vivienda.Techo','Vivienda.Paredes','Vivienda.Enseres','Vivienda.Cond_salubridad','Vivienda.Plagas','Vivienda.Mascotas'])), \
 	  df(set(['Planilla.Numero']),set(['Servicios.Aguas_blancas','Servicios.Aguas_servidas','Servicios.Gas','Servicios.Electricidad','Servicios.Recoleccion_basura','Servicios.Telefonia','Servicios.Transporte','Servicios.Mecanismo_de_informacion','Servicios.Servicios_comunales'])), \
 	  df(set(['Planilla.Numero']),set(['Participacion_comunitaria.Org_comunitarias','Participacion_comunitaria.Administracion','Participacion_comunitaria.Constitucion','Participacion_comunitaria.Propia','Participacion_comunitaria.Familia','Participacion_comunitaria.Misiones','Participacion_comunitaria.Sabe','Participacion_comunitaria.Apoya','Participacion_comunitaria.Área'])), \
 	  df(set(['Planilla.Numero']),set(['Salud.Ayuda_especial','Salud.Historia_familiar'])), \
