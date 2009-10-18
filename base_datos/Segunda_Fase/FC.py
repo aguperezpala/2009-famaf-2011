@@ -92,7 +92,8 @@ def calcular_FC(F,R):
 		for df in F1:
 			raros += atrib_raros_der(df,R,res)
 			if not (raros == []):
+				print ("Encontrados atributos raros: ")
+				print str(raros) + '\n'
 				break
-		
 
 	return res
