@@ -25,8 +25,7 @@
 
 import copy
 from df import *
-
-global cierreAtributos
+from fprima import *
 
 def union_partes_izq(d1,F):
 	new = set()
@@ -48,7 +47,15 @@ def atrib_raros_der(df,R,F):
 	raros = []
 	for A in df.beta:
 		# Parecera largo pero mas variables solo complica su escritura.
-		if A in cierreAtributos(df.alfa,(F-df)|set((df.alfa,df.beta - A)),R):
+		#Desglozamiento fulero
+		#bla = copy.deepcopy(F)
+		#bla.remove(df) 
+		#h = copy.deepcopy(df.beta)
+		#h.remove(A)
+		#mierda = df(df.alfa,h)
+		#bla.add(mierda)
+		b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
+		if A in b:	
 			F.add((df.alfa,df.beta - set(A)))
 			F.remove(df)
 			print "Eliminamos "+A+" de "+df+" en el lado derecho\n"
@@ -62,15 +69,14 @@ def atrib_raros_izq(df,R,F):
 	raros = []
 	for A in df.alfa:
 		# Chequeamos beta subconjunto del cierre de atributos de alfa-A
-		if df.beta.issubset(cierreAtributos(df.alfa-set(A),F,R)):
+		if df.beta.issubset(cierreAtributos[df.alfa-set(A)]):
 			F.add(df(df.alfa-set(A),df.beta))
 			F.remove(df)
 			print "Eliminamos "+A+" de "+df+"en el lado izquierdo\n"
 			raros += [A]
 	return raros
 						
-def calcular_FC(C,F,R):
-	cierreAtributos = C
+def calcular_FC(F,R):
 	res = copy.deepcopy(F) # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
@@ -79,5 +85,5 @@ def calcular_FC(C,F,R):
 		raros = []
 		for df in F:
 			union_partes_izq(df,res)
-			raros += atrib_raros_izq(df,R,res)+atrib_raros_der(df,R,res)
+			raros += atrib_raros_der(df,R,res)
 	return res
