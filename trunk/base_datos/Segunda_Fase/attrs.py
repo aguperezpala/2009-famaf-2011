@@ -9,11 +9,11 @@ from df import *
 
 def getEsquemaUniversal():
 	return set(['Planilla.Numero', 'Planilla.Fecha', 'Encuestado.Edad', \
-	'Encuestado.sexo', 'Encuestado.Ingreso_Mensual', \
+	'Encuestado.Sexo', 'Encuestado.Ingreso_mensual', \
 	'Encuestado.Profesion', 'Encuestado.Instruccion', \
-	'Encuestado.No_C.I.', 'Encuestado.Nombre_y_Apellido', \
+	'Encuestado.No_C.I.', 'Encuestado.Nombre_y_apellido', \
 	'Jefe_de_Grupo_Familiar.Fecha_de_nacimiento', \
-	'Jefe_de_Grupo_Familiar.Forma_de_Cobro', \
+	'Jefe_de_Grupo_Familiar.Forma_de_cobro', \
 	'Jefe_de_Grupo_Familiar.¿Trabaja_actualmente?', \
 	'Jefe_de_Grupo_Familiar.Dedicacion_actual', \
 	'Jefe_de_Grupo_Familiar.E-mail', \
@@ -49,7 +49,7 @@ def getEsquemaUniversal():
 	'Salud.Ayuda_especial', \
 	'Situacion_de_Exclusion.Tercera_edad', \
 	'Situacion_de_Exclusion.Discapacitados', \
-	'Situacion_de_Exclusion.Enfermedades_terminarles', \
+	'Situacion_de_Exclusion.Enfermedades_terminales', \
 	'Situacion_de_Exclusion.Indigentes', \
 	'Situacion_de_Exclusion.Niños_calle', \
 	'Participacion_Comunitaria.Propia', \
