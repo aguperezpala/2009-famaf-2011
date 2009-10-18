@@ -126,11 +126,16 @@ def getDepFunc ():
 						   'Comunidad.Direccion.Calle'])), \
 		  df(set(['Comunidad.Nombre']),set(['Sector.CP'])), \
 		  df(set(['Municipio.Nombre']),set(['Estado.Nombre'])), \
-		  df(set(['Parroquia.Nombre']),set(['Municipio.Nombre'])), \
+		  # Cambiamos esta, ibamos antes a Municipio.Nombre, ahora a Sector.CP
+		  df(set(['Parroquia.Nombre']),set(['Sector.CP'])), \
 		  df(set(['Planilla.Numero']),set(['Encuestado.No_C.I.'])), \
 		  df(set(['Encuestado.No_C.I.']),set(['Planilla.Numero'])), \
 		  df(set(['Participacion_Comunitaria.Constitucion']),set(['Participacion_Comunitaria.Sabe'])), \
-		  df(set(['Situacion_Laboral.Tarjeta']),set(['Situacion_Laboral.Cta_banco'])) \
+		  df(set(['Situacion_Laboral.Tarjeta']),set(['Situacion_Laboral.Cta_banco'])), \
+		  # Estas se pasaron por alto!!!!! en la primera entrega
+		  df(set(['Sector.CP']),set(['Municipio.Nombre'])), \
+		  df(set(['Sector.CP']),set(['Planilla.Fecha'])), \
+		  df(set(['Planilla.Numero']),set(['Parroquia.Nombre']))
 	  ])
 	
 	return s
