@@ -25,21 +25,24 @@
 
 import copy
 from df import *
-from fprima import elimTrivial
+
+global cierreAtributos
 
 def union_partes_izq(d1,F):
-	
+	new = set()
 	""" Fusiona todas las dependencias funcionales que tenga a alfa
 		como parte izquierda de la misma """
-	assert d1.__class__ == df and df == F.pop()
-	for d2 in F - d1:
-		if d1.alfa == d2.alfa:
+	for d2 in F:
+		if d1.alfa == d2.alfa and d1 != d2:
 			F.remove(d1)
 			F.remove(d2)
-			F.add(df(d1.alfa,d1.beta|d2.beta))
+			c = df(d1.alfa,d1.beta|d2.beta)
+			new.add(c)
+			print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
+			
  
 def atrib_raros_der(df,R,F):
-	
+
 	""" Elimina y devuelve una lista de los atributos raros de beta """
 	  
 	raros = []
@@ -48,6 +51,7 @@ def atrib_raros_der(df,R,F):
 		if A in cierreAtributos(df.alfa,(F-df)|set((df.alfa,df.beta - A)),R):
 			F.add((df.alfa,df.beta - set(A)))
 			F.remove(df)
+			print "Eliminamos "+A+" de "+df+" en el lado derecho\n"
 			raros += [A]
 	return raros
 	
@@ -61,13 +65,16 @@ def atrib_raros_izq(df,R,F):
 		if df.beta.issubset(cierreAtributos(df.alfa-set(A),F,R)):
 			F.add(df(df.alfa-set(A),df.beta))
 			F.remove(df)
+			print "Eliminamos "+A+" de "+df+"en el lado izquierdo\n"
 			raros += [A]
 	return raros
 						
-def calcular_FC(F,R):
+def calcular_FC(C,F,R):
+	cierreAtributos = C
 	res = copy.deepcopy(F) # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
+	print "Calculando F Canonico!\n"
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
 		raros = []
 		for df in F:
