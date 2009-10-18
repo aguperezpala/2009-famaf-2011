@@ -27,8 +27,8 @@ def cierreAtributos (f, eu):
 
 def elimTrivial (cierreAtributos):
 	""" Eliminamos las depedencias triviales """
-	
-	cierreAtr = cierreAtributos.copy()
+	global cierresDic
+	cierresDic = {}
 	for cierre in cierreAtributos:
 		""" Como no se si el tipo "tupla" de python permite modificación 
 		    alguna, apelo al recurso de borrar el par (a,b) para luego
@@ -38,10 +38,9 @@ def elimTrivial (cierreAtributos):
 		    atributos que aparecen del lado derecho en nuestras d.f. =>
 		    podemos descartar su cierre.  """
 		if cierre.am-cierre.a != set([]): # si no es trivial
-			cierreAtr.add(ca(cierre.a.copy() , cierre.am-cierre.a))
-		cierreAtr.remove(cierre)
+			cierresDic.setdefault(frozenset(cierre.a.copy()),cierre.am-cierre.a)
 			
-	return cierreAtr
+	return cierresDic
 
 def genDep (cierreAtr):
 	""" Con el conjunto de cierres de atributos construimos las d.f. """
@@ -59,3 +58,5 @@ f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
 ca = cierreAtributos(f,eu)
 et = elimTrivial(ca)				
 			
+
+print et
