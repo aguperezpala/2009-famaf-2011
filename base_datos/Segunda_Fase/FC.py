@@ -125,18 +125,12 @@ def calcular_FC(F,R):
 		for dep in unidas:
 			res.add(dep)
 		
-		#for df1 in F1:
-			##print "\ndf1 antes: "+str(df1)
-			#union_partes_izq(df1,res)
-			##print "\ndf1 después: "+str(df1)+'\n'
-		##print "\n\n\nDespues: res = " + str (res)
-		
-		i = 0
-		print "F DESPUÉS de las uniones\n{",
-		for dep in res:
-			print "df"+str(i)+": "+str(dep)+'\n'
-			i+=1
-		print '}'
+		#i = 0
+		#print "F DESPUÉS de las uniones\n{",
+		#for dep in res:
+			#print "df"+str(i)+": "+str(dep)+'\n'
+			#i+=1
+		#print '}'
 		
 		raros = []
 		tested = set()
