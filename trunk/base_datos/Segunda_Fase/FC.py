@@ -40,25 +40,26 @@ def union_partes_izq(d1,F):
 			print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
 			
  
-def atrib_raros_der(df,R,F):
+def atrib_raros_der(dep,R,F):
 
 	""" Elimina y devuelve una lista de los atributos raros de beta """
 	  
 	raros = []
-	for A in df.beta:
+	for A in dep.beta:
 		# Parecera largo pero mas variables solo complica su escritura.
 		#Desglozamiento fulero
-		#bla = copy.deepcopy(F)
-		#bla.remove(df) 
-		#h = copy.deepcopy(df.beta)
-		#h.remove(A)
-		#mierda = df(df.alfa,h)
-		#bla.add(mierda)
-		b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
+		bla = F.copy()
+		bla.remove(dep) 
+		h = dep.beta.copy()
+		h.remove(A)
+		mierda = df(dep.alfa,h)
+		bla.add(mierda)
+		b = cierreAtributosAlfa(dep.alfa,bla)
+		#b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
 		if A in b:	
-			F.add((df.alfa,df.beta - set(A)))
-			F.remove(df)
-			print "Eliminamos "+A+" de "+df+" en el lado derecho\n"
+			F.add((dep.alfa,dep.beta - set(A)))
+			F.remove(dep)
+			print "Eliminamos "+A+" de "+dep+" en el lado derecho\n"
 			raros += [A]
 	return raros
 	
