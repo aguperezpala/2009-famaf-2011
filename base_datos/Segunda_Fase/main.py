@@ -74,7 +74,7 @@ def mainProg():
 			print "Calculando 3FN del esquema universal"
 			desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
 			print str (desc3FN)
-			print "\Conseguimos 3FN\n"
+			print "\nConseguimos 3FN\n"
 		elif op == "0":
 			print "chau chau\n"
 		else:
