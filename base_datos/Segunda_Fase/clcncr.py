@@ -12,9 +12,7 @@ from ca import *
 #	LCC	= List. de Claves Candidatas
 def getCCC(R, LCA):
 	LCC = []
-	print "R: " + str (R) + "\nLCA: " + str (LCA)
 	for cla in LCA:
-		print "cla : " + str(cla)
 		# verificamos si el cierre (ca[1]) es igual a R
 		if cla.am <= R <= cla.am:
 			#si son iguales => la agregamos al conjunto
