@@ -36,7 +36,7 @@ class df:
 		return (not(self.alfa == other.alfa and self.beta == other.beta))
 			
 	def __init__(self,x,y):
-		assert type(x) == set and type(y) == set 
+		#assert type(x) == set and type(y) == set 
 		self.alfa = x.copy()
 		self.beta = y.copy()
 	def trans (self,df):
