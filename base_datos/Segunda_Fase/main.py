@@ -14,29 +14,32 @@ def mainProg():
 	EU = getEsquemaUniversal()
 	# Obtenemos las dep.func.
 	depFun = getDepFunc()
+	print "conseguimos depFun"
 	# calculamos el cierre de atributos
 	cierreAttrs = cierreAtributos (depFun, EU)
 	# calculamos el cierre minimal
 	cierreAttrsMin = elimTrivial(cierreAttrs)
+	print "conseguimos cierreAttrsMin"
 	# obtenemos FPrima
 	FPrima = genDep (cierreAttrsMin)
+	print "conseguimos FPrima"
 	# calculamos FNBC ahora, que nos pide una lista de Ri, creamos una que
 	# contenga simplemente EU
 	RiList = list()
 	RiList.append (EU)
-	descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrs)
-	
+	descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
+	print "conseguimos descFNBC"
 	# Ahora vamos a obtener el conjunto de claves candidatas
 	clavesCandidatas = getCCC (EU, cierreAttrs)
-	
+	print "conseguimos clavesCandidatas"
 	# Calculamos F canonica
 	FCanonica = calcular_FC(depFun,EU)
-	
+	print "conseguimos FCanonica"
 	# Obtenemos 3FN
 	RiList2 = list()
 	RiList2.append (EU)
 	desc3FN = calculate3FN (FCanonica, RiList, clavesCandidatas)
-	
+	print "conseguimos desc3FN"
 	
 	# deberiamos hacer algo aca con todos los datos que tenemos...
 	
