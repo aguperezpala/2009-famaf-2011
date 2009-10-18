@@ -26,31 +26,76 @@ def mainProg():
 	cierreAttrsMin = elimTrivial(cierreAttrs)
 	print "Dependencias triviales eliminadas\n"
 	
-	print "Calculando F Canonica"
-	FCanonica = calcular_FC(depFun,EU)
-	print "Conseguimos F Canonica\n"
-	
 	print "Calculando F+ sin las dependencias triviales (F prima)"
 	FPrima = genDep (cierreAttrsMin)
 	print "Conseguimos FPrima\n"
 	
-	# calculamos FNBC ahora, que nos pide una lista de Ri, creamos una que
-	# contenga simplemente EU
-	RiList = list()
-	RiList.append (EU)
-	print "Calculando FNBC del esquema universal"
-	descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
-	print "Conseguimos FNBC\n"
-	
-	print "Calcualndo claves candidatas"
+	print "Calculando claves candidatas"
 	clavesCandidatas = getCCC (EU, cierreAttrs)
 	print "Conseguimos clavesCandidatas\n"
 	
+	
+	print "Calculando F Canonica"
+	FCanonica = calcular_FC(depFun,EU)
+	print "Conseguimos F Canonica\n"
+	
+	
+	op = ""
+	while not (op == "0"):
+		print "Seleccione opcion a imprimir"
+		print "\t1) Cierre de atributos sin trivialidades"
+		print "\t2) F Canonica"
+		print "\t3) F Prima"
+		print "\t4) Claves Canidatas"
+		print "\t5) Descomposicion FNBC"
+		print "\t6) Descomposicion 3FN"
+		print "\t0) Para salir"
+		op = raw_input()
+		if op == "1":
+			print str(cierreAttrsMin),
+		elif op == "2":
+			print str (FCanonica)
+		elif op == "3":
+			print str (FPrima)
+		elif op == "4":
+			print str (clavesCandidatas)
+		elif op == "5":
+			# calculamos FNBC ahora, que nos pide una lista de Ri, creamos una que 
+			# contenga simplemente EU
+			RiList = list() 
+			RiList.append (EU) 
+			print "Calculando FNBC del esquema universal" 
+			descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin) 
+			print str (descFNBC) 
+			print "\nConseguimos FNBC\n"
+		elif op == "6":
+			RiList2 = list()
+			RiList2.append (EU)
+			print "Calculando 3FN del esquema universal"
+			desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
+			print str (desc3FN)
+			print "\Conseguimos 3FN\n"
+		elif op == "0":
+			print "chau chau\n"
+		else:
+			print "opcion incorrecta"
+	
+	
+	
+	# calculamos FNBC ahora, que nos pide una lista de Ri, creamos una que
+	# contenga simplemente EU
+	#RiList = list()
+	#RiList.append (EU)
+	#print "Calculando FNBC del esquema universal"
+	#descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
+	#print "Conseguimos FNBC\n"
+	
 	# Obtenemos 3FN
-	RiList2 = list()
-	RiList2.append (EU)
-	print "Calculando 3FN del esquema universal"
-	desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
-	print "Conseguimos 3FN\n"
-
+	#RiList2 = list()
+	#RiList2.append (EU)
+	#print "Calculando 3FN del esquema universal"
+	#desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
+	#print "Conseguimos 3FN\n"
+	
+	
 mainProg()
