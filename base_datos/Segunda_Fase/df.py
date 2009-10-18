@@ -27,9 +27,23 @@ class df:
 	def __hash__(self):
 		return 0
 	def __repr__(self):
-		return str(self.alfa)+"->"+str(self.beta)+ "\n\n"
+		rep = "("
+		for elem in self.alfa:
+			rep += elem+' '
+		rep += "-->"
+		for elem in self.beta:
+			rep += elem+' '
+		rep += ')'
+		return rep
 	def __str__(self):
-		return str(self.alfa)+"->"+str(self.beta)+ "\n"
+		rep = "("
+		for elem in self.alfa:
+			rep += elem+' '
+		rep += "-->"
+		for elem in self.beta:
+			rep += ' '+elem
+		rep += ')'
+		return rep
 	def __call__(self):
 		return "MIERDA\!"
 	def __cmp__(self,other):
