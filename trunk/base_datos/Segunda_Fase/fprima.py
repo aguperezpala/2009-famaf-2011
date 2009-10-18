@@ -70,15 +70,19 @@ def genDep (cierreAtr):
 	for cierre in cierreAtr:
 		Fprima.add(df(cierre,cierreAtr[cierre]))
 	
-	"""printFprima(Fprima)"""
+	printFprima(Fprima)
 	
 	return Fprima
-	
+
+
+""" Funciones de impresión """
+
 def printCierre (cierreAtr):
 	print "Cierre de atributos:\n{"
 	for cierre in cierreAtr:
 		print "(" + str(cierre.a) + " , " + str(cierre.am) + "),\n"
 	print "}"
+
 
 def printElimTrivial (cierresDic):
 	print "Cierre de atributos sin trivialidades:\n{"
@@ -86,11 +90,26 @@ def printElimTrivial (cierresDic):
 		print "(" + str(cierre) + " , " + str(cierresDic[cierre]) + "), \n"
 	print "}"
 
+
 def printFprima (Fprima):
 	print "F':\n{"
 	for dep in Fprima:
-		print "(" + str(dep.alfa) + " , " + str(dep.beta) + "), \n"
+		print "(",
+		for char in dep.alfa:
+			print str(char),
+		print " , ",
+		for char in dep.beta:
+			print str(char),
+		print "), \n"
 	print "}"
+
+
+
+
+
+
+
+
 
 """eu = set(['hola','chau','adios'])
 f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
