@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 def calcular_FNBC (conjRi, Fpri, cierreAtr):
 
 	"""Descomposición en la forma normal de Boyce-Codd de un
@@ -12,7 +13,7 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 		return "El 1º parametro debe ser una 'list' de 'sets'"
 	elif (not (type(Fpri) is set)):
 		return "El 2º parametro debe ser un 'set' de 'df'"
-	elif (not (type(cierreAtr) is set)):
+	elif (not (type(cierreAtr) is dict)):
 		return "El 3º parametro debe ser un 'set' de 'tuplas'"
 	
 	# ¿Revisamos los tipos del contenido de conjRi y Fpri?
@@ -25,10 +26,13 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 	
 	while (not stop):
 		stop = True
+		#print "****\n"
 		for dep in F:	
 			Ri = es_violac_FNBC (FNBC, dep, cierreAtr)
 			if Ri is not None: # Si hay violación en algun Ri
 				stop = False
+				#print "convertir_FNBC Ri :" + str (Ri) + "\nsegun dep: " + str (dep)
+				wait=raw_input()
 				convertir_FNBC (FNBC, Ri, dep)
 	
 	return FNBC
@@ -45,11 +49,16 @@ def es_violac_FNBC (conjRi, dep, cierreAtr):
 		if (viola_FNBC (Ri, dep, cierreAtr)):
 			return Ri
 	# si no encontramos violación se retorna 'None'
+	#print "es_violac_FNBC: Devolvemos none"
+	return None
 
 
 def viola_FNBC (Ri, dep, cierreAtr):
 	
 	""" Informa si la d.f. dep es violación FNBC para el esquema Ri """
+	
+	if (not dep.alfa.issubset(Ri) or not dep.beta.issubset(Ri)):
+		return False
 	
 	if (dep.beta.issubset(dep.alfa)):
 		# dependencia trivial => no hay violación FNBC
@@ -57,7 +66,10 @@ def viola_FNBC (Ri, dep, cierreAtr):
 	
 	for atr in cierreAtr:
 		# revisamos si la parte izquierda de la dep es superclave
-		if (dep.alfa == atr.a and Ri.issubset(atr.am) ):
+		print ("atr: ") + str(atr)
+		print ("dep.alfa: ") + str(dep.alfa)
+		if (dep.alfa == atr and Ri.issubset(cierreAtr[atr]) ):
+			print ("Entramos")
 			return False # es superclave => no hay violación FNBC
 	
 	# si llegamos acá la dep no era trivial, ni superclave de Ri
@@ -73,13 +85,17 @@ def convertir_FNBC (conjRi, Ri, dep):
 	    para que deje de haber violación FNBC """
 	
 	#assert viola_FNBC (Ri, dep)
+	print "\nConjRi antes: " + str (conjRi)
 	conjRi.remove(Ri)
+	print "\nConjRi desp: " + str (conjRi)
 	
-	Rj = dep.alfa.union(dep.beta) # atributos en la dependencia ({a,b})
+	Rj = dep.alfa.union(dep.beta) #  {a} U {b}
 	
-	Ri = Ri.difference(dep.beta) # quitamos la parte derecha (Ri - {b})
+	Ri = Ri.difference(dep.beta) # Ri - {b}
 	
 	conjRi.append(Ri)
 	conjRi.append(Rj)
+	print "\nNuevos Conjuntos\nRi: " + str(Ri)
+	print "\nRj: " + str (Rj)
 
 
