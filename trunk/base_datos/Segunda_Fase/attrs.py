@@ -54,7 +54,7 @@ def getEsquemaUniversal():
 	'Situacion_de_Exclusion.Niños_calle', \
 	'Participacion_Comunitaria.Propia', \
 	'Participacion_Comunitaria.Familia', \
-	'Participacion_Comunitaria.Org_comunitarias', \
+	'Participacion_Comunitaria.Org_Comunitarias', \
 	'Participacion_Comunitaria.Administracion', \
 	'Participacion_Comunitaria.Constitucion', \
 	'Participacion_Comunitaria.Sabe', \
@@ -67,8 +67,8 @@ def getEsquemaUniversal():
 def getDepFunc ():
 	s = set ([df(set(['Planilla.Numero']),set(['Situacion_Laboral.Trabajo','Situacion_Laboral.Comercio_en_casa','Situacion_Laboral.Ingreso_familiar','Situacion_Laboral.Cta_banco','Situacion_Laboral.Tarjeta','Situacion_Laboral.Ticket'])),
 		  df(set(['Planilla.Numero']),set(['Vivienda.Tipo','Vivienda.Forma_tenencia','Vivienda.Terreno_propio','Vivienda.OCV','Vivienda.Techo','Vivienda.Paredes','Vivienda.Enseres','Vivienda.Cond_salubridad','Vivienda.Plagas','Vivienda.Mascotas'])), \
-	  df(set(['Planilla.Numero']),set(['Servicios.Aguas_blancas','Servicios.Aguas_servidas','Servicios.Gas','Servicios.Electricidad','Servicios.Recoleccion_basura','Servicios.Telefonia','Servicios.Transporte','Servicios.Mecanismo_de_informacion','Servicios.Servicios_comunales'])), \
-	  df(set(['Planilla.Numero']),set(['Participacion_comunitaria.Org_comunitarias','Participacion_comunitaria.Administracion','Participacion_comunitaria.Constitucion','Participacion_comunitaria.Propia','Participacion_comunitaria.Familia','Participacion_comunitaria.Misiones','Participacion_comunitaria.Sabe','Participacion_comunitaria.Apoya','Participacion_comunitaria.Área'])), \
+	  df(set(['Planilla.Numero']),set(['Servicios.Aguas_blancas','Servicios.Aguas_servidas','Servicios.Gas','Servicios.Electricidad','Servicios.Recoleccion_basura','Servicios.Telefonia','Servicios.Transporte','Servicios.Medios','Servicios.Servicios_comunales'])), \
+	  df(set(['Planilla.Numero']),set(['Participacion_Comunitaria.Org_Comunitarias','Participacion_Comunitaria.Administracion','Participacion_Comunitaria.Constitucion','Participacion_Comunitaria.Propia','Participacion_Comunitaria.Familia','Participacion_Comunitaria.Misiones','Participacion_Comunitaria.Sabe','Participacion_Comunitaria.Apoya','Participacion_Comunitaria.Área'])), \
 	  df(set(['Planilla.Numero']),set(['Salud.Ayuda_especial','Salud.Historia_familiar'])), \
 	  df(set(['Planilla.Numero']),set(['Situacion_de_exclusion.Niños_calle','Situacion_de_exclusion.Indigentes','Situacion_de_exclusion.Tercera_edad','Situacion_de_exclusion.Discapacitados','Situacion_de_exclusion.Enfermedades_terminales'])), \
 	  df(set(['Encuestado.No_C.I.']),set(['Encuestado.Nombre_y_apellido','Encuestado.Edad','Encuestado.Sexo','Encuestado.Ingreso_mensual','Encuestado.Profesion','Encuestado.Instruccion'])), \
@@ -80,7 +80,7 @@ def getDepFunc ():
 	  df(set(['Parroquia.Nombre']),set(['Municipio.Nombre'])), \
 	  df(set(['Planilla.Numero']),set(['Encuestado.No_C.I.'])), \
 	  df(set(['Encuestado.No_C.I.']),set(['Planilla.Numero'])), \
-	  df(set(['Participacion_comunitaria.Constitucion']),set(['Participacion_Comunitaria.Sabe'])), \
+	  df(set(['Participacion_Comunitaria.Constitucion']),set(['Participacion_Comunitaria.Sabe'])), \
 	  df(set(['Situacion_Laboral.Tarjeta']),set(['Situacion_Laboral.Cta_banco'])) \
 	  ])
 	

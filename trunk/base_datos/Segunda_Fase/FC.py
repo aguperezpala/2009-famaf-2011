@@ -38,7 +38,7 @@ def union_partes_izq(d1,F):
 			new.discard(d2)
 			c = df(d1.alfa,d1.beta|d2.beta)
 			new.add(c)
-			print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
+			#print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
 	F = new
  
 def atrib_raros_der(dep,R,F):
@@ -60,7 +60,7 @@ def atrib_raros_der(dep,R,F):
 		if A in b:	
 			F.add(df(dep.alfa,dep.beta - set(A)))
 			F.discard(dep)
-			print "Eliminamos "+A+" de "+str(dep)+" en el lado derecho\n"
+			#print "Eliminamos "+A+" de "+str(dep)+" en el lado derecho\n"
 			raros += [A]
 	return raros
 	
@@ -74,7 +74,7 @@ def atrib_raros_izq(df,R,F):
 		if df.beta.issubset(cierreAtributos[df.alfa-set(A)]):
 			F.add(df(df.alfa-set(A),df.beta))
 			F.remove(df)
-			print "Eliminamos "+A+" de "+str(df)+"en el lado izquierdo\n"
+			#print "Eliminamos "+A+" de "+str(df)+"en el lado izquierdo\n"
 			raros += [A]
 	return raros
 						
@@ -85,13 +85,14 @@ def calcular_FC(F,R):
 	print "Calculando F Canonico!\n"
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
 		raros = []
-		for df in F:
+		F1 = res.copy()
+		for df in F1:
 			union_partes_izq(df,res)
-		F = res
-		for df in F:
+		F1 = res.copy()
+		for df in F1:
 			raros += atrib_raros_der(df,R,res)
 			if not (raros == []):
 				break
-		F = res
+		
 
 	return res
