@@ -39,6 +39,7 @@ def union_partes_izq(d1,F):
 			c = df(d1.alfa,d1.beta|d2.beta)
 			new.add(c)
 			print "Unimos "+d1.__str__()+" y "+d2.__str__()+". Obtuvimos "+c.__str__()+"\n"
+	wait = raw_input()
 	F = new
  
 def atrib_raros_der(dep,R,F):
@@ -49,18 +50,17 @@ def atrib_raros_der(dep,R,F):
 	for A in dep.beta:
 		# Parecera largo pero mas variables solo complica su escritura.
 		#Desglozamiento fulero
-		bla = F.copy()
-		bla.remove(dep) 
+		F.discard(dep)
 		h = dep.beta.copy()
 		h.remove(A)
 		mierda = df(dep.alfa,h)
-		bla.add(mierda)
-		b = cierreAtributosAlfa(dep.alfa,bla)
+		F.add(mierda)
+		b = cierreAtributosAlfa(dep.alfa,F)
 		#b = cierreAtributosAlfa(df.alfa,(F-set(df))|set(df(df.alfa,df.beta - set(A))))
 		if A in b:	
-			F.add((dep.alfa,dep.beta - set(A)))
-			F.remove(dep)
-			print "Eliminamos "+A+" de "+dep+" en el lado derecho\n"
+			F.add(df(dep.alfa,dep.beta - set(A)))
+			F.discard(dep)
+			print "Eliminamos "+A+" de "+str(dep)+" en el lado derecho\n"
 			raros += [A]
 	return raros
 	
@@ -74,12 +74,12 @@ def atrib_raros_izq(df,R,F):
 		if df.beta.issubset(cierreAtributos[df.alfa-set(A)]):
 			F.add(df(df.alfa-set(A),df.beta))
 			F.remove(df)
-			print "Eliminamos "+A+" de "+df+"en el lado izquierdo\n"
+			print "Eliminamos "+A+" de "+str(df)+"en el lado izquierdo\n"
 			raros += [A]
 	return raros
 						
 def calcular_FC(F,R):
-	res = copy.deepcopy(F) # Copio F para modificarlo a gusto.
+	res = F.copy() # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
 	print "Calculando F Canonico!\n"
