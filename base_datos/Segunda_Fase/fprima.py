@@ -28,7 +28,7 @@ def cierreAtributos (f, eu):
 	return cierreAtr
 
 def cierreAtributosAlfa (alfa,f):
-	cierreAtr = set([alfa])
+	cierreAtr = alfa.copy()
 	for d in f:
 		if d.alfa.issubset(cierreAtr):
 			cierreAtr |= d.beta
