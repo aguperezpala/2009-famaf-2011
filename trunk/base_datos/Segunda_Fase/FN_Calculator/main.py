@@ -74,10 +74,8 @@ def mainProg():
 			#print str (descFNBC) 
 			print "\nConseguimos FNBC\n"
 		elif op == "6":
-			RiList2 = list()
-			RiList2.append (EU)
 			print "Calculando 3FN del esquema universal"
-			desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
+			desc3FN = calculate3FN (FCanonica, [], clavesCandidatas)
 			print str (desc3FN)
 			print "\nConseguimos 3FN\n"
 		elif op == "7":
