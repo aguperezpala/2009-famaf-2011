@@ -109,15 +109,7 @@ def printFprima (Fprima):
 			print str(char),
 		print "), \n"
 	print "}"
-
-
-
-
-
-
-
-
-
+	
 """eu = set(['hola','chau','adios'])
 f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
 ca = cierreAtributos(f,eu)
