@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from fprima import cierreAtributosAlfa
+import copy
 
 def calcular_FNBC (conjRi, Fpri, cierreAtr):
 
@@ -110,3 +111,24 @@ def chequear_FNBC (fPrima, conjRi, cierreAtr):
 
 	# Si llegamos hasta acá, conjRi respeta FNBC
 	return True
+
+def chequear_FNBC_df(F,conjR):
+	""" Determina si la descomposición conjR preserva las df de F """
+	
+	for df in F: # Chequeamos que la descompoción conserve cada df
+		res = copy.deepcopy(df.alfa)
+		c = len(res) - 1
+		print "beta =" , df.beta
+		while c < len(res): 
+			print "Res = " , res
+			c = len(res)
+			for Ri in conjR: 
+				cierre = cierreAtributosAlfa(res.intersection(Ri),F)
+				res.update(cierre.intersection(Ri))
+				print "cierre = " , cierre
+				print "Res = " , res
+		if  not df.beta.issubset(res):# beta no esta en res
+			return False
+	# Todos los beta estaban contenidos en res
+	return True				
+			

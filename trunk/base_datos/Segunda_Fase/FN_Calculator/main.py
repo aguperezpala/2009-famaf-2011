@@ -4,7 +4,7 @@ from df import *
 from clcncr import getCCC
 from fprima import *
 from c3fn import calculate3FN
-from FNBC import calcular_FNBC, chequear_FNBC
+from FNBC import calcular_FNBC, chequear_FNBC , chequear_FNBC_df
 from FC import *
 
 
@@ -52,6 +52,7 @@ def mainProg():
 		print "\t5) Descomposicion FNBC"
 		print "\t6) Descomposicion 3FN"
 		print "\t7) Chequear que la descomposición respeta FNBC"
+		print "\t8) Chequear que la descomposición preserva las df"
 		print "\t0) Para salir"
 		op = raw_input()
 		if op == "1":
@@ -84,6 +85,11 @@ def mainProg():
 				print chequear_FNBC (FPrima, descFNBC, cierreAttrsMin)
 			else:
 				print "\nTodavía no se ha calculado la descomposición en FNBC"
+		elif op == "8":
+			if calcFNBC == True:
+				print chequear_FNBC_df (depFun, descFNBC)
+			else:
+				print "\nTodavía no se ha calculado la descomposición en FNBC"		
 		elif op == "0":
 			print "chau chau\n"
 		else:
