@@ -67,7 +67,7 @@ def atrib_raros_der(dep,F):
 		
 		b = cierreAtributosAlfa(dep.alfa,FNew)
 		
-		if A in b:
+		if A in b: # A era atributo raro
 			raros += [A]
 			if (len(dep.beta)==1):  # la dependencia quedó vacía
 				F.remove(dep)
@@ -102,15 +102,9 @@ def calcular_FC(F,R):
 	res = F.copy() # Copio F para modificarlo a gusto.
 	raros = ["I ALWAYS WANT TO BE A LUMBERJACK"] # Inicialización
 	
-	print "Calculando F Canonico!\n"
 	while len(raros) > 0 :# Mientras obtengamos atributos raros 
 		
-		#i = 0
-		#print "F ANTES de las uniones\n{",
-		#for dep in res:
-			#print "df"+str(i)+": "+str(dep)+'\n'
-			#i+=1
-		#print '}'+'\n\n'
+		# Unimos las partes izquierdas
 		
 		i = len(res)
 		unidas = []
@@ -125,12 +119,7 @@ def calcular_FC(F,R):
 		for dep in unidas:
 			res.add(dep)
 		
-		#i = 0
-		#print "F DESPUÉS de las uniones\n{",
-		#for dep in res:
-			#print "df"+str(i)+": "+str(dep)+'\n'
-			#i+=1
-		#print '}'
+		# Eliminamos los atributos raros
 		
 		raros = []
 		tested = set()
