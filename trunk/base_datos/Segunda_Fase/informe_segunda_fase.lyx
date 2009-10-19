@@ -362,7 +362,7 @@ Comercio_en_casa,
 \end_layout
 
 \begin_layout Itemize
-Trabajo, 
+Trabajo, Tarjeta
 \end_layout
 
 \end_deeper
@@ -1150,7 +1150,116 @@ Ejercicio 6
 \end_layout
 
 \begin_layout Standard
+Vemos que el 3FN representa mucho mejor tanto nuestro diagrama E-R como
+ las dependencias funcionales con que se trabajo.
+ En FNBC se genera la tabla R1.1.1.2 la cual contiene una R1 y R2 de 3FN ,
+ mas una gran cantidad de atributos que pertencian al lado izquierdo de
+ las df.
+ Esta tabla al ser tan grande no permite chequear facilmente los datos de
+ los grupos familiares ni de las planilla por no estar respetando las entidades
+ , provocando tambien altos niveles de redundancia.
+\end_layout
 
+\begin_layout Standard
+Por todas estas razones elegimos a 3FN como nuestro candidato.
+ FELICITACIONES 3FN :D.
+\end_layout
+
+\begin_layout Section*
+Ejercicio 7
+\end_layout
+
+\begin_layout Standard
+3FN respeta el diagrama E-R a la perfección ya que cada uno de los Ri de
+ esta descomposición tiene una unica superclave la cual es clave primaria
+ o clave parcial para todas las entidades o relaciones que se encuentran
+ dentro de ese esquema.
+ 
+\end_layout
+
+\begin_layout Standard
+Al estar agrupados mediante una unica clave primaria o parcial de la entidad
+ dominante cada esquema engloba un conj' de atributos de naturaleza similar
+ , basada en las dependencias funcionales escogidas.
+\end_layout
+
+\begin_layout Section*
+Ejercicio 8
+\end_layout
+
+\begin_layout Standard
+El esquema que vamos a presentar se corresponde con la desc' 3FN :
+\end_layout
+
+\begin_layout Itemize
+Planilla = ['Participacion_Comunitaria.Administracion', 'Comunidad.Nombre',
+ 'Vivienda.Forma_tenencia', 'Participacion_Comunitaria.Constitucion', 'Servicios.Re
+coleccion_basura', 'Vivienda.Paredes', 'Servicios.Gas', 'Participacion_Comunitaria.
+Apoya', 'Vivienda.Mascotas', 'Situacion_de_Exclusion.Enfermedades_terminales',
+ 'Vivienda.Terreno_propio', 'Encuestado.No_C.I.', 'Salud.Ayuda_especial', 'Participac
+ion_Comunitaria.Familia', 'Situacion_Laboral.Ticket', 'Planilla.Numero', 'Servicios.
+Aguas_blancas', 'Planilla.Fecha', 'Servicios.Aguas_servidas', 'Servicios.Servicios_
+comunales', 'Situacion_de_Exclusion.Tercera_edad', 'Vivienda.Plagas', 'Salud.Histor
+ia_familiar', 'Servicios.Medios', 'Situacion_Laboral.Comercio_en_casa', 'Situacion
+_de_Exclusion.Indigentes', 'Participacion_Comunitaria.Misiones', 'Situacion_Labora
+l.Tarjeta', 'Vivienda.OCV', 'Vivienda.Enseres', 'Situacion_Laboral.Ingreso_familiar'
+, 'Servicios.Transporte', 'Vivienda.Cond_salubridad', 'Servicios.Telefonia',
+ 'Vivienda.Tipo', 'Participacion_Comunitaria.Propia', 'Servicios.Electricidad',
+ 'Participacion_Comunitaria.Org_Comunitarias', 'Participacion_Comunitaria.
+\backslash
+xc3
+\backslash
+x81rea', 'Comunidad.Direccion.Nro', 'Comunidad.Direccion.Calle', 'Situacion_Laboral.T
+rabajo', 'Situacion_de_Exclusion.Ni
+\backslash
+xc3
+\backslash
+xb1os_calle', 'Situacion_de_Exclusion.Discapacitados', 'Parroquia.Nombre',
+ 'Vivienda.Techo']
+\end_layout
+
+\begin_layout Itemize
+Grupo
+\begin_inset space ~
+\end_inset
+
+Familiar = ['Encuestado.Profesion', 'Jefe_de_Grupo_Familiar.Fecha_de_nacimiento',
+ 'Jefe_de_Grupo_Familiar.Dedicacion_actual', 'Encuestado.Nombre_y_apellido',
+ 'Jefe_de_Grupo_Familiar.
+\backslash
+xc2
+\backslash
+xbfTrabaja_actualmente?', 'Jefe_de_Grupo_Familiar.Telefono.Celular', 'Jefe_de_Grup
+o_Familiar.Forma_de_cobro', 'Jefe_de_Grupo_Familiar.Telefono.Oficina', 'Jefe_de_Gru
+po_Familiar.Telefono.Habitacion', 'Situacion_comunidad.Desventajas', 'Encuestado.No_
+C.I.', 'Encuestado.Instruccion', 'Encuestado.Edad', 'Encuestado.Ingreso_mensual',
+ 'Planilla.Numero', 'Situacion_comunidad.Ventajas', 'Jefe_de_Grupo_Familiar.E-mail'
+, 'Encuestado.Sexo'] 
+\end_layout
+
+\begin_layout Itemize
+Tarjetas_Cuentas = ['Situacion_Laboral.Tarjeta', 'Situacion_Laboral.Cta_banco']
+\end_layout
+
+\begin_layout Itemize
+Sector_Municipio= ['Municipio.Nombre', 'Sector.CP']
+\end_layout
+
+\begin_layout Itemize
+Comunidad_Sector = ['Comunidad.Nombre', 'Sector.CP']
+\end_layout
+
+\begin_layout Itemize
+Municipio_Estado = ['Estado.Nombre', 'Municipio.Nombre']
+\end_layout
+
+\begin_layout Itemize
+Parroquia_Sector = ['Parroquia.Nombre', 'Sector.CP']
+\end_layout
+
+\begin_layout Itemize
+Participacion_Comunitaria = ['Participacion_Comunitaria.Sabe', 'Participacion_Com
+unitaria.Constitucion']
 \end_layout
 
 \end_body
