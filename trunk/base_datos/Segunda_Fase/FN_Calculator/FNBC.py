@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from fprima import cierreAtributosAlfa
 import copy
 
@@ -40,16 +41,10 @@ def calcular_FNBC (conjRi, Fpri, cierreAtr):
 
 
 def es_violac_FNBC (conjRi, dep, cierreAtr):
-	
 	""" Indica si dep es violación de la descomposición conjRi.
 	    Si así es devuelve el Ri violado. Sino regresa None """
-	
 	for Ri in conjRi:
 		if (viola_FNBC (Ri, dep, cierreAtr)):
-			"""  DEBUG
-			print ("Violación encontrada\n")
-			print ("Ri: ") + str(Ri) + '\n'
-			print ("dep: ") + str(dep.alfa) + "->" + str(dep.beta) + '\n' """
 			return Ri
 	# si no encontramos violación se retorna 'None'
 
@@ -57,6 +52,7 @@ def es_violac_FNBC (conjRi, dep, cierreAtr):
 def viola_FNBC (Ri, dep, cierreAtr):
 	
 	""" Informa si la d.f. dep es violación FNBC para el esquema Ri """
+	
 	if (not dep.alfa.issubset(Ri) or not dep.beta.issubset(Ri)):
 		return False
 	
@@ -96,14 +92,11 @@ def convertir_FNBC (conjRi, Ri, dep):
 	conjRi.append(Rj)
 	print "\n"+str(conjRi)
 
+
+
 def chequear_FNBC (fPrima, conjRi, cierreAtr):
 	""" Determina si la descomposición conjRi respeta FNBC, según fPrima """
-	
 	for dep in fPrima:
-		#Calculamos el cierre de atributos de dep.alfa
-		"""cierre = cierreAtributosAlfa (dep.alfa,fPrima)
-		print "\nD.f.: "+str(dep.alfa)+"->"+str(dep.beta)
-		print "\nCierre: "+str(cierre)"""
 		ri = es_violac_FNBC (conjRi, dep, cierreAtr)
 		if ri is not None:
 			#print "\nEl esquema "+str(ri)+" no respeta FNBC y "+str(dep.alfa)+"->"+str(dep.beta)+" es un testigo..."
@@ -111,6 +104,7 @@ def chequear_FNBC (fPrima, conjRi, cierreAtr):
 
 	# Si llegamos hasta acá, conjRi respeta FNBC
 	return True
+
 
 def chequear_FNBC_df(F,conjR):
 	""" Determina si la descomposición conjR preserva las df de F """
