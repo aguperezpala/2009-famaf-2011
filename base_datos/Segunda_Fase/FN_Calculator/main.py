@@ -44,15 +44,17 @@ def mainProg():
 	
 	op = ""
 	while not (op == "0"):
-		print "\n\nSeleccione opcion a imprimir"
+		print "\n\nSeleccione una opcion\n"
 		print "\t1) Cierre de atributos sin trivialidades"
 		print "\t2) F Canonica"
 		print "\t3) F Prima"
 		print "\t4) Claves Canidatas"
 		print "\t5) Descomposicion FNBC"
 		print "\t6) Descomposicion 3FN"
-		print "\t7) Chequear que la descomposición respeta FNBC"
-		print "\t8) Chequear que la descomposición preserva las df"
+		print "\t7) Chequear que la descomposición FNBC realmente",
+		print "respeta\n\t   la Forma Normal de Boyce-Codd"
+		print "\t8) Chequear que la descomposición FNBC preserva"
+		print "\t   las dependencias funcionales"
 		print "\t0) Para salir"
 		op = raw_input()
 		if op == "1":
@@ -80,35 +82,25 @@ def mainProg():
 			print "\nConseguimos 3FN\n"
 		elif op == "7":
 			if calcFNBC == True:
-				print chequear_FNBC (FPrima, descFNBC, cierreAttrsMin)
+				if chequear_FNBC (FPrima, descFNBC, cierreAttrsMin):
+					print "\nRealmente está en FNBC"
+				else:
+					print "\n¡¡¡Todo como el chori!!!"
 			else:
 				print "\nTodavía no se ha calculado la descomposición en FNBC"
 		elif op == "8":
 			if calcFNBC == True:
-				print chequear_FNBC_df (depFun, descFNBC)
+				if chequear_FNBC_df (depFun, descFNBC):
+					print "\nLas dependencias son preservadas"
+				else:
+					print "\nNo se preservaron las dependencias"
 			else:
 				print "\nTodavía no se ha calculado la descomposición en FNBC"		
 		elif op == "0":
-			print "chau chau\n"
+			print "Chau chau\n"
 		else:
-			print "opcion incorrecta"
-	
-	
-	
-	# calculamos FNBC ahora, que nos pide una lista de Ri, creamos una que
-	# contenga simplemente EU
-	#RiList = list()
-	#RiList.append (EU)
-	#print "Calculando FNBC del esquema universal"
-	#descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
-	#print "Conseguimos FNBC\n"
-	
-	# Obtenemos 3FN
-	#RiList2 = list()
-	#RiList2.append (EU)
-	#print "Calculando 3FN del esquema universal"
-	#desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
-	#print "Conseguimos 3FN\n"
+			print "Opcion incorrecta. Por favor señor, ",
+			print "aprenda a teclear antes de pedirnos algo"
 	
 	
 mainProg()
