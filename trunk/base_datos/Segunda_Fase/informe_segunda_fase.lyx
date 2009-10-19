@@ -1,0 +1,1157 @@
+#LyX 1.6.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass scrreprt
+\use_default_options true
+\language spanish
+\inputencoding default
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics pdftex
+\paperfontsize 10
+\spacing single
+\use_hyperref false
+\papersize a4paper
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\leftmargin 1cm
+\topmargin 1cm
+\rightmargin 1cm
+\bottommargin 1cm
+\headheight 1cm
+\headsep 1cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 2
+\papersides 1
+\paperpagestyle empty
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Bases de Datos 2008 - Proyecto de Taller Base de datos de un Estudio Demográfico
+: Segunda Fase 
+\end_layout
+
+\begin_layout Author
+Soldevila ,Mallku Ernesto Raffa <mallkuernesto@gmail.com>
+\begin_inset Newline newline
+\end_inset
+
+Carlos Esteban Budde <hobborg@gmail.com>
+\begin_inset Newline newline
+\end_inset
+
+Kondrasky Alejandro <drasky.vanderhoff@gmail.com>
+\begin_inset Newline newline
+\end_inset
+
+Agustin Perez Paladini <aguperezpala@gmail.com>
+\end_layout
+
+\begin_layout Chapter*
+Ejercicio 1
+\end_layout
+
+\begin_layout Standard
+Vimos que nos faltaban las sig dependencias funcionales:
+\end_layout
+
+\begin_layout Itemize
+Sector.CP -->Municipio.Nombre
+\end_layout
+
+\begin_layout Itemize
+Planilla.Numero --> Planilla.Fecha
+\end_layout
+
+\begin_layout Itemize
+Planilla.Numero --> Parroquia.Nombre.
+ Agregamos esta df por que descubrimos que no podiamos definir correctamente
+ cual era la parroquia dado un nro determinado de planilla.
+\end_layout
+
+\begin_layout Standard
+Se modifico la sig dependencia funcional
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Patrocina Slim
+\end_layout
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Description
+Antes Parroquia.Nombre --> Municipio.Nombre
+\end_layout
+
+\begin_layout Description
+Despues Parroquia.Nombre --> Sector.CP
+\end_layout
+
+\begin_layout Chapter*
+Ejercicio 2
+\end_layout
+
+\begin_layout Subsection*
+Esquema
+\begin_inset space ~
+\end_inset
+
+Universal 
+\end_layout
+
+\begin_layout Standard
+Subdividimos el esquema universal por entidades para una mejor visualización:
+\end_layout
+
+\begin_layout Description
+Ejemplo 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Número, Planilla.Fecha, 
+\end_layout
+
+\begin_layout Description
+Se
+\begin_inset space ~
+\end_inset
+
+vera
+\begin_inset space ~
+\end_inset
+
+como
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Planilla.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Número, 
+\end_layout
+
+\begin_layout Itemize
+Fecha, 
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_deeper
+\begin_layout Standard
+R = Censo (
+\end_layout
+
+\begin_layout Itemize
+Planilla.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Número, 
+\end_layout
+
+\begin_layout Itemize
+Fecha, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Encuestado.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Edad,
+\end_layout
+
+\begin_layout Itemize
+Sexo, 
+\end_layout
+
+\begin_layout Itemize
+Ingreso_Mensual, 
+\end_layout
+
+\begin_layout Itemize
+Profesión, 
+\end_layout
+
+\begin_layout Itemize
+Instrucción, 
+\end_layout
+
+\begin_layout Itemize
+No_C.I., 
+\end_layout
+
+\begin_layout Itemize
+Nombre_y_Apellido, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Jefe_de_Grupo_Familiar.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Fecha_de_nacimiento, 
+\end_layout
+
+\begin_layout Itemize
+Forma_de_Cobro, 
+\end_layout
+
+\begin_layout Itemize
+¿Trabaja_actualmente?, 
+\end_layout
+
+\begin_layout Itemize
+Dedicación_actual, 
+\end_layout
+
+\begin_layout Itemize
+E-mail, 
+\end_layout
+
+\begin_layout Itemize
+Teléfono.Celular, 
+\end_layout
+
+\begin_layout Itemize
+Teléfono.Habitación, 
+\end_layout
+
+\begin_layout Itemize
+Teléfono.Oficina,
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Situación_comunidad.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Ventajas, 
+\end_layout
+
+\begin_layout Itemize
+Desventajas, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Comunidad.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Nombre, 
+\end_layout
+
+\begin_layout Itemize
+Dirección.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Nro, 
+\end_layout
+
+\begin_layout Itemize
+Calle, 
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+Sector.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+CP, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Municipio.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Nombre, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Parroquia.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Nombre, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Estado.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Nombre, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Situación_Laboral.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Tarjeta, 
+\end_layout
+
+\begin_layout Itemize
+Ticket, 
+\end_layout
+
+\begin_layout Itemize
+Cta_banco, 
+\end_layout
+
+\begin_layout Itemize
+Ingreso_familiar, 
+\end_layout
+
+\begin_layout Itemize
+Comercio_en_casa, 
+\end_layout
+
+\begin_layout Itemize
+Trabajo, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Vivienda.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Mascotas, 
+\end_layout
+
+\begin_layout Itemize
+Plagas, 
+\end_layout
+
+\begin_layout Itemize
+Cond_salubridad, 
+\end_layout
+
+\begin_layout Itemize
+Enseres, 
+\end_layout
+
+\begin_layout Itemize
+Techo, 
+\end_layout
+
+\begin_layout Itemize
+Paredes, 
+\end_layout
+
+\begin_layout Itemize
+Terreno_propio, 
+\end_layout
+
+\begin_layout Itemize
+Forma_tenencia, 
+\end_layout
+
+\begin_layout Itemize
+Tipo, 
+\end_layout
+
+\begin_layout Itemize
+OCV, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Servicios.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Servicios_comunales, 
+\end_layout
+
+\begin_layout Itemize
+Recolección_basura, 
+\end_layout
+
+\begin_layout Itemize
+Transporte, 
+\end_layout
+
+\begin_layout Itemize
+Medios, 
+\end_layout
+
+\begin_layout Itemize
+Telefonía, 
+\end_layout
+
+\begin_layout Itemize
+Electricidad, 
+\end_layout
+
+\begin_layout Itemize
+Gas, 
+\end_layout
+
+\begin_layout Itemize
+Aguas_servidas, 
+\end_layout
+
+\begin_layout Itemize
+Aguas_blancas, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Salud.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Historia_familiar, 
+\end_layout
+
+\begin_layout Itemize
+Ayuda_especial, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Situación_de_Exclusión.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Tercera_edad,
+\end_layout
+
+\begin_layout Itemize
+Discapacitados, 
+\end_layout
+
+\begin_layout Itemize
+Enfermedades_terminarles, 
+\end_layout
+
+\begin_layout Itemize
+Indigentes, 
+\end_layout
+
+\begin_layout Itemize
+Niños_calle, 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Participación_Comunitaria.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Propia, 
+\end_layout
+
+\begin_layout Itemize
+Familia, 
+\end_layout
+
+\begin_layout Itemize
+Org_comunitarias, 
+\end_layout
+
+\begin_layout Itemize
+Administración, 
+\end_layout
+
+\begin_layout Itemize
+Constitución, 
+\end_layout
+
+\begin_layout Itemize
+Sabe, 
+\end_layout
+
+\begin_layout Itemize
+Apoya, 
+\end_layout
+
+\begin_layout Itemize
+Área, 
+\end_layout
+
+\begin_layout Itemize
+Misiones
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+) 
+\end_layout
+
+\begin_layout Subsection*
+Normalización
+\begin_inset space ~
+\end_inset
+
+FNBC
+\end_layout
+
+\begin_layout Subsubsection*
+Primera Pasada 
+\end_layout
+
+\begin_layout Itemize
+El esquema R no respeta FNBC.
+ Dependencia funcional testigo de la violación:
+\begin_inset Newline newline
+\end_inset
+
+Participacion_Comunitaria.Constitucion --> Participacion_Comunitaria.Sabe
+ 
+\end_layout
+
+\begin_layout Itemize
+Descomposición obtenida:
+\begin_inset Newline newline
+\end_inset
+
+R1 = R - R2
+\begin_inset Newline newline
+\end_inset
+
+R2 = (Participacion_Comunitaria.Sabe, Participacion_Comunitaria.Constitucion)
+\end_layout
+
+\begin_layout Subsubsection*
+Segunda Pasada 
+\end_layout
+
+\begin_layout Itemize
+El esquema R1 no respeta FNBC.
+ Dependencia funcional testigo de la violación:
+\begin_inset Newline newline
+\end_inset
+
+ Comunidad.Nombre --> Sector.CP 
+\end_layout
+
+\begin_layout Itemize
+Descomposición obtenida: 
+\begin_inset Newline newline
+\end_inset
+
+R1.1 = R1 - R1.2
+\begin_inset Newline newline
+\end_inset
+
+R1.2 = (Comunidad.Nombre, Sector.CP) 
+\begin_inset Newline newline
+\end_inset
+
+R2 = (Participacion_Comunitaria.Sabe, Participacion_Comunitaria.Constitucion)
+\end_layout
+
+\begin_layout Subsubsection*
+Tercera Pasada 
+\end_layout
+
+\begin_layout Itemize
+El esquema R1.1 no respeta FNBC.
+ Dependencia funcional testigo de la violación: 
+\begin_inset Newline newline
+\end_inset
+
+Situacion_Laboral.Tarjeta --> Situacion_Laboral.Cta_banco
+\end_layout
+
+\begin_layout Itemize
+Descomposición obtenida:
+\begin_inset Newline newline
+\end_inset
+
+R1.1.1 = R1.1 -R1.1.2 
+\begin_inset Newline newline
+\end_inset
+
+R1.1.2 = (Situacion_Laboral.Tarjeta, Situacion_Laboral.Cta_banco) 
+\begin_inset Newline newline
+\end_inset
+
+R1.2 = (Comunidad.Nombre, Sector.CP) 
+\begin_inset Newline newline
+\end_inset
+
+R2 = (Participacion_Comunitaria.Sabe, Participacion_Comunitaria.Constitucion)
+ 
+\end_layout
+
+\begin_layout Subsubsection*
+Cuarta Pasada
+\end_layout
+
+\begin_layout Itemize
+El esquema R1.1.1 no respeta FNBC.
+ Dependencia funcional testigo de la violación: 
+\begin_inset Newline newline
+\end_inset
+
+Municipio.Nombre --> Estado.Nombre 
+\end_layout
+
+\begin_layout Itemize
+Descomposición obtenida: 
+\begin_inset Newline newline
+\end_inset
+
+R1.1.1.2 = R1.1.1 - R1.1.1.2
+\begin_inset Newline newline
+\end_inset
+
+R1.1.1.2 = (Estado.Nombre, Municipio.Nombre) 
+\begin_inset Newline newline
+\end_inset
+
+R1.1.2 = (Situacion_Laboral.Tarjeta, Situacion_Laboral.Cta_banco) 
+\begin_inset Newline newline
+\end_inset
+
+R1.2 = (Comunidad.Nombre, Sector.CP) 
+\begin_inset Newline newline
+\end_inset
+
+R2 = (Participacion_Comunitaria.Sabe, Participacion_Comunitaria.Constitucion)
+\end_layout
+
+\begin_layout Subsubsection*
+Descomposición Final
+\end_layout
+
+\begin_layout Itemize
+R1.1.1.2 = (Encuestado.Profesion, Participacion_Comunitaria.Administracion, Comunidad.
+Nombre, Vivienda.Forma_tenencia, Participacion_Comunitaria.Constitucion, Jefe_de_G
+rupo_Familiar.Telefono.Celular, Jefe_de_Grupo_Familiar.Forma_de_cobro, Servicios.Rec
+oleccion_basura, Participacion_Comunitaria.Apoya, Jefe_de_Grupo_Familiar.Telefono.O
+ficina, Servicios.Gas, Vivienda.Paredes, Municipio.Nombre, Vivienda.Mascotas,
+ Situacion_de_Exclusion.Enfermedades_terminales, Situacion_comunidad.Desventajas,
+ Vivienda.Terreno_propio, Encuestado.No_C.I., Encuestado.Instruccion, Encuestado.Edad,
+ Participacion_Comunitaria.Familia, Encuestado.Ingreso_mensual, Situacion_Laboral.T
+icket, Planilla.Numero, Servicios.Aguas_blancas, Planilla.Fecha, Servicios.Aguas_ser
+vidas, Situacion_comunidad.Ventajas, Servicios.Servicios_comunales, Jefe_de_Grupo_
+Familiar.E-mail, Vivienda.Techo, Situacion_de_Exclusion.Tercera_edad, Vivienda.Plaga
+s, Jefe_de_Grupo_Familiar.Fecha_de_nacimiento, Jefe_de_Grupo_Familiar.Dedicacion_a
+ctual, Servicios.Medios, Situacion_Laboral.Comercio_en_casa, Situacion_de_Exclusio
+n.Indigentes, Participacion_Comunitaria.Misiones, Situacion_Laboral.Tarjeta,
+ Vivienda.OCV, Jefe_de_Grupo_Familiar.Telefono.Habitacion, Salud.Ayuda_especial,
+ Salud.Historia_familiar, Vivienda.Enseres, Encuestado.Nombre_y_apellido, Situacion
+_Laboral.Ingreso_familiar, Servicios.Transporte, Vivienda.Cond_salubridad,
+ Servicios.Telefonia, Vivienda.Tipo, Comunidad.Direccion.Nro, Situacion_de_Exclusion.
+Ni
+\backslash
+xc3
+\backslash
+xb1os_calle, Participacion_Comunitaria.Org_Comunitarias, Jefe_de_Grupo_Familiar.
+\backslash
+xc2
+\backslash
+xbfTrabaja_actualmente?, Participacion_Comunitaria.
+\backslash
+xc3
+\backslash
+x81rea, Participacion_Comunitaria.Propia, Comunidad.Direccion.Calle, Situacion_Labo
+ral.Trabajo, Servicios.Electricidad, Situacion_de_Exclusion.Discapacitados,
+ Parroquia.Nombre, Encuestado.Sexo
+\end_layout
+
+\begin_layout Itemize
+R1.1.1.2 = (Estado.Nombre, Municipio.Nombre) 
+\end_layout
+
+\begin_layout Itemize
+R1.1.2 = (Situacion_Laboral.Tarjeta, Situacion_Laboral.Cta_banco) 
+\end_layout
+
+\begin_layout Itemize
+R1.2 = (Comunidad.Nombre, Sector.CP) 
+\end_layout
+
+\begin_layout Itemize
+R2 = (Participacion_Comunitaria.Sabe, Participacion_Comunitaria.Constitucion)
+\end_layout
+
+\begin_layout Chapter*
+Ejercicio 3
+\end_layout
+
+\begin_layout Subsection*
+Chequeo de que FNBC preserva las DF de F.
+\end_layout
+
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Numero --> Participacion_Comunitaria.Administracion Comunidad.Nombre
+ Vivienda.Forma_tenencia Participacion_Comunitaria.Constitucion Servicios.Recolecci
+on_basura Participacion_Comunitaria.Apoya Servicios.Gas Vivienda.Paredes Vivienda.Ma
+scotas Situacion_de_Exclusion.Enfermedades_terminales Servicios.Servicios_comunale
+s Vivienda.Terreno_propio Encuestado.No_C.I.
+ Salud.Ayuda_especial Situacion_Laboral.Ticket Servicios.Aguas_blancas Planilla.Fech
+a Servicios.Aguas_servidas Participacion_Comunitaria.Familia Situacion_de_Exclusio
+n.Tercera_edad Vivienda.Plagas Salud.Historia_familiar Servicios.Medios Situacion_La
+boral.Comercio_en_casa Situacion_de_Exclusion.Indigentes Participacion_Comunitaria.
+Misiones Situacion_Laboral.Ingreso_familiar Situacion_Laboral.Tarjeta Vivienda.OCV
+ Vivienda.Cond_salubridad Vivienda.Enseres Servicios.Transporte Servicios.Telefonia
+ Vivienda.Tipo Participacion_Comunitaria.Propia Servicios.Electricidad Participacio
+n_Comunitaria.Org_Comunitarias Participacion_Comunitaria.Área Comunidad.Direccion.Nr
+o Comunidad.Direccion.Calle Situacion_Laboral.Trabajo Situacion_de_Exclusion.Niños_c
+alle Situacion_de_Exclusion.Discapacitados Parroquia.Nombre Vivienda.Techo
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+Res += ( Estado.Nombre, Municipio.Nombre) 
+\end_layout
+
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Numero --> Vivienda.Terreno_propio Vivienda.Plagas Vivienda.Cond_salubridad
+ Vivienda.Forma_tenencia Vivienda.Tipo Vivienda.OCV Vivienda.Paredes Vivienda.Mascota
+s Vivienda.Techo Vivienda.Enseres 
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Encuestado.No_C.I.
+ --> Encuestado.Profesion Encuestado.Nombre_y_apellido Encuestado.Instruccion
+ Encuestado.Edad Encuestado.Ingreso_mensual Encuestado.Sexo
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Participacion_Comunitaria.Constitucion --> Participacion_Comunitaria.Sabe
+ 
+\end_layout
+
+\begin_layout Standard
+Res += set([]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Numero --> Encuestado.No_C.I.
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Numero --> Salud.Historia_familiar Salud.Ayuda_especial
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Encuestado.No_C.I.
+ --> Encuestado.Profesion Encuestado.Nombre_y_apellido Encuestado.Instruccion
+ Jefe_de_Grupo_Familiar.Fecha_de_nacimiento Jefe_de_Grupo_Familiar.Dedicacion_actu
+al Encuestado.Ingreso_mensual Planilla.Numero Jefe_de_Grupo_Familiar.Telefono.Celula
+r Jefe_de_Grupo_Familiar.¿Trabaja_actualmente? Jefe_de_Grupo_Familiar.Forma_de_cob
+ro Jefe_de_Grupo_Familiar.Telefono.Oficina Situacion_comunidad.Ventajas Jefe_de_Gru
+po_Familiar.Telefono.Habitacion Encuestado.Edad Situacion_comunidad.Desventajas
+ Jefe_de_Grupo_Familiar.E-mail Encuestado.Sexo 
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Numero --> Participacion_Comunitaria.Administracion Participacion_Comunit
+aria.Sabe Participacion_Comunitaria.Constitucion Participacion_Comunitaria.Propia
+ Participacion_Comunitaria.Misiones Participacion_Comunitaria.Org_Comunitarias
+ Participacion_Comunitaria.Área Participacion_Comunitaria.Apoya Participacion_Comu
+nitaria.Familia 
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Planilla.Numero --> Parroquia.Nombre
+\end_layout
+
+\begin_layout Standard
+Res += set([Estado.Nombre, Municipio.Nombre]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Situacion_Laboral.Tarjeta --> Situacion_Laboral.Cta_banco
+\end_layout
+
+\begin_layout Standard
+Res += set([]) 
+\end_layout
+
+\end_deeper
+\begin_layout Description
+Pasada
+\begin_inset space ~
+\end_inset
+
+del
+\begin_inset space ~
+\end_inset
+
+df 
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+Sector.CP --> Municipio.Nombre
+\end_layout
+
+\begin_layout Standard
+Res += set([])
+\end_layout
+
+\end_deeper
+\begin_layout Paragraph
+No se preservaron las dependencias
+\end_layout
+
+\begin_layout Section*
+Ejercicio 4
+\end_layout
+
+\begin_layout Paragraph*
+Recubrimiento canónico de F
+\end_layout
+
+\begin_layout Itemize
+Planilla.Numero --> Participacion_Comunitaria.Administracion Comunidad.Nombre
+ Vivienda.Forma_tenencia Participacion_Comunitaria.Constitucion Vivienda.Enseres
+ Servicios.Recoleccion_basura Participacion_Comunitaria.Apoya Salud.Historia_famili
+ar Vivienda.Paredes Vivienda.Mascotas Situacion_de_Exclusion.Enfermedades_terminale
+s Vivienda.Terreno_propio Encuestado.No_C.I.
+ Salud.Ayuda_especial Situacion_Laboral.Ticket Servicios.Aguas_blancas Planilla.Fech
+a Servicios.Aguas_servidas Servicios.Servicios_comunales Situacion_de_Exclusion.Ter
+cera_edad Vivienda.Plagas Servicios.Gas Servicios.Medios Situacion_Laboral.Comercio_
+en_casa Situacion_de_Exclusion.Indigentes Participacion_Comunitaria.Misiones
+ Situacion_Laboral.Tarjeta Vivienda.OCV Participacion_Comunitaria.Familia Situacion
+_Laboral.Ingreso_familiar Servicios.Transporte Vivienda.Cond_salubridad Servicios.Te
+lefonia Vivienda.Tipo Participacion_Comunitaria.Propia Situacion_de_Exclusion.Niños
+_calle Participacion_Comunitaria.Org_Comunitarias Participacion_Comunitaria.Área
+ Comunidad.Direccion.Nro Comunidad.Direccion.Calle Vivienda.Techo Servicios.Electricid
+ad Situacion_de_Exclusion.Discapacitados Parroquia.Nombre Situacion_Laboral.Trabajo
+\end_layout
+
+\begin_layout Itemize
+Encuestado.No_C.I.
+ --> Encuestado.Profesion Encuestado.Nombre_y_apellido Encuestado.Instruccion
+ Jefe_de_Grupo_Familiar.Fecha_de_nacimiento Jefe_de_Grupo_Familiar.Dedicacion_actu
+al Encuestado.Ingreso_mensual Planilla.Numero Jefe_de_Grupo_Familiar.Telefono.Celula
+r Jefe_de_Grupo_Familiar.¿Trabaja_actualmente? Jefe_de_Grupo_Familiar.Forma_de_cob
+ro Jefe_de_Grupo_Familiar.Telefono.Oficina Situacion_comunidad.Ventajas Jefe_de_Gru
+po_Familiar.Telefono.Habitacion Encuestado.Edad Situacion_comunidad.Desventajas
+ Jefe_de_Grupo_Familiar.E-mail Encuestado.Sexo
+\end_layout
+
+\begin_layout Itemize
+Situacion_Laboral.Tarjeta --> Situacion_Laboral.Cta_banco
+\end_layout
+
+\begin_layout Itemize
+Sector.CP --> Municipio.Nombre
+\end_layout
+
+\begin_layout Itemize
+Comunidad.Nombre --> Sector.CP
+\end_layout
+
+\begin_layout Itemize
+Municipio.Nombre --> Estado.Nombre
+\end_layout
+
+\begin_layout Itemize
+Parroquia.Nombre --> Sector.CP
+\end_layout
+
+\begin_layout Itemize
+Participacion_Comunitaria.Constitucion --> Participacion_Comunitaria.Sabe
+\end_layout
+
+\begin_layout Section*
+Ejercicio 5
+\end_layout
+
+\begin_layout Itemize
+R1 = ['Participacion_Comunitaria.Administracion', 'Comunidad.Nombre', 'Vivienda.For
+ma_tenencia', 'Participacion_Comunitaria.Constitucion', 'Servicios.Recoleccion_bas
+ura', 'Vivienda.Paredes', 'Servicios.Gas', 'Participacion_Comunitaria.Apoya',
+ 'Vivienda.Mascotas', 'Situacion_de_Exclusion.Enfermedades_terminales', 'Vivienda.T
+erreno_propio', 'Encuestado.No_C.I.', 'Salud.Ayuda_especial', 'Participacion_Comunit
+aria.Familia', 'Situacion_Laboral.Ticket', 'Planilla.Numero', 'Servicios.Aguas_blanc
+as', 'Planilla.Fecha', 'Servicios.Aguas_servidas', 'Servicios.Servicios_comunales',
+ 'Situacion_de_Exclusion.Tercera_edad', 'Vivienda.Plagas', 'Salud.Historia_familiar
+', 'Servicios.Medios', 'Situacion_Laboral.Comercio_en_casa', 'Situacion_de_Exclusi
+on.Indigentes', 'Participacion_Comunitaria.Misiones', 'Situacion_Laboral.Tarjeta',
+ 'Vivienda.OCV', 'Vivienda.Enseres', 'Situacion_Laboral.Ingreso_familiar',
+ 'Servicios.Transporte', 'Vivienda.Cond_salubridad', 'Servicios.Telefonia',
+ 'Vivienda.Tipo', 'Participacion_Comunitaria.Propia', 'Servicios.Electricidad',
+ 'Participacion_Comunitaria.Org_Comunitarias', 'Participacion_Comunitaria.
+\backslash
+xc3
+\backslash
+x81rea', 'Comunidad.Direccion.Nro', 'Comunidad.Direccion.Calle', 'Situacion_Laboral.T
+rabajo', 'Situacion_de_Exclusion.Ni
+\backslash
+xc3
+\backslash
+xb1os_calle', 'Situacion_de_Exclusion.Discapacitados', 'Parroquia.Nombre',
+ 'Vivienda.Techo']
+\end_layout
+
+\begin_layout Itemize
+R2 = ['Encuestado.Profesion', 'Jefe_de_Grupo_Familiar.Fecha_de_nacimiento',
+ 'Jefe_de_Grupo_Familiar.Dedicacion_actual', 'Encuestado.Nombre_y_apellido',
+ 'Jefe_de_Grupo_Familiar.
+\backslash
+xc2
+\backslash
+xbfTrabaja_actualmente?', 'Jefe_de_Grupo_Familiar.Telefono.Celular', 'Jefe_de_Grup
+o_Familiar.Forma_de_cobro', 'Jefe_de_Grupo_Familiar.Telefono.Oficina', 'Jefe_de_Gru
+po_Familiar.Telefono.Habitacion', 'Situacion_comunidad.Desventajas', 'Encuestado.No_
+C.I.', 'Encuestado.Instruccion', 'Encuestado.Edad', 'Encuestado.Ingreso_mensual',
+ 'Planilla.Numero', 'Situacion_comunidad.Ventajas', 'Jefe_de_Grupo_Familiar.E-mail'
+, 'Encuestado.Sexo'] 
+\end_layout
+
+\begin_layout Itemize
+R3 = ['Situacion_Laboral.Tarjeta', 'Situacion_Laboral.Cta_banco']
+\end_layout
+
+\begin_layout Itemize
+R4 = ['Municipio.Nombre', 'Sector.CP']
+\end_layout
+
+\begin_layout Itemize
+R5 = ['Comunidad.Nombre', 'Sector.CP']
+\end_layout
+
+\begin_layout Itemize
+R6 = ['Estado.Nombre', 'Municipio.Nombre']
+\end_layout
+
+\begin_layout Itemize
+R7 = ['Parroquia.Nombre', 'Sector.CP']
+\end_layout
+
+\begin_layout Itemize
+R8 = ['Participacion_Comunitaria.Sabe', 'Participacion_Comunitaria.Constitucion']
+\end_layout
+
+\begin_layout Section*
+Ejercicio 6
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\end_body
+\end_document
