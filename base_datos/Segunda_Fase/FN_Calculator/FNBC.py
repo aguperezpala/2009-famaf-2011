@@ -77,7 +77,7 @@ def convertir_FNBC (conjRi, Ri, dep):
 	""" Descompone Ri según la dependencia dep
 	    para que deje de haber violación FNBC """
 	
-	print "Descomponiendo Ri: " + str (conjRi) + '\n'
+	print "Descomponiendo Ri: "
 	
 	conjRi.remove(Ri)
 	
@@ -86,11 +86,11 @@ def convertir_FNBC (conjRi, Ri, dep):
 	Ri = Ri.difference(dep.beta) # Ri - {b}
 	
 	print "Descomposición obtenida:"
-	print "\tRj1 = "+str(Rj)+'\n\tRj2 = '+str(Ri)+'\n'
+	print "\tRj1 = "+str(Rj)
+	print "\tRj2 = "+str(Ri)
 	
 	conjRi.append(Ri)
 	conjRi.append(Rj)
-	print "\n"+str(conjRi)
 
 
 
@@ -112,15 +112,14 @@ def chequear_FNBC_df(F,conjR):
 	for df in F: # Chequeamos que la descompoción conserve cada df
 		res = copy.deepcopy(df.alfa)
 		c = len(res) - 1
-		print "beta =" , df.beta
+		print "Pasada del def " , df
 		while c < len(res): 
-			print "Res = " , res
 			c = len(res)
 			for Ri in conjR: 
 				cierre = cierreAtributosAlfa(res.intersection(Ri),F)
 				res.update(cierre.intersection(Ri))
-				print "cierre = " , cierre
-				print "Res = " , res
+		print "Res += " , cierre.intersection(Ri)
+		
 		if  not df.beta.issubset(res):# beta no esta en res
 			return False
 	# Todos los beta estaban contenidos en res
