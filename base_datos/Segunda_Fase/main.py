@@ -4,12 +4,14 @@ from df import *
 from clcncr import getCCC
 from fprima import *
 from c3fn import calculate3FN
-from FNBC import calcular_FNBC
+from FNBC import calcular_FNBC, chequear_FNBC
 from FC import *
 
 
 
 def mainProg():
+	# Para saber si ya se ha calculado la descomposición en FNBC
+	calcFNBC = False
 	print "\nObteniendo el Esquema Uiversal"
 	EU = getEsquemaUniversal()
 	print "Esquema Universal obtenido\n"
@@ -49,6 +51,7 @@ def mainProg():
 		print "\t4) Claves Canidatas"
 		print "\t5) Descomposicion FNBC"
 		print "\t6) Descomposicion 3FN"
+		print "\t7) Chequear que la descomposición respeta FNBC"
 		print "\t0) Para salir"
 		op = raw_input()
 		if op == "1":
@@ -65,8 +68,9 @@ def mainProg():
 			RiList = list() 
 			RiList.append (EU) 
 			print "Calculando FNBC del esquema universal" 
-			descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin) 
-			print str (descFNBC) 
+			descFNBC = calcular_FNBC (RiList, FPrima, cierreAttrsMin)
+			calcFNBC = True 
+			#print str (descFNBC) 
 			print "\nConseguimos FNBC\n"
 		elif op == "6":
 			RiList2 = list()
@@ -75,6 +79,11 @@ def mainProg():
 			desc3FN = calculate3FN (FCanonica, RiList2, clavesCandidatas)
 			print str (desc3FN)
 			print "\nConseguimos 3FN\n"
+		elif op == "7":
+			if calcFNBC == True:
+				print chequear_FNBC (FPrima, descFNBC, cierreAttrsMin)
+			else:
+				print "\nTodavía no se ha calculado la descomposición en FNBC"
 		elif op == "0":
 			print "chau chau\n"
 		else:

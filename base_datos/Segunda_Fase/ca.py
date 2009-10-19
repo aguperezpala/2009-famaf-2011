@@ -9,19 +9,19 @@ class ca:
 		return 0
 	def __repr__(self):
 		rep = "(ATRIBUTO: "
-		for elem in self.alfa:
+		for elem in self.a:
 			rep += elem+' '
 		rep += ", CIERRE:"
-		for elem in self.beta:
+		for elem in self.am:
 			rep += ' '+elem
 		rep += ')'
 		return rep
 	def __str__(self):
 		rep = "(ATRIBUTO: "
-		for elem in self.alfa:
+		for elem in self.a:
 			rep += elem+' '
 		rep += ", CIERRE:"
-		for elem in self.beta:
+		for elem in self.am:
 			rep += ' '+elem
 		rep += ')'
 		return rep
