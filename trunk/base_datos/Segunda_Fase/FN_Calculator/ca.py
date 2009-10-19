@@ -8,7 +8,7 @@ class ca:
 	def __hash__(self):
 		return 0
 	def __repr__(self):
-		rep = "(ATRIBUTO: "
+		rep = "(ATRIBUTO/S: "
 		for elem in self.a:
 			rep += elem+' '
 		rep += ", CIERRE:"
@@ -17,7 +17,7 @@ class ca:
 		rep += ')'
 		return rep
 	def __str__(self):
-		rep = "(ATRIBUTO: "
+		rep = "(ATRIBUTO/S: "
 		for elem in self.a:
 			rep += elem+' '
 		rep += ", CIERRE:"

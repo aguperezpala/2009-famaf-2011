@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ca import *
 
-# Si si, una pijasa el nombre, (Claves Candidatas Creator/dor XD)
+# Nombre: Claves Candidatas Creator/dor, aka clcncr)
 
 # Funcion que toma un conjunto de cierres de atributos y es esquema universal
 # y devuelve un NUEVO conjunto de claves candidatas.
