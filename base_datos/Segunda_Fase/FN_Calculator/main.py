@@ -97,7 +97,7 @@ def mainProg():
 			else:
 				print "\nTodavía no se ha calculado la descomposición en FNBC"		
 		elif op == "0":
-			print "Chau chau\n"
+			print "\nChau chau\n"
 		else:
 			print "Opcion incorrecta. Por favor señor, ",
 			print "aprenda a teclear antes de pedirnos algo"
