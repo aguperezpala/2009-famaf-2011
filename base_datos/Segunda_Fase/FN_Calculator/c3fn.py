@@ -66,7 +66,7 @@ def reunionWithoutLoss(LRi, LCC):
 # Funcion que va a calcular 3FN.
 # Requires:
 #	Fc 	= Fcanonico
-#	LRi 	= Conjunto de Ri inicial (R universal....)
+#	LRi 	= Conjunto de Ri inicial (el conj vacío la mayoría de las veces)
 #	LCC 	= Lista Claves Candidatas
 # Returns:
 #	LRi's (Descomposicion 3FN)
