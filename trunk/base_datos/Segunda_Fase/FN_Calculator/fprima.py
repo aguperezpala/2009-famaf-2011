@@ -5,14 +5,15 @@ from ca import *
 
 def cierreAtributos (f, eu):
 	"""Usando el conjunto de d.f. y el esquema universal construimos el
-       cierre de atributos de cada atributo. Lo representaremos como un
-       par ordenado donde la primer componente es el atributo y la segunda
-       componente es el cierre mismo."""
+	   cierre de atributos de cada atributo. Lo representaremos con un TAD
+	   que es un par ordenado, donde la primer componente ('a') es el
+	   atributo considerado, y la segunda ('am') es el cierre del mismo """
 	cierreAtr = set ()
 	
-	""" Dadas las observaciones que hicimos sobre nuestras d.f., tomamos
-		cada atributo del esquema universal y calculamos su cierre, en vez
-		de considerar cada subconjunto de atributos del esquema. """
+	""" Como nuestras dependencias funcionales tienen todas un único
+	    atributo a la izquierda, tomamos cada atributo del esquema universal
+	    y calculamos su cierre, en lugar de considerar cada posible
+	    subconjunto de atributos del esquema. """
 	
 	for atr in eu:
 		stop = False
@@ -30,12 +31,11 @@ def cierreAtributos (f, eu):
 				Lo guardamos en cierreAtr """
 			cierreAtr.add(ca(set([atr]),cierreSetAtr))
 		
-	"""printCierre(cierreAtr)"""
-	
 	return cierreAtr
 
 
 def cierreAtributosAlfa (alfa,f):
+	""" Calcula el cierre del atributo 'alfa' dado un conj. 'f' de d.f."""
 	cierreAtr = alfa.copy()
 	stop = False
 	while (not stop):
@@ -50,23 +50,15 @@ def cierreAtributosAlfa (alfa,f):
 
 
 def elimTrivial (cierreAtributos):
-	""" Eliminamos las depedencias triviales """
+	""" Elimina las trivialidades de cada cierre """
 	global cierresDic
 	cierresDic = {}
 	for cierre in cierreAtributos:
-		""" Como no se si el tipo "tupla" de python permite modificación 
-		    alguna, apelo al recurso de borrar el par (a,b) para luego
-		    agregar el par (a,b-a).
-			Luego, si el cierre de un atributo es un singletón cuyo 
-		    único elemento es el atributo mismo => es uno de los
-		    atributos que aparecen del lado derecho en nuestras d.f. =>
-		    podemos descartar su cierre.  """
-		if cierre.am-cierre.a != set([]): # si no es trivial
+		if cierre.am-cierre.a != set([]): # si no es puramente trivial
 			cierresDic.setdefault(frozenset(cierre.a.copy()),cierre.am-cierre.a)
-			
-	"""printElimTrivial(cierresDic)"""
-
+		# si era puramente trivial ni siquiera lo agregamos
 	return cierresDic
+
 
 def genDep (cierreAtr):
 	""" Con el conjunto de cierres de atributos construimos las d.f. """
@@ -109,13 +101,4 @@ def printFprima (Fprima):
 			print str(char),
 		print "), \n"
 	print "}"
-	
-"""eu = set(['hola','chau','adios'])
-f = set([df(set(['hola']),set(['chau'])),df(set(['hola']),set(['adios']))])
-ca = cierreAtributos(f,eu)
-et = elimTrivial(ca)				
-df = genDep (et)
-ca2 = cierreAtributosAlfa('hola',f)
-print ca2
 
-"""
