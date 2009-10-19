@@ -134,7 +134,7 @@ def getDepFunc ():
 		  df(set(['Situacion_Laboral.Tarjeta']),set(['Situacion_Laboral.Cta_banco'])), \
 		  # Estas se pasaron por alto!!!!! en la primera entrega
 		  df(set(['Sector.CP']),set(['Municipio.Nombre'])), \
-		  df(set(['Sector.CP']),set(['Planilla.Fecha'])), \
+		  df(set(['Planilla.Numero']),set(['Planilla.Fecha'])), \
 		  df(set(['Planilla.Numero']),set(['Parroquia.Nombre']))
 	  ])
 	
