@@ -60,9 +60,19 @@ def mainProg():
 		if op == "1":
 			print str(cierreAttrsMin),
 		elif op == "2":
-			print str (FCanonica)
+			print "\nRecubrimiento canónico de F:\n"
+			i = 1
+			for dep in FCanonica:
+				print str(i)+". "+str(dep)+"\n"
+				i+=1
+			print '\n'
 		elif op == "3":
-			print str (FPrima)
+			print "\nF prima:\n"
+			i = 1
+			for dep in FPrima:
+				print str(i)+". "+str(dep)+"\n"
+				i+=1
+			print '\n'
 		elif op == "4":
 			print str (clavesCandidatas)
 		elif op == "5":
