@@ -1,1 +1,0 @@
-CREATE TABLE Tarjetas_Cuentas ("situacion_laboral.tarjeta" BOOLEAN, "situacion_laboral.cta_banco" BOOLEAN, PRIMARY KEY ("situacion_laboral.tarjeta"));

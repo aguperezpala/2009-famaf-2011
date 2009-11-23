@@ -1,0 +1,110 @@
+________________________________________________________________________________
+Cambios introducidos al esquema relacional durante la implementación
+
+   Evaluando detenidamente las tablas obtenidas en la descomposición 3FN
+con el esquema ER de la 1º entrega, y comparándola con el Formulario del censo,
+se descubrieron una serie de inconsistencias que llevarían a una mala
+implementación de la BD.
+
+   Para salvar estos problemas se decidió modificar ligeramente el esquema ER,
+del cual se efectúa una nueva entrega. Cabe mencionar que esto afectó la
+descomposición de tablas obtenidas durante la 2º fase. El resultado final es el
+que aparece impl,ementado en la página de la materia[0]
+
+   A continuación se lista la serie de problemas hallados, y las modificaciones
+efectuadas para resolverlos:
+
+ 1) # La Parroquia
+    No era posible identificar una Parroquia a partir de una Planilla, pues la
+    cadena de relaciones que las comunicaban era:
+    (Planilla) *--1 (Comunidad) 1--* (Sector) 1--* (Parroquia)
+    Como puede verse hay 2 relaciones "uno a muchos" que hacían que desde una
+    única Planilla no pueda llegarse a la Parroquia relacionada.
+    # Solución
+    Se eliminó la relación (Sector) 1--* (Parroquia) y se generó una nueva
+    (Planilla) *--1 (Parroquia), de manera que desde una Planilla se pueda
+    identificar la Parroquia asociada.
+    En las tablas esto implicó la eliminación de parroquia_sector y la creación
+    de planilla_parroquia
+
+ 2) # La Comunidad
+    Observando la tabla de mayor tamaño (Planilla) se descubrió que no se estaba
+    referenciando a la Clave Parcial "comunidad.nombre" de una Comunidad, sino
+    que se hacía referencia a la dirección de la misma.
+    En la descomposición esto impedía relacionar la Planilla con la Comunidad
+    a la que pertenecía, pues se asumió que "comunidad.dirección" no era Clave
+    Parcial de Comunidad.
+    Además la tabla sector_comunidad carecía de sentido, pues sector ya es una
+    entidad fuerte que no requiere de una relación para identificarse. En cambio
+    Comunidad es débil y debería identificarse con el sector al que pertenece.
+    # Solución
+    Se alteró la descomposición de tablas eliminando sector_comunidad y
+    reemplazándola por 2 tablas.
+    Una es Sector, que tiene toda la info correspondiente al mismo. Ahora pues
+    municipio_sector referencia a sector (y no a sector_comunidad que fue borrada)
+    La otra tabla nueva es Comunidad, que tiene toda la info de una comunmidad,
+    más una clave foránea a sector para identificarla unívocamente.
+    Se añadio "sector.CP" y "comundidad.nombre" a la tabla Planilla para poder
+    referenciar desde allí a una única comunidad. Y se quitó
+    "comunidad.dirección" de Planilla pues ya no era necesaria.
+
+ 3) # Participación Comunitaria
+    En la descomposición 3FN existía una tabla Participación_Comunitaria que
+    estaba compuesto por 2 booleanos: 'Participacion_Comunitaria.Sabe' y
+    'Participacion_Comunitaria.Constitucion'. Con esos valores (son 4 
+    combinaciones posibles) es imposible identificar una única elección dada
+    una planilla. Se requeriría de una clave de identificación unívoca, como ser
+    el "encuestado.no_ci" o "planilla.numero"
+    # Solución
+    Se decidió eliminar esa tabla introduciéndola dentro de Planilla, ya que son
+    datos sin clave primaria, que dependen del identificador de la planilla a la
+    que pertenecen para identificarlos.
+
+ 4) # Tarjetas Cuentas
+    Es exactamente la misma situación que la explicada en 3), salvo que con
+    'Situacion_Laboral.Tarjeta','Situacion_Laboral.Cta_banco'
+    # Solución
+    También la misma que en 3)
+
+ 5) # Municipio Estado
+    En la descomposición 3FN aparece Estado relacionado en una misma tabla con
+    el Municipio. El problema no es solo que esto genera redundancia innecesaria
+    de nombres de estado, sino que además complica la lógica de identificación
+    entre la dupla (estado,municipio) y el sector.cp. Habría que haber incluido
+    los valores de estado.nombre y municipio.nombre en la tabla de Sector, y eso
+    implica incluir 2 claves foráneas en una tabla que tenía un único campo (el
+    sector.cp)
+    # Solución
+    Se decidió modificar la estructura de tablas que se refieren a la
+    información geográfica de una planilla. Antes teníamos las tablas
+    Municipio-Estado, Sector-Municipio y Comunidad-Sector. Como ya se dijo en 2)
+    la 3º tabla se dividió en dos: Comunidad y Sector. Ahora transformamos las
+    tablas Municipio-Estado y Sector-Municipio de la siguiente forma:
+    a) Creamos una tabla Estado que solo contenga estado.nombre (es fuerte)
+    b) Creamos una tabla Sector que solo contenga sector.cp (es fuerte)
+    c) Creamos una tabla Municipio que contiene municipio.nombre y hace de
+       relación entre Estado y Sector. Es decir que tiene 2 calves foráneas:
+       una a sector.cp y otra a estado.nombre
+    Como puede verse esta solución también genera algo de redundancia, pues para
+    un mismo municipio.nombre tendremos varios sector.cp que harán que se repita
+    ese valor. Sin embargo esto presenta una división mucho más natural de la
+    estructura jerárquica existente entre esas divisiones regionales, y centra
+    toda la redundancia en una única tabla (Municipio) que sólo debe ser
+    consultada cuando se busca info referente al Estado o al Municipio.
+
+ 6) # Jefe de grupo familiar.
+    La entidad Jefe de Grupo Familiar que es una especializacion de la entidad
+    encuestado, tiene ademas otra relacion con la misma denominada parentezco.
+    Ésto genera una relacion de un encuestado con otro encuestado que debe verse
+    como una relacion entre dos encuestado.no_ci. Esto no estaba siendo reflejado
+    por la descomposicion 3FN obtenida.
+    # Solución
+    Para diagramar esta relacion de la entidad con sigo misma, se genero en la
+    tabla Planilla un nuevo campo denominado jefe_ci que hace referencia al
+    no_ci de el Jefe de Grupo Familiar relacionado con ése encuestado. Entonces
+    si encuestado.no_ci == jefe_ci esto significa que el encuestado que se está
+    tratando es precisamente el Jefe de Grupo Familiar
+    
+    
+
+[0] https://kali.famaf.unc.edu.ar/2009/bd/grupo3/web/
