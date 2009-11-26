@@ -1,0 +1,3 @@
+CREATE DOMAIN uint AS INT
+	CONSTRAINT positiveness
+	CHECK (VALUE > 0);

@@ -1,0 +1,1000 @@
+1,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+2,Falcón,Federación,Churuguara,1,Churuguara
+3,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+4,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+5,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+6,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+7,Táchira,Cárdenas,Táriba,1,Táriba
+8,Anzoátegui,Guanta,Guanta,4,Guanta
+9,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+10,Anzoátegui,Bruzual,Clarines,1,Clarines
+11,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+12,Táchira,Cárdenas,Táriba,2,Táriba
+13,Táchira,Cárdenas,Táriba,3,Táriba
+14,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+15,Anzoátegui,Guanta,Guanta,3,Guanta
+16,Apure,Biruaca,Biruaca,3,Biruaca
+17,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+18,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+19,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+20,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+21,Bolívar,Sifontes,El Dorado,1,El Dorado
+22,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+23,Apure,Biruaca,Biruaca,2,Biruaca
+24,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+25,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+26,Falcón,Federación,Churuguara,1,Churuguara
+27,Táchira,Cárdenas,Táriba,4,Táriba
+28,Anzoátegui,Guanta,Guanta,3,Guanta
+29,Falcón,Federación,Churuguara,1,Churuguara
+30,Anzoátegui,Bruzual,Clarines,1,Clarines
+31,Apure,Biruaca,Biruaca,2,Biruaca
+32,Bolívar,Sifontes,El Dorado,3,El Dorado
+33,Anzoátegui,Bruzual,Clarines,3,Clarines
+34,Anzoátegui,Guanta,Guanta,2,Guanta
+35,Apure,Biruaca,Biruaca,3,Biruaca
+36,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+37,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+38,Táchira,Cárdenas,Táriba,4,Táriba
+39,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+40,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+41,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+42,Falcón,Federación,Churuguara,4,Churuguara
+43,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+44,Apure,Biruaca,Biruaca,2,Biruaca
+45,Anzoátegui,Guanta,Guanta,2,Guanta
+46,Bolívar,Sifontes,El Dorado,3,El Dorado
+47,Apure,Biruaca,Biruaca,1,Biruaca
+48,Bolívar,Sifontes,El Dorado,3,El Dorado
+49,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+50,Anzoátegui,Guanta,Guanta,4,Guanta
+51,Falcón,Federación,Churuguara,4,Churuguara
+52,Anzoátegui,Bruzual,Clarines,1,Clarines
+53,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+54,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+55,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+56,Táchira,Cárdenas,Táriba,2,Táriba
+57,Táchira,Cárdenas,Táriba,1,Táriba
+58,Táchira,Cárdenas,Táriba,4,Táriba
+59,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+60,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+61,Anzoátegui,Guanta,Guanta,1,Guanta
+62,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+63,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+64,Falcón,Federación,Churuguara,1,Churuguara
+65,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+66,Anzoátegui,Bruzual,Clarines,1,Clarines
+67,Anzoátegui,Bruzual,Clarines,1,Clarines
+68,Anzoátegui,Guanta,Guanta,3,Guanta
+69,Táchira,Cárdenas,Táriba,2,Táriba
+70,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+71,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+72,Anzoátegui,Guanta,Guanta,2,Guanta
+73,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+74,Táchira,Cárdenas,Táriba,2,Táriba
+75,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+76,Táchira,Cárdenas,Táriba,4,Táriba
+77,Anzoátegui,Guanta,Guanta,2,Guanta
+78,Anzoátegui,Bruzual,Clarines,2,Clarines
+79,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+80,Anzoátegui,Bruzual,Clarines,2,Clarines
+81,Anzoátegui,Guanta,Guanta,1,Guanta
+82,Bolívar,Sifontes,El Dorado,3,El Dorado
+83,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+84,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+85,Apure,Biruaca,Biruaca,1,Biruaca
+86,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+87,Anzoátegui,Guanta,Guanta,1,Guanta
+88,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+89,Apure,Biruaca,Biruaca,2,Biruaca
+90,Falcón,Federación,Churuguara,1,Churuguara
+91,Táchira,Cárdenas,Táriba,4,Táriba
+92,Apure,Biruaca,Biruaca,2,Biruaca
+93,Falcón,Federación,Churuguara,4,Churuguara
+94,Apure,Biruaca,Biruaca,2,Biruaca
+95,Bolívar,Sifontes,El Dorado,3,El Dorado
+96,Anzoátegui,Bruzual,Clarines,2,Clarines
+97,Bolívar,Sifontes,El Dorado,2,El Dorado
+98,Anzoátegui,Guanta,Guanta,2,Guanta
+99,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+100,Táchira,Cárdenas,Táriba,3,Táriba
+101,Apure,Biruaca,Biruaca,1,Biruaca
+102,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+103,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+104,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+105,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+106,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+107,Anzoátegui,Bruzual,Clarines,4,Clarines
+108,Falcón,Federación,Churuguara,3,Churuguara
+109,Táchira,Cárdenas,Táriba,2,Táriba
+110,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+111,Anzoátegui,Bruzual,Clarines,1,Clarines
+112,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+113,Anzoátegui,Bruzual,Clarines,3,Clarines
+114,Apure,Biruaca,Biruaca,4,Biruaca
+115,Falcón,Federación,Churuguara,3,Churuguara
+116,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+117,Apure,Biruaca,Biruaca,2,Biruaca
+118,Anzoátegui,Bruzual,Clarines,2,Clarines
+119,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+120,Apure,Biruaca,Biruaca,3,Biruaca
+121,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+122,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+123,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+124,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+125,Bolívar,Sifontes,El Dorado,2,El Dorado
+126,Bolívar,Sifontes,El Dorado,4,El Dorado
+127,Táchira,Cárdenas,Táriba,2,Táriba
+128,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+129,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+130,Apure,Biruaca,Biruaca,4,Biruaca
+131,Apure,Biruaca,Biruaca,2,Biruaca
+132,Táchira,Cárdenas,Táriba,3,Táriba
+133,Táchira,Cárdenas,Táriba,3,Táriba
+134,Anzoátegui,Guanta,Guanta,1,Guanta
+135,Falcón,Federación,Churuguara,3,Churuguara
+136,Anzoátegui,Guanta,Guanta,3,Guanta
+137,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+138,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+139,Bolívar,Sifontes,El Dorado,4,El Dorado
+140,Anzoátegui,Guanta,Guanta,2,Guanta
+141,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+142,Táchira,Cárdenas,Táriba,4,Táriba
+143,Táchira,Cárdenas,Táriba,1,Táriba
+144,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+145,Bolívar,Sifontes,El Dorado,3,El Dorado
+146,Apure,Biruaca,Biruaca,3,Biruaca
+147,Anzoátegui,Bruzual,Clarines,1,Clarines
+148,Anzoátegui,Guanta,Guanta,3,Guanta
+149,Táchira,Cárdenas,Táriba,2,Táriba
+150,Apure,Biruaca,Biruaca,3,Biruaca
+151,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+152,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+153,Bolívar,Sifontes,El Dorado,2,El Dorado
+154,Apure,Biruaca,Biruaca,3,Biruaca
+155,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+156,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+157,Apure,Biruaca,Biruaca,4,Biruaca
+158,Táchira,Cárdenas,Táriba,2,Táriba
+159,Apure,Biruaca,Biruaca,3,Biruaca
+160,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+161,Apure,Biruaca,Biruaca,4,Biruaca
+162,Bolívar,Sifontes,El Dorado,1,El Dorado
+163,Apure,Biruaca,Biruaca,2,Biruaca
+164,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+165,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+166,Táchira,Cárdenas,Táriba,1,Táriba
+167,Anzoátegui,Bruzual,Clarines,4,Clarines
+168,Táchira,Cárdenas,Táriba,4,Táriba
+169,Falcón,Federación,Churuguara,3,Churuguara
+170,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+171,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+172,Falcón,Federación,Churuguara,4,Churuguara
+173,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+174,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+175,Falcón,Federación,Churuguara,2,Churuguara
+176,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+177,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+178,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+179,Falcón,Federación,Churuguara,2,Churuguara
+180,Falcón,Federación,Churuguara,3,Churuguara
+181,Táchira,Cárdenas,Táriba,3,Táriba
+182,Apure,Biruaca,Biruaca,4,Biruaca
+183,Anzoátegui,Bruzual,Clarines,3,Clarines
+184,Apure,Biruaca,Biruaca,4,Biruaca
+185,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+186,Anzoátegui,Bruzual,Clarines,2,Clarines
+187,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+188,Falcón,Federación,Churuguara,4,Churuguara
+189,Bolívar,Sifontes,El Dorado,3,El Dorado
+190,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+191,Bolívar,Sifontes,El Dorado,2,El Dorado
+192,Bolívar,Sifontes,El Dorado,4,El Dorado
+193,Anzoátegui,Guanta,Guanta,2,Guanta
+194,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+195,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+196,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+197,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+198,Anzoátegui,Bruzual,Clarines,4,Clarines
+199,Bolívar,Sifontes,El Dorado,3,El Dorado
+200,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+201,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+202,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+203,Bolívar,Sifontes,El Dorado,3,El Dorado
+204,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+205,Táchira,Cárdenas,Táriba,4,Táriba
+206,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+207,Bolívar,Sifontes,El Dorado,4,El Dorado
+208,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+209,Apure,Biruaca,Biruaca,1,Biruaca
+210,Anzoátegui,Guanta,Guanta,4,Guanta
+211,Táchira,Cárdenas,Táriba,2,Táriba
+212,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+213,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+214,Bolívar,Sifontes,El Dorado,4,El Dorado
+215,Táchira,Cárdenas,Táriba,2,Táriba
+216,Falcón,Federación,Churuguara,2,Churuguara
+217,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+218,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+219,Falcón,Federación,Churuguara,2,Churuguara
+220,Táchira,Cárdenas,Táriba,2,Táriba
+221,Anzoátegui,Guanta,Guanta,3,Guanta
+222,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+223,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+224,Bolívar,Sifontes,El Dorado,3,El Dorado
+225,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+226,Táchira,Cárdenas,Táriba,4,Táriba
+227,Táchira,Cárdenas,Táriba,4,Táriba
+228,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+229,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+230,Bolívar,Sifontes,El Dorado,1,El Dorado
+231,Anzoátegui,Bruzual,Clarines,2,Clarines
+232,Falcón,Federación,Churuguara,3,Churuguara
+233,Táchira,Cárdenas,Táriba,4,Táriba
+234,Táchira,Cárdenas,Táriba,1,Táriba
+235,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+236,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+237,Bolívar,Sifontes,El Dorado,2,El Dorado
+238,Táchira,Cárdenas,Táriba,2,Táriba
+239,Falcón,Federación,Churuguara,4,Churuguara
+240,Anzoátegui,Bruzual,Clarines,4,Clarines
+241,Apure,Biruaca,Biruaca,4,Biruaca
+242,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+243,Falcón,Federación,Churuguara,4,Churuguara
+244,Anzoátegui,Guanta,Guanta,3,Guanta
+245,Apure,Biruaca,Biruaca,2,Biruaca
+246,Táchira,Cárdenas,Táriba,1,Táriba
+247,Apure,Biruaca,Biruaca,2,Biruaca
+248,Apure,Biruaca,Biruaca,2,Biruaca
+249,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+250,Apure,Biruaca,Biruaca,1,Biruaca
+251,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+252,Anzoátegui,Guanta,Guanta,4,Guanta
+253,Bolívar,Sifontes,El Dorado,2,El Dorado
+254,Falcón,Federación,Churuguara,1,Churuguara
+255,Anzoátegui,Guanta,Guanta,3,Guanta
+256,Anzoátegui,Guanta,Guanta,1,Guanta
+257,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+258,Anzoátegui,Bruzual,Clarines,4,Clarines
+259,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+260,Anzoátegui,Bruzual,Clarines,4,Clarines
+261,Anzoátegui,Bruzual,Clarines,2,Clarines
+262,Anzoátegui,Bruzual,Clarines,3,Clarines
+263,Falcón,Federación,Churuguara,4,Churuguara
+264,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+265,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+266,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+267,Bolívar,Sifontes,El Dorado,3,El Dorado
+268,Anzoátegui,Bruzual,Clarines,1,Clarines
+269,Apure,Biruaca,Biruaca,1,Biruaca
+270,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+271,Anzoátegui,Bruzual,Clarines,4,Clarines
+272,Apure,Biruaca,Biruaca,3,Biruaca
+273,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+274,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+275,Anzoátegui,Guanta,Guanta,4,Guanta
+276,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+277,Falcón,Federación,Churuguara,1,Churuguara
+278,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+279,Anzoátegui,Guanta,Guanta,4,Guanta
+280,Anzoátegui,Guanta,Guanta,2,Guanta
+281,Anzoátegui,Guanta,Guanta,3,Guanta
+282,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+283,Anzoátegui,Guanta,Guanta,3,Guanta
+284,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+285,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+286,Apure,Biruaca,Biruaca,1,Biruaca
+287,Anzoátegui,Guanta,Guanta,1,Guanta
+288,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+289,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+290,Bolívar,Sifontes,El Dorado,2,El Dorado
+291,Falcón,Federación,Churuguara,4,Churuguara
+292,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+293,Táchira,Cárdenas,Táriba,3,Táriba
+294,Táchira,Cárdenas,Táriba,2,Táriba
+295,Anzoátegui,Bruzual,Clarines,1,Clarines
+296,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+297,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+298,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+299,Bolívar,Sifontes,El Dorado,2,El Dorado
+300,Apure,Biruaca,Biruaca,4,Biruaca
+301,Bolívar,Sifontes,El Dorado,1,El Dorado
+302,Táchira,Cárdenas,Táriba,1,Táriba
+303,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+304,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+305,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+306,Táchira,Cárdenas,Táriba,4,Táriba
+307,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+308,Anzoátegui,Guanta,Guanta,4,Guanta
+309,Falcón,Federación,Churuguara,2,Churuguara
+310,Apure,Biruaca,Biruaca,3,Biruaca
+311,Falcón,Federación,Churuguara,1,Churuguara
+312,Bolívar,Sifontes,El Dorado,3,El Dorado
+313,Bolívar,Sifontes,El Dorado,2,El Dorado
+314,Falcón,Federación,Churuguara,1,Churuguara
+315,Bolívar,Sifontes,El Dorado,3,El Dorado
+316,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+317,Falcón,Federación,Churuguara,1,Churuguara
+318,Anzoátegui,Guanta,Guanta,4,Guanta
+319,Táchira,Cárdenas,Táriba,3,Táriba
+320,Apure,Biruaca,Biruaca,1,Biruaca
+321,Falcón,Federación,Churuguara,1,Churuguara
+322,Bolívar,Sifontes,El Dorado,3,El Dorado
+323,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+324,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+325,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+326,Bolívar,Sifontes,El Dorado,2,El Dorado
+327,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+328,Falcón,Federación,Churuguara,3,Churuguara
+329,Falcón,Federación,Churuguara,1,Churuguara
+330,Bolívar,Sifontes,El Dorado,3,El Dorado
+331,Anzoátegui,Bruzual,Clarines,2,Clarines
+332,Falcón,Federación,Churuguara,3,Churuguara
+333,Táchira,Cárdenas,Táriba,3,Táriba
+334,Apure,Biruaca,Biruaca,4,Biruaca
+335,Falcón,Federación,Churuguara,1,Churuguara
+336,Falcón,Federación,Churuguara,3,Churuguara
+337,Anzoátegui,Bruzual,Clarines,4,Clarines
+338,Táchira,Cárdenas,Táriba,2,Táriba
+339,Anzoátegui,Bruzual,Clarines,4,Clarines
+340,Falcón,Federación,Churuguara,2,Churuguara
+341,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+342,Anzoátegui,Bruzual,Clarines,3,Clarines
+343,Anzoátegui,Guanta,Guanta,3,Guanta
+344,Falcón,Federación,Churuguara,2,Churuguara
+345,Apure,Biruaca,Biruaca,2,Biruaca
+346,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+347,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+348,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+349,Anzoátegui,Guanta,Guanta,2,Guanta
+350,Bolívar,Sifontes,El Dorado,3,El Dorado
+351,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+352,Anzoátegui,Bruzual,Clarines,1,Clarines
+353,Bolívar,Sifontes,El Dorado,2,El Dorado
+354,Apure,Biruaca,Biruaca,2,Biruaca
+355,Apure,Biruaca,Biruaca,3,Biruaca
+356,Bolívar,Sifontes,El Dorado,4,El Dorado
+357,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+358,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+359,Anzoátegui,Bruzual,Clarines,4,Clarines
+360,Anzoátegui,Bruzual,Clarines,4,Clarines
+361,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+362,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+363,Táchira,Cárdenas,Táriba,2,Táriba
+364,Apure,Biruaca,Biruaca,1,Biruaca
+365,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+366,Anzoátegui,Guanta,Guanta,2,Guanta
+367,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+368,Apure,Biruaca,Biruaca,3,Biruaca
+369,Apure,Biruaca,Biruaca,3,Biruaca
+370,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+371,Anzoátegui,Bruzual,Clarines,2,Clarines
+372,Táchira,Cárdenas,Táriba,4,Táriba
+373,Anzoátegui,Guanta,Guanta,4,Guanta
+374,Falcón,Federación,Churuguara,3,Churuguara
+375,Anzoátegui,Guanta,Guanta,2,Guanta
+376,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+377,Bolívar,Sifontes,El Dorado,2,El Dorado
+378,Anzoátegui,Bruzual,Clarines,2,Clarines
+379,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+380,Falcón,Federación,Churuguara,3,Churuguara
+381,Bolívar,Sifontes,El Dorado,1,El Dorado
+382,Anzoátegui,Bruzual,Clarines,3,Clarines
+383,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+384,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+385,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+386,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+387,Anzoátegui,Bruzual,Clarines,1,Clarines
+388,Apure,Biruaca,Biruaca,4,Biruaca
+389,Falcón,Federación,Churuguara,1,Churuguara
+390,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+391,Falcón,Federación,Churuguara,2,Churuguara
+392,Bolívar,Sifontes,El Dorado,2,El Dorado
+393,Falcón,Federación,Churuguara,3,Churuguara
+394,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+395,Falcón,Federación,Churuguara,4,Churuguara
+396,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+397,Táchira,Cárdenas,Táriba,1,Táriba
+398,Apure,Biruaca,Biruaca,2,Biruaca
+399,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+400,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+401,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+402,Apure,Biruaca,Biruaca,2,Biruaca
+403,Anzoátegui,Bruzual,Clarines,2,Clarines
+404,Bolívar,Sifontes,El Dorado,2,El Dorado
+405,Falcón,Federación,Churuguara,4,Churuguara
+406,Táchira,Cárdenas,Táriba,4,Táriba
+407,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+408,Falcón,Federación,Churuguara,1,Churuguara
+409,Falcón,Federación,Churuguara,2,Churuguara
+410,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+411,Anzoátegui,Bruzual,Clarines,2,Clarines
+412,Táchira,Cárdenas,Táriba,4,Táriba
+413,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+414,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+415,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+416,Bolívar,Sifontes,El Dorado,3,El Dorado
+417,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+418,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+419,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+420,Falcón,Federación,Churuguara,2,Churuguara
+421,Anzoátegui,Bruzual,Clarines,2,Clarines
+422,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+423,Anzoátegui,Bruzual,Clarines,4,Clarines
+424,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+425,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+426,Táchira,Cárdenas,Táriba,2,Táriba
+427,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+428,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+429,Apure,Biruaca,Biruaca,3,Biruaca
+430,Falcón,Federación,Churuguara,4,Churuguara
+431,Anzoátegui,Guanta,Guanta,4,Guanta
+432,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+433,Bolívar,Sifontes,El Dorado,3,El Dorado
+434,Bolívar,Sifontes,El Dorado,1,El Dorado
+435,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+436,Anzoátegui,Guanta,Guanta,2,Guanta
+437,Anzoátegui,Guanta,Guanta,2,Guanta
+438,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+439,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+440,Anzoátegui,Bruzual,Clarines,1,Clarines
+441,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+442,Táchira,Cárdenas,Táriba,4,Táriba
+443,Apure,Biruaca,Biruaca,2,Biruaca
+444,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+445,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+446,Falcón,Federación,Churuguara,4,Churuguara
+447,Apure,Biruaca,Biruaca,1,Biruaca
+448,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+449,Anzoátegui,Guanta,Guanta,4,Guanta
+450,Falcón,Federación,Churuguara,3,Churuguara
+451,Apure,Biruaca,Biruaca,3,Biruaca
+452,Anzoátegui,Bruzual,Clarines,2,Clarines
+453,Falcón,Federación,Churuguara,2,Churuguara
+454,Anzoátegui,Bruzual,Clarines,1,Clarines
+455,Falcón,Federación,Churuguara,2,Churuguara
+456,Bolívar,Sifontes,El Dorado,4,El Dorado
+457,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+458,Anzoátegui,Guanta,Guanta,2,Guanta
+459,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+460,Bolívar,Sifontes,El Dorado,4,El Dorado
+461,Bolívar,Sifontes,El Dorado,1,El Dorado
+462,Apure,Biruaca,Biruaca,1,Biruaca
+463,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+464,Falcón,Federación,Churuguara,4,Churuguara
+465,Anzoátegui,Bruzual,Clarines,2,Clarines
+466,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+467,Bolívar,Sifontes,El Dorado,1,El Dorado
+468,Anzoátegui,Bruzual,Clarines,4,Clarines
+469,Táchira,Cárdenas,Táriba,4,Táriba
+470,Falcón,Federación,Churuguara,1,Churuguara
+471,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+472,Bolívar,Sifontes,El Dorado,3,El Dorado
+473,Apure,Biruaca,Biruaca,4,Biruaca
+474,Falcón,Federación,Churuguara,4,Churuguara
+475,Falcón,Federación,Churuguara,4,Churuguara
+476,Táchira,Cárdenas,Táriba,3,Táriba
+477,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+478,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+479,Anzoátegui,Guanta,Guanta,1,Guanta
+480,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+481,Táchira,Cárdenas,Táriba,4,Táriba
+482,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+483,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+484,Anzoátegui,Guanta,Guanta,3,Guanta
+485,Bolívar,Sifontes,El Dorado,4,El Dorado
+486,Falcón,Federación,Churuguara,1,Churuguara
+487,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+488,Anzoátegui,Bruzual,Clarines,2,Clarines
+489,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+490,Falcón,Federación,Churuguara,3,Churuguara
+491,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+492,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+493,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+494,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+495,Anzoátegui,Guanta,Guanta,4,Guanta
+496,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+497,Falcón,Federación,Churuguara,3,Churuguara
+498,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+499,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+500,Falcón,Federación,Churuguara,4,Churuguara
+501,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+502,Anzoátegui,Guanta,Guanta,2,Guanta
+503,Anzoátegui,Guanta,Guanta,4,Guanta
+504,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+505,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+506,Táchira,Cárdenas,Táriba,4,Táriba
+507,Táchira,Cárdenas,Táriba,2,Táriba
+508,Falcón,Federación,Churuguara,3,Churuguara
+509,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+510,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+511,Anzoátegui,Bruzual,Clarines,3,Clarines
+512,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+513,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+514,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+515,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+516,Anzoátegui,Bruzual,Clarines,3,Clarines
+517,Falcón,Federación,Churuguara,4,Churuguara
+518,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+519,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+520,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+521,Anzoátegui,Bruzual,Clarines,4,Clarines
+522,Bolívar,Sifontes,El Dorado,4,El Dorado
+523,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+524,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+525,Táchira,Cárdenas,Táriba,2,Táriba
+526,Táchira,Cárdenas,Táriba,3,Táriba
+527,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+528,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+529,Anzoátegui,Guanta,Guanta,2,Guanta
+530,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+531,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+532,Anzoátegui,Guanta,Guanta,2,Guanta
+533,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+534,Anzoátegui,Guanta,Guanta,1,Guanta
+535,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+536,Bolívar,Sifontes,El Dorado,2,El Dorado
+537,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+538,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+539,Táchira,Cárdenas,Táriba,3,Táriba
+540,Falcón,Federación,Churuguara,1,Churuguara
+541,Falcón,Federación,Churuguara,1,Churuguara
+542,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+543,Anzoátegui,Bruzual,Clarines,4,Clarines
+544,Bolívar,Sifontes,El Dorado,1,El Dorado
+545,Apure,Biruaca,Biruaca,2,Biruaca
+546,Táchira,Cárdenas,Táriba,2,Táriba
+547,Falcón,Federación,Churuguara,4,Churuguara
+548,Apure,Biruaca,Biruaca,1,Biruaca
+549,Falcón,Federación,Churuguara,3,Churuguara
+550,Bolívar,Sifontes,El Dorado,4,El Dorado
+551,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+552,Táchira,Cárdenas,Táriba,1,Táriba
+553,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+554,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+555,Falcón,Federación,Churuguara,2,Churuguara
+556,Apure,Biruaca,Biruaca,4,Biruaca
+557,Anzoátegui,Bruzual,Clarines,2,Clarines
+558,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+559,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+560,Bolívar,Sifontes,El Dorado,4,El Dorado
+561,Falcón,Federación,Churuguara,4,Churuguara
+562,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+563,Bolívar,Sifontes,El Dorado,4,El Dorado
+564,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+565,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+566,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+567,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+568,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+569,Anzoátegui,Bruzual,Clarines,1,Clarines
+570,Anzoátegui,Bruzual,Clarines,4,Clarines
+571,Anzoátegui,Bruzual,Clarines,3,Clarines
+572,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+573,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+574,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+575,Apure,Biruaca,Biruaca,1,Biruaca
+576,Apure,Biruaca,Biruaca,3,Biruaca
+577,Anzoátegui,Bruzual,Clarines,1,Clarines
+578,Apure,Biruaca,Biruaca,1,Biruaca
+579,Anzoátegui,Bruzual,Clarines,2,Clarines
+580,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+581,Bolívar,Sifontes,El Dorado,1,El Dorado
+582,Anzoátegui,Guanta,Guanta,4,Guanta
+583,Táchira,Cárdenas,Táriba,4,Táriba
+584,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+585,Táchira,Cárdenas,Táriba,4,Táriba
+586,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+587,Táchira,Cárdenas,Táriba,2,Táriba
+588,Táchira,Cárdenas,Táriba,3,Táriba
+589,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+590,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+591,Anzoátegui,Guanta,Guanta,1,Guanta
+592,Bolívar,Sifontes,El Dorado,3,El Dorado
+593,Apure,Biruaca,Biruaca,1,Biruaca
+594,Táchira,Cárdenas,Táriba,1,Táriba
+595,Táchira,Cárdenas,Táriba,2,Táriba
+596,Apure,Biruaca,Biruaca,1,Biruaca
+597,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+598,Táchira,Cárdenas,Táriba,2,Táriba
+599,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+600,Anzoátegui,Bruzual,Clarines,4,Clarines
+601,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+602,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+603,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+604,Táchira,Cárdenas,Táriba,4,Táriba
+605,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+606,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+607,Anzoátegui,Guanta,Guanta,1,Guanta
+608,Anzoátegui,Guanta,Guanta,1,Guanta
+609,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+610,Táchira,Cárdenas,Táriba,4,Táriba
+611,Anzoátegui,Bruzual,Clarines,4,Clarines
+612,Falcón,Federación,Churuguara,1,Churuguara
+613,Bolívar,Sifontes,El Dorado,3,El Dorado
+614,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+615,Bolívar,Sifontes,El Dorado,3,El Dorado
+616,Bolívar,Sifontes,El Dorado,1,El Dorado
+617,Táchira,Cárdenas,Táriba,2,Táriba
+618,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+619,Anzoátegui,Bruzual,Clarines,3,Clarines
+620,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+621,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+622,Falcón,Federación,Churuguara,4,Churuguara
+623,Anzoátegui,Guanta,Guanta,3,Guanta
+624,Anzoátegui,Guanta,Guanta,4,Guanta
+625,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+626,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+627,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+628,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+629,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+630,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+631,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+632,Táchira,Cárdenas,Táriba,4,Táriba
+633,Apure,Biruaca,Biruaca,3,Biruaca
+634,Apure,Biruaca,Biruaca,4,Biruaca
+635,Bolívar,Sifontes,El Dorado,3,El Dorado
+636,Anzoátegui,Bruzual,Clarines,3,Clarines
+637,Apure,Biruaca,Biruaca,4,Biruaca
+638,Apure,Biruaca,Biruaca,4,Biruaca
+639,Bolívar,Sifontes,El Dorado,4,El Dorado
+640,Apure,Biruaca,Biruaca,2,Biruaca
+641,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+642,Anzoátegui,Bruzual,Clarines,3,Clarines
+643,Falcón,Federación,Churuguara,2,Churuguara
+644,Táchira,Cárdenas,Táriba,1,Táriba
+645,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+646,Táchira,Cárdenas,Táriba,3,Táriba
+647,Táchira,Cárdenas,Táriba,1,Táriba
+648,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+649,Táchira,Cárdenas,Táriba,1,Táriba
+650,Bolívar,Sifontes,El Dorado,3,El Dorado
+651,Anzoátegui,Bruzual,Clarines,4,Clarines
+652,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+653,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+654,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+655,Anzoátegui,Guanta,Guanta,3,Guanta
+656,Apure,Biruaca,Biruaca,4,Biruaca
+657,Anzoátegui,Guanta,Guanta,4,Guanta
+658,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+659,Anzoátegui,Bruzual,Clarines,3,Clarines
+660,Apure,Biruaca,Biruaca,2,Biruaca
+661,Falcón,Federación,Churuguara,2,Churuguara
+662,Falcón,Federación,Churuguara,2,Churuguara
+663,Apure,Biruaca,Biruaca,3,Biruaca
+664,Táchira,Cárdenas,Táriba,4,Táriba
+665,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+666,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+667,Anzoátegui,Bruzual,Clarines,2,Clarines
+668,Táchira,Cárdenas,Táriba,3,Táriba
+669,Anzoátegui,Guanta,Guanta,3,Guanta
+670,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+671,Táchira,Cárdenas,Táriba,2,Táriba
+672,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+673,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+674,Falcón,Federación,Churuguara,2,Churuguara
+675,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+676,Táchira,Cárdenas,Táriba,2,Táriba
+677,Anzoátegui,Guanta,Guanta,3,Guanta
+678,Anzoátegui,Guanta,Guanta,4,Guanta
+679,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+680,Apure,Biruaca,Biruaca,3,Biruaca
+681,Anzoátegui,Bruzual,Clarines,4,Clarines
+682,Apure,Biruaca,Biruaca,2,Biruaca
+683,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+684,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+685,Bolívar,Sifontes,El Dorado,1,El Dorado
+686,Anzoátegui,Guanta,Guanta,1,Guanta
+687,Táchira,Cárdenas,Táriba,3,Táriba
+688,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+689,Apure,Biruaca,Biruaca,3,Biruaca
+690,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+691,Anzoátegui,Bruzual,Clarines,4,Clarines
+692,Anzoátegui,Guanta,Guanta,3,Guanta
+693,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+694,Bolívar,Sifontes,El Dorado,3,El Dorado
+695,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+696,Anzoátegui,Bruzual,Clarines,3,Clarines
+697,Táchira,Cárdenas,Táriba,3,Táriba
+698,Táchira,Cárdenas,Táriba,2,Táriba
+699,Falcón,Federación,Churuguara,3,Churuguara
+700,Apure,Biruaca,Biruaca,3,Biruaca
+701,Apure,Biruaca,Biruaca,1,Biruaca
+702,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+703,Bolívar,Sifontes,El Dorado,3,El Dorado
+704,Bolívar,Sifontes,El Dorado,1,El Dorado
+705,Anzoátegui,Guanta,Guanta,1,Guanta
+706,Apure,Biruaca,Biruaca,4,Biruaca
+707,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+708,Táchira,Cárdenas,Táriba,4,Táriba
+709,Bolívar,Sifontes,El Dorado,4,El Dorado
+710,Anzoátegui,Guanta,Guanta,4,Guanta
+711,Táchira,Cárdenas,Táriba,3,Táriba
+712,Anzoátegui,Guanta,Guanta,4,Guanta
+713,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+714,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+715,Apure,Biruaca,Biruaca,2,Biruaca
+716,Anzoátegui,Bruzual,Clarines,1,Clarines
+717,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+718,Anzoátegui,Guanta,Guanta,1,Guanta
+719,Falcón,Federación,Churuguara,3,Churuguara
+720,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+721,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+722,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+723,Anzoátegui,Bruzual,Clarines,1,Clarines
+724,Anzoátegui,Bruzual,Clarines,4,Clarines
+725,Anzoátegui,Bruzual,Clarines,4,Clarines
+726,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+727,Falcón,Federación,Churuguara,4,Churuguara
+728,Anzoátegui,Bruzual,Clarines,2,Clarines
+729,Táchira,Cárdenas,Táriba,2,Táriba
+730,Bolívar,Sifontes,El Dorado,1,El Dorado
+731,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+732,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+733,Anzoátegui,Guanta,Guanta,1,Guanta
+734,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+735,Anzoátegui,Bruzual,Clarines,1,Clarines
+736,Bolívar,Sifontes,El Dorado,1,El Dorado
+737,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+738,Apure,Biruaca,Biruaca,4,Biruaca
+739,Anzoátegui,Bruzual,Clarines,4,Clarines
+740,Falcón,Federación,Churuguara,1,Churuguara
+741,Falcón,Federación,Churuguara,3,Churuguara
+742,Falcón,Federación,Churuguara,3,Churuguara
+743,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+744,Bolívar,Sifontes,El Dorado,1,El Dorado
+745,Falcón,Federación,Churuguara,2,Churuguara
+746,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+747,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+748,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+749,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+750,Falcón,Federación,Churuguara,3,Churuguara
+751,Táchira,Cárdenas,Táriba,3,Táriba
+752,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+753,Falcón,Federación,Churuguara,2,Churuguara
+754,Anzoátegui,Bruzual,Clarines,4,Clarines
+755,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+756,Anzoátegui,Guanta,Guanta,1,Guanta
+757,Anzoátegui,Guanta,Guanta,4,Guanta
+758,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+759,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+760,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+761,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+762,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+763,Bolívar,Sifontes,El Dorado,1,El Dorado
+764,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+765,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+766,Bolívar,Sifontes,El Dorado,1,El Dorado
+767,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+768,Anzoátegui,Bruzual,Clarines,3,Clarines
+769,Falcón,Federación,Churuguara,3,Churuguara
+770,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+771,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+772,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+773,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+774,Bolívar,Sifontes,El Dorado,3,El Dorado
+775,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+776,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+777,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+778,Bolívar,Sifontes,El Dorado,2,El Dorado
+779,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+780,Anzoátegui,Guanta,Guanta,2,Guanta
+781,Táchira,Cárdenas,Táriba,1,Táriba
+782,Bolívar,Sifontes,El Dorado,4,El Dorado
+783,Bolívar,Sifontes,El Dorado,4,El Dorado
+784,Anzoátegui,Bruzual,Clarines,4,Clarines
+785,Anzoátegui,Guanta,Guanta,3,Guanta
+786,Apure,Biruaca,Biruaca,4,Biruaca
+787,Bolívar,Sifontes,El Dorado,2,El Dorado
+788,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+789,Táchira,Cárdenas,Táriba,1,Táriba
+790,Táchira,Cárdenas,Táriba,4,Táriba
+791,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+792,Apure,Biruaca,Biruaca,3,Biruaca
+793,Falcón,Federación,Churuguara,1,Churuguara
+794,Falcón,Federación,Churuguara,3,Churuguara
+795,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+796,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+797,Falcón,Federación,Churuguara,4,Churuguara
+798,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+799,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+800,Falcón,Federación,Churuguara,1,Churuguara
+801,Anzoátegui,Bruzual,Clarines,1,Clarines
+802,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+803,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+804,Apure,Biruaca,Biruaca,3,Biruaca
+805,Falcón,Federación,Churuguara,4,Churuguara
+806,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+807,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+808,Anzoátegui,Bruzual,Clarines,3,Clarines
+809,Apure,Biruaca,Biruaca,4,Biruaca
+810,Táchira,Cárdenas,Táriba,1,Táriba
+811,Anzoátegui,Guanta,Guanta,1,Guanta
+812,Anzoátegui,Bruzual,Clarines,2,Clarines
+813,Falcón,Federación,Churuguara,4,Churuguara
+814,Apure,Biruaca,Biruaca,4,Biruaca
+815,Anzoátegui,Guanta,Guanta,2,Guanta
+816,Anzoátegui,Guanta,Guanta,4,Guanta
+817,Táchira,Cárdenas,Táriba,1,Táriba
+818,Bolívar,Sifontes,El Dorado,4,El Dorado
+819,Miranda,Los Salias,San Antonio de los Altos,1,San Antonio de los Altos
+820,Táchira,Cárdenas,Táriba,3,Táriba
+821,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+822,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+823,Anzoátegui,Bruzual,Clarines,4,Clarines
+824,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+825,Anzoátegui,Guanta,Guanta,1,Guanta
+826,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+827,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+828,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+829,Anzoátegui,Bruzual,Clarines,3,Clarines
+830,Bolívar,Sifontes,El Dorado,3,El Dorado
+831,Apure,Biruaca,Biruaca,1,Biruaca
+832,Bolívar,Sifontes,El Dorado,1,El Dorado
+833,Anzoátegui,Guanta,Guanta,2,Guanta
+834,Apure,Biruaca,Biruaca,2,Biruaca
+835,Apure,Biruaca,Biruaca,2,Biruaca
+836,Anzoátegui,Guanta,Guanta,2,Guanta
+837,Apure,Biruaca,Biruaca,2,Biruaca
+838,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+839,Bolívar,Sifontes,El Dorado,3,El Dorado
+840,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+841,Bolívar,Sifontes,El Dorado,2,El Dorado
+842,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+843,Anzoátegui,Bruzual,Clarines,3,Clarines
+844,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+845,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+846,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+847,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+848,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+849,Táchira,Cárdenas,Táriba,2,Táriba
+850,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+851,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+852,Bolívar,Sifontes,El Dorado,3,El Dorado
+853,Anzoátegui,Guanta,Guanta,3,Guanta
+854,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+855,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+856,Apure,Biruaca,Biruaca,1,Biruaca
+857,Falcón,Federación,Churuguara,4,Churuguara
+858,Falcón,Federación,Churuguara,4,Churuguara
+859,Anzoátegui,Bruzual,Clarines,4,Clarines
+860,Anzoátegui,Guanta,Guanta,2,Guanta
+861,Bolívar,Sifontes,El Dorado,2,El Dorado
+862,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+863,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+864,Falcón,Federación,Churuguara,3,Churuguara
+865,Bolívar,Sifontes,El Dorado,1,El Dorado
+866,Anzoátegui,Bruzual,Clarines,1,Clarines
+867,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+868,Falcón,Federación,Churuguara,3,Churuguara
+869,Falcón,Federación,Churuguara,4,Churuguara
+870,Anzoátegui,Guanta,Guanta,4,Guanta
+871,Anzoátegui,Bruzual,Clarines,1,Clarines
+872,Bolívar,Sifontes,El Dorado,2,El Dorado
+873,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+874,Falcón,Federación,Churuguara,2,Churuguara
+875,Anzoátegui,Bruzual,Clarines,3,Clarines
+876,Anzoátegui,Bruzual,Clarines,2,Clarines
+877,Anzoátegui,Bruzual,Clarines,1,Clarines
+878,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+879,Táchira,Cárdenas,Táriba,4,Táriba
+880,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+881,Bolívar,Sifontes,El Dorado,1,El Dorado
+882,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+883,Anzoátegui,Guanta,Guanta,4,Guanta
+884,Táchira,Cárdenas,Táriba,4,Táriba
+885,Anzoátegui,Bruzual,Clarines,3,Clarines
+886,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+887,Apure,Biruaca,Biruaca,2,Biruaca
+888,Bolívar,Sifontes,El Dorado,1,El Dorado
+889,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+890,Anzoátegui,Guanta,Guanta,4,Guanta
+891,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+892,Táchira,Cárdenas,Táriba,3,Táriba
+893,Apure,Biruaca,Biruaca,2,Biruaca
+894,Falcón,Federación,Churuguara,4,Churuguara
+895,Bolívar,Sifontes,El Dorado,3,El Dorado
+896,Táchira,Cárdenas,Táriba,4,Táriba
+897,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+898,Táchira,Cárdenas,Táriba,2,Táriba
+899,Táchira,Cárdenas,Táriba,2,Táriba
+900,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+901,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+902,Apure,Biruaca,Biruaca,1,Biruaca
+903,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+904,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+905,Táchira,Cárdenas,Táriba,4,Táriba
+906,Falcón,Federación,Churuguara,2,Churuguara
+907,Anzoátegui,Bruzual,Clarines,4,Clarines
+908,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+909,Falcón,Federación,Churuguara,1,Churuguara
+910,Táchira,Cárdenas,Táriba,1,Táriba
+911,Apure,Biruaca,Biruaca,2,Biruaca
+912,Anzoátegui,Bruzual,Clarines,2,Clarines
+913,Anzoátegui,Guanta,Guanta,2,Guanta
+914,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+915,Táchira,Cárdenas,Táriba,2,Táriba
+916,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+917,Táchira,Cárdenas,Táriba,1,Táriba
+918,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+919,Táchira,Cárdenas,Táriba,4,Táriba
+920,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+921,Táchira,Cárdenas,Táriba,4,Táriba
+922,Anzoátegui,Bruzual,Clarines,2,Clarines
+923,Falcón,Federación,Churuguara,4,Churuguara
+924,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+925,Apure,Biruaca,Biruaca,4,Biruaca
+926,Anzoátegui,Guanta,Guanta,1,Guanta
+927,Bolívar,Sifontes,El Dorado,4,El Dorado
+928,Falcón,Federación,Churuguara,3,Churuguara
+929,Táchira,Cárdenas,Táriba,2,Táriba
+930,Apure,Biruaca,Biruaca,3,Biruaca
+931,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+932,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+933,Anzoátegui,Bruzual,Clarines,1,Clarines
+934,Anzoátegui,Francisco de Miranda,Pariaguán,2,Pariaguán
+935,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+936,Apure,Biruaca,Biruaca,1,Biruaca
+937,Falcón,Federación,Churuguara,1,Churuguara
+938,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+939,Táchira,Cárdenas,Táriba,3,Táriba
+940,Anzoátegui,Bruzual,Clarines,4,Clarines
+941,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+942,Táchira,Cárdenas,Táriba,2,Táriba
+943,Apure,Biruaca,Biruaca,3,Biruaca
+944,Falcón,Federación,Churuguara,1,Churuguara
+945,Aragua,José Angel Lamas,Santa Cruz de Aragua,4,Santa Cruz de Aragua
+946,Falcón,Federación,Churuguara,4,Churuguara
+947,Bolívar,Sifontes,El Dorado,2,El Dorado
+948,Apure,Biruaca,Biruaca,1,Biruaca
+949,Anzoátegui,Bruzual,Clarines,4,Clarines
+950,Apure,Biruaca,Biruaca,1,Biruaca
+951,Falcón,Federación,Churuguara,3,Churuguara
+952,Táchira,Cárdenas,Táriba,4,Táriba
+953,Lara,Andrés Eloy Blanco,Sanare,2,Sanare
+954,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+955,Anzoátegui,Guanta,Guanta,1,Guanta
+956,Aragua,José Angel Lamas,Santa Cruz de Aragua,2,Santa Cruz de Aragua
+957,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+958,Aragua,José Angel Lamas,Santa Cruz de Aragua,1,Santa Cruz de Aragua
+959,Anzoátegui,Francisco de Miranda,Pariaguán,1,Pariaguán
+960,Apure,Biruaca,Biruaca,1,Biruaca
+961,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+962,Anzoátegui,Bruzual,Clarines,2,Clarines
+963,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+964,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+965,Falcón,Federación,Churuguara,1,Churuguara
+966,Anzoátegui,Bruzual,Clarines,2,Clarines
+967,Apure,Biruaca,Biruaca,2,Biruaca
+968,Bolívar,Sifontes,El Dorado,1,El Dorado
+969,Apure,Biruaca,Biruaca,2,Biruaca
+970,Apure,Biruaca,Biruaca,2,Biruaca
+971,Aragua,José Angel Lamas,Santa Cruz de Aragua,3,Santa Cruz de Aragua
+972,Lara,Andrés Eloy Blanco,Sanare,4,Sanare
+973,Anzoátegui,Guanta,Guanta,1,Guanta
+974,Apure,Biruaca,Biruaca,2,Biruaca
+975,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+976,Apure,Biruaca,Biruaca,4,Biruaca
+977,Anzoátegui,Bruzual,Clarines,2,Clarines
+978,Anzoátegui,Guanta,Guanta,4,Guanta
+979,Bolívar,Sifontes,El Dorado,1,El Dorado
+980,Lara,Andrés Eloy Blanco,Sanare,1,Sanare
+981,Apure,Biruaca,Biruaca,4,Biruaca
+982,Apure,Biruaca,Biruaca,2,Biruaca
+983,Anzoátegui,Francisco de Miranda,Pariaguán,4,Pariaguán
+984,Bolívar,Sifontes,El Dorado,3,El Dorado
+985,Anzoátegui,Francisco de Miranda,Pariaguán,3,Pariaguán
+986,Anzoátegui,Bruzual,Clarines,1,Clarines
+987,Miranda,Los Salias,San Antonio de los Altos,4,San Antonio de los Altos
+988,Bolívar,Sifontes,El Dorado,2,El Dorado
+989,Apure,Biruaca,Biruaca,2,Biruaca
+990,Táchira,Cárdenas,Táriba,1,Táriba
+991,Táchira,Cárdenas,Táriba,1,Táriba
+992,Miranda,Los Salias,San Antonio de los Altos,3,San Antonio de los Altos
+993,Bolívar,Sifontes,El Dorado,1,El Dorado
+994,Anzoátegui,Bruzual,Clarines,4,Clarines
+995,Lara,Andrés Eloy Blanco,Sanare,3,Sanare
+996,Falcón,Federación,Churuguara,2,Churuguara
+997,Táchira,Cárdenas,Táriba,2,Táriba
+998,Miranda,Los Salias,San Antonio de los Altos,2,San Antonio de los Altos
+999,Apure,Biruaca,Biruaca,4,Biruaca
+1000,Táchira,Cárdenas,Táriba,2,Táriba

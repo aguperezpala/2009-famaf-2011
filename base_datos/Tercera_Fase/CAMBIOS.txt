@@ -104,7 +104,25 @@ efectuadas para resolverlos:
     no_ci de el Jefe de Grupo Familiar relacionado con ése encuestado. Entonces
     si encuestado.no_ci == jefe_ci esto significa que el encuestado que se está
     tratando es precisamente el Jefe de Grupo Familiar
-    
-    
+
+ 7) # Restricciones de integridad
+    Estudiando nuevamente el esquema E-R y comparándolo con el formulario y la
+    descomposición final en tablas que aquí se obtuvo, se agregaron algunas
+    restricciones de integridad que serán implementadas como triggers.
+    Las mismas son:
+    a) Si un Jefe de grupo Familiar tiene su "Forma de cobro" con un valor no
+       nulo, entonces su "Dedicación actual" es no nulo.
+    b) Si en una planilla se marcó que sí se posee "Tarjeta" (de crédito),
+       entonces debe poseer una "Cta_banco"
+    c) Que el siglo de la "Fecha de nacimiento" de un Jefe de Grupo Familiar
+       sea > 18
+    d) Si el Jefe de Grupo Familiar ó alguien de su familia participa en alguna
+       organización comunitaria (ie: si "participacion_comunitaria.propia" o si
+       "participacion_comunitaria.familia" son 'True') entonces el campo
+       "participacion_comunitaria.org_comunitarias" de esa misma planilla debe
+       ser no nulo (es un varchar, si fuese nulo sería que no existe)
+       NOTA: usar un valor por defecto para cuando no se cumpla esta restricción.
+    e) TODO: revisar la dep.func. paricipación_comunitaria -> constitución
+       ¿qué quisimos decir con eso?
 
 [0] https://kali.famaf.unc.edu.ar/2009/bd/grupo3/web/
