@@ -1,5 +1,5 @@
 CREATE TABLE "sector" (
-	"sector.cp" INT NOT NULL,
+	"sector.cp" uint NOT NULL,
 	PRIMARY KEY ("sector.cp")
 );
 

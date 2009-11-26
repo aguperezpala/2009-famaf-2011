@@ -1,0 +1,1000 @@
+1,Comercial,1,Cerveza,825048
+2,Privada,1,Helados,862473
+3,Publica,1,Refrescos,613393
+4,Cuenta propia,0,,728008
+5,Cuenta propia,0,,999293
+6,Cuenta propia,1,Dulces,339346
+7,Publica,0,,1654672
+8,Cuenta propia,0,,14674
+9,Comercial,0,,1312648
+10,Cuenta propia,0,,354701
+11,Privada,0,,2072958
+12,Cuenta propia,0,,1403795
+13,Privada,0,,683050
+14,Cuenta propia,0,,1465450
+15,Cuenta propia,0,,416386
+16,Cuenta propia,1,Dulces,463335
+17,Comercial,1,Malta,645448
+18,Publica,0,,836808
+19,Comercial,0,,2265123
+20,Cuenta propia,1,Empanadas,2337649
+21,Comercial,1,Malta,1768192
+22,Comercial,1,Empanadas,715680
+23,Cuenta propia,1,Cerveza,1793163
+24,Privada,0,,845691
+25,Privada,1,Empanadas,1868022
+26,Comercial,0,,2391917
+27,Cuenta propia,0,,1424164
+28,Cuenta propia,0,,85300
+29,Cuenta propia,0,,1489607
+30,Cuenta propia,1,Refrescos,1071369
+31,Comercial,1,Helados,641100
+32,Comercial,0,,1613488
+33,Cuenta propia,1,Cerveza,1232357
+34,Publica,1,Refrescos,1192347
+35,Comercial,0,,1804205
+36,Cuenta propia,0,,1540059
+37,Comercial,0,,1948661
+38,Cuenta propia,1,Refrescos,1820215
+39,Comercial,0,,1341357
+40,Publica,1,Refrescos,831485
+41,Comercial,1,Refrescos,1105966
+42,Comercial,1,Refrescos,1599711
+43,Cuenta propia,1,Empanadas,668102
+44,Cuenta propia,1,Cerveza,2077469
+45,Cuenta propia,0,,1248356
+46,Privada,0,,1322121
+47,Privada,1,Cerveza,181479
+48,Publica,0,,1959826
+49,Publica,1,Malta,2032179
+50,Cuenta propia,1,Malta,537753
+51,Privada,0,,1925861
+52,Publica,1,Cerveza,1257565
+53,Publica,1,Malta,2040179
+54,Cuenta propia,0,,84477
+55,Comercial,1,Helados,392833
+56,Comercial,1,Dulces,1072384
+57,Comercial,1,Helados,1888119
+58,Privada,0,,1684800
+59,Cuenta propia,0,,457539
+60,Comercial,1,Dulces,1882864
+61,Privada,0,,738948
+62,Privada,0,,58253
+63,Cuenta propia,0,,139899
+64,Privada,1,Malta,736927
+65,Cuenta propia,1,Empanadas,430133
+66,Cuenta propia,0,,2465487
+67,Cuenta propia,1,Cerveza,1298515
+68,Cuenta propia,1,Cerveza,1693819
+69,Cuenta propia,0,,1299993
+70,Privada,1,Cerveza,632099
+71,Cuenta propia,1,Malta,1392877
+72,Publica,0,,146815
+73,Cuenta propia,0,,1857363
+74,Cuenta propia,0,,2011851
+75,Publica,1,Empanadas,414322
+76,Cuenta propia,0,,1353745
+77,Publica,0,,140341
+78,Publica,1,Helados,2339106
+79,Publica,0,,1905016
+80,Publica,0,,181959
+81,Privada,1,Empanadas,2082359
+82,Comercial,0,,1156299
+83,Publica,1,Dulces,658353
+84,Comercial,1,Malta,1702173
+85,Cuenta propia,0,,86535
+86,Cuenta propia,1,Empanadas,1227457
+87,Publica,0,,1037216
+88,Publica,0,,1404278
+89,Publica,1,Empanadas,1477302
+90,Cuenta propia,1,Cerveza,118700
+91,Publica,0,,1313372
+92,Cuenta propia,0,,183581
+93,Privada,0,,573882
+94,Cuenta propia,1,Dulces,1630879
+95,Publica,0,,568526
+96,Privada,1,Helados,502151
+97,Cuenta propia,0,,1759583
+98,Comercial,0,,2089741
+99,Comercial,0,,2307301
+100,Publica,0,,576299
+101,Privada,0,,1931300
+102,Publica,1,Refrescos,52032
+103,Comercial,1,Helados,742610
+104,Cuenta propia,1,Helados,2113177
+105,Comercial,1,Malta,1878513
+106,Privada,0,,2021429
+107,Comercial,0,,1942477
+108,Cuenta propia,1,Dulces,2221668
+109,Comercial,1,Helados,1516011
+110,Privada,1,Dulces,2131547
+111,Comercial,0,,271641
+112,Publica,1,Cerveza,263915
+113,Publica,1,Cerveza,2303081
+114,Comercial,1,Malta,650322
+115,Privada,1,Dulces,1980015
+116,Comercial,1,Helados,805034
+117,Publica,0,,1284180
+118,Comercial,1,Helados,1335922
+119,Comercial,0,,799822
+120,Privada,0,,1524639
+121,Comercial,1,Helados,861379
+122,Privada,1,Malta,1795510
+123,Publica,1,Refrescos,402546
+124,Cuenta propia,1,Dulces,461772
+125,Privada,0,,1541673
+126,Cuenta propia,1,Refrescos,1976200
+127,Publica,1,Dulces,2396764
+128,Publica,1,Dulces,387115
+129,Publica,1,Cerveza,1030082
+130,Publica,0,,460912
+131,Publica,1,Helados,1035695
+132,Comercial,0,,1445902
+133,Comercial,1,Helados,825003
+134,Publica,0,,1608984
+135,Publica,0,,19553
+136,Privada,1,Empanadas,183232
+137,Comercial,0,,1072346
+138,Publica,0,,1608265
+139,Comercial,1,Malta,2031615
+140,Cuenta propia,1,Dulces,992777
+141,Publica,1,Empanadas,1583857
+142,Privada,0,,336267
+143,Privada,1,Cerveza,2190075
+144,Publica,1,Malta,644727
+145,Publica,1,Malta,551673
+146,Comercial,1,Malta,1717817
+147,Cuenta propia,1,Refrescos,1005786
+148,Privada,1,Helados,2169531
+149,Comercial,0,,714798
+150,Cuenta propia,1,Helados,2000848
+151,Comercial,0,,1794490
+152,Comercial,0,,48925
+153,Comercial,0,,875221
+154,Cuenta propia,1,Refrescos,305374
+155,Cuenta propia,1,Refrescos,2275678
+156,Privada,1,Helados,2190931
+157,Publica,0,,1942582
+158,Privada,1,Helados,568323
+159,Publica,0,,1549223
+160,Cuenta propia,1,Dulces,195535
+161,Publica,0,,450327
+162,Publica,1,Empanadas,1077284
+163,Privada,0,,918473
+164,Cuenta propia,0,,1410503
+165,Privada,1,Helados,706168
+166,Publica,1,Malta,2325684
+167,Privada,0,,1387341
+168,Publica,1,Dulces,1127037
+169,Publica,1,Malta,860972
+170,Comercial,0,,907239
+171,Privada,1,Helados,598749
+172,Cuenta propia,1,Empanadas,1987697
+173,Comercial,1,Dulces,1287142
+174,Privada,0,,360856
+175,Publica,0,,1756240
+176,Cuenta propia,1,Malta,811192
+177,Publica,0,,2343308
+178,Privada,1,Malta,675122
+179,Comercial,0,,1453276
+180,Cuenta propia,0,,1124509
+181,Publica,0,,522445
+182,Privada,1,Helados,2384001
+183,Privada,0,,2282323
+184,Cuenta propia,1,Refrescos,640905
+185,Comercial,1,Malta,1001500
+186,Privada,0,,2087949
+187,Privada,0,,1577935
+188,Publica,0,,2077945
+189,Publica,0,,1309891
+190,Comercial,0,,577176
+191,Comercial,0,,1373232
+192,Privada,1,Cerveza,1025927
+193,Cuenta propia,0,,2241847
+194,Publica,0,,52856
+195,Privada,0,,573664
+196,Publica,0,,991621
+197,Cuenta propia,1,Refrescos,2334435
+198,Privada,0,,1713809
+199,Privada,1,Malta,50322
+200,Cuenta propia,1,Refrescos,675744
+201,Comercial,0,,227719
+202,Comercial,0,,2142803
+203,Comercial,1,Refrescos,748363
+204,Cuenta propia,0,,1131115
+205,Publica,0,,1518641
+206,Privada,1,Malta,1676460
+207,Comercial,0,,563322
+208,Comercial,1,Malta,745514
+209,Comercial,1,Empanadas,1962973
+210,Cuenta propia,1,Helados,2038258
+211,Comercial,0,,467701
+212,Comercial,0,,1393746
+213,Privada,1,Dulces,1360790
+214,Cuenta propia,0,,2120309
+215,Publica,0,,1530042
+216,Cuenta propia,1,Empanadas,2122348
+217,Cuenta propia,0,,1243165
+218,Publica,1,Malta,734103
+219,Publica,0,,2339661
+220,Cuenta propia,1,Helados,2418360
+221,Cuenta propia,1,Empanadas,1640906
+222,Publica,1,Helados,385053
+223,Comercial,0,,562065
+224,Privada,1,Dulces,1251342
+225,Privada,0,,1331650
+226,Publica,1,Refrescos,532185
+227,Comercial,0,,1023468
+228,Publica,1,Empanadas,2190725
+229,Comercial,0,,2450062
+230,Publica,1,Refrescos,1475112
+231,Publica,1,Empanadas,2123172
+232,Privada,1,Empanadas,2375039
+233,Publica,1,Dulces,1385059
+234,Privada,1,Dulces,855362
+235,Cuenta propia,1,Cerveza,2202366
+236,Privada,0,,1661262
+237,Comercial,0,,1258445
+238,Comercial,0,,226213
+239,Publica,1,Cerveza,795806
+240,Comercial,0,,2344985
+241,Privada,0,,839177
+242,Cuenta propia,0,,2022737
+243,Comercial,1,Cerveza,1449325
+244,Privada,1,Helados,2000856
+245,Publica,1,Dulces,2182273
+246,Publica,1,Empanadas,1321536
+247,Publica,0,,2096539
+248,Publica,0,,2329609
+249,Comercial,1,Helados,2146233
+250,Privada,0,,311872
+251,Publica,0,,1460854
+252,Comercial,1,Cerveza,1921050
+253,Publica,0,,1505125
+254,Cuenta propia,0,,535163
+255,Comercial,1,Cerveza,2343592
+256,Cuenta propia,1,Empanadas,475662
+257,Privada,0,,2457339
+258,Comercial,0,,1915749
+259,Privada,1,Helados,2278051
+260,Privada,0,,934610
+261,Comercial,0,,1528077
+262,Cuenta propia,0,,1132870
+263,Cuenta propia,0,,1738505
+264,Cuenta propia,1,Dulces,1201171
+265,Privada,1,Malta,2405993
+266,Comercial,1,Cerveza,432211
+267,Privada,0,,65978
+268,Publica,1,Cerveza,1194037
+269,Publica,1,Dulces,826627
+270,Privada,0,,1250867
+271,Comercial,0,,1419139
+272,Comercial,0,,1469405
+273,Cuenta propia,1,Empanadas,1798995
+274,Cuenta propia,1,Refrescos,890689
+275,Comercial,1,Helados,393538
+276,Publica,1,Helados,1854609
+277,Publica,0,,2069143
+278,Privada,1,Empanadas,264873
+279,Publica,1,Cerveza,1065898
+280,Comercial,0,,2252098
+281,Comercial,0,,183725
+282,Cuenta propia,1,Malta,1418891
+283,Privada,0,,2184114
+284,Privada,0,,1477998
+285,Publica,1,Helados,1720460
+286,Comercial,0,,787189
+287,Privada,0,,526392
+288,Publica,0,,932074
+289,Comercial,0,,2046095
+290,Publica,1,Dulces,1753471
+291,Publica,0,,1153285
+292,Privada,0,,209608
+293,Publica,0,,2205419
+294,Comercial,0,,1640414
+295,Publica,0,,2105110
+296,Comercial,0,,444069
+297,Comercial,1,Dulces,121505
+298,Privada,1,Helados,1768133
+299,Cuenta propia,1,Helados,917338
+300,Publica,1,Empanadas,855842
+301,Privada,1,Dulces,986750
+302,Cuenta propia,1,Dulces,1454285
+303,Comercial,0,,1272894
+304,Privada,1,Helados,1441734
+305,Publica,0,,1204673
+306,Publica,1,Cerveza,91438
+307,Publica,0,,688343
+308,Comercial,1,Empanadas,704293
+309,Publica,1,Empanadas,1216926
+310,Publica,0,,698637
+311,Publica,1,Helados,2355512
+312,Privada,0,,116951
+313,Privada,0,,205158
+314,Cuenta propia,1,Helados,1466752
+315,Privada,0,,558601
+316,Privada,1,Helados,2418544
+317,Privada,0,,787634
+318,Publica,0,,200135
+319,Cuenta propia,1,Empanadas,2349464
+320,Privada,1,Malta,814539
+321,Privada,1,Malta,1810297
+322,Privada,0,,629158
+323,Privada,1,Helados,2308218
+324,Comercial,1,Malta,2184674
+325,Privada,0,,666756
+326,Publica,1,Helados,1292030
+327,Publica,0,,1937379
+328,Privada,0,,2349447
+329,Privada,0,,169990
+330,Cuenta propia,1,Malta,1222731
+331,Comercial,0,,463650
+332,Privada,1,Helados,1510700
+333,Comercial,1,Malta,863188
+334,Comercial,1,Dulces,1319262
+335,Comercial,0,,2336396
+336,Cuenta propia,1,Cerveza,481325
+337,Comercial,1,Malta,1033331
+338,Privada,1,Empanadas,457139
+339,Privada,1,Refrescos,340290
+340,Comercial,0,,2031489
+341,Publica,1,Empanadas,493092
+342,Privada,0,,80623
+343,Cuenta propia,1,Malta,1463071
+344,Privada,1,Cerveza,1040607
+345,Cuenta propia,1,Dulces,1179838
+346,Privada,1,Refrescos,1004692
+347,Cuenta propia,1,Malta,314505
+348,Publica,0,,2144998
+349,Cuenta propia,0,,1109104
+350,Privada,0,,1870567
+351,Comercial,0,,526521
+352,Privada,1,Refrescos,2249811
+353,Cuenta propia,1,Malta,46978
+354,Cuenta propia,1,Empanadas,2471990
+355,Publica,0,,1734323
+356,Cuenta propia,0,,1625888
+357,Cuenta propia,0,,2264266
+358,Privada,0,,2413324
+359,Comercial,0,,1384188
+360,Privada,0,,1951164
+361,Publica,1,Malta,977961
+362,Publica,1,Cerveza,386166
+363,Cuenta propia,0,,407601
+364,Publica,0,,2452342
+365,Cuenta propia,1,Helados,1106593
+366,Privada,0,,18016
+367,Privada,1,Refrescos,860476
+368,Privada,1,Refrescos,1916619
+369,Cuenta propia,1,Helados,2172663
+370,Cuenta propia,1,Refrescos,1845965
+371,Cuenta propia,1,Empanadas,2412381
+372,Comercial,0,,1435480
+373,Cuenta propia,1,Refrescos,958475
+374,Comercial,1,Refrescos,1210170
+375,Privada,0,,93288
+376,Cuenta propia,0,,951724
+377,Publica,0,,299782
+378,Privada,0,,905862
+379,Cuenta propia,0,,2290037
+380,Publica,1,Refrescos,185985
+381,Cuenta propia,0,,1216411
+382,Cuenta propia,0,,2374941
+383,Privada,1,Malta,828202
+384,Cuenta propia,1,Refrescos,1458126
+385,Cuenta propia,0,,1594234
+386,Privada,1,Helados,611398
+387,Privada,1,Dulces,854986
+388,Comercial,0,,1083537
+389,Comercial,0,,2292382
+390,Privada,1,Dulces,362980
+391,Cuenta propia,1,Dulces,296799
+392,Comercial,1,Helados,137842
+393,Privada,1,Malta,454611
+394,Cuenta propia,0,,1199089
+395,Cuenta propia,1,Helados,1246629
+396,Publica,0,,1263967
+397,Comercial,0,,426569
+398,Comercial,1,Empanadas,1113262
+399,Publica,1,Malta,1001041
+400,Publica,1,Helados,424317
+401,Comercial,0,,822051
+402,Publica,0,,1014074
+403,Comercial,0,,2190664
+404,Publica,1,Cerveza,1645173
+405,Comercial,1,Empanadas,47734
+406,Privada,1,Malta,1522696
+407,Comercial,1,Helados,458539
+408,Privada,0,,940377
+409,Publica,1,Empanadas,2117605
+410,Privada,1,Helados,1133772
+411,Comercial,1,Cerveza,838822
+412,Privada,0,,1609460
+413,Cuenta propia,0,,1588480
+414,Cuenta propia,1,Helados,1407267
+415,Comercial,0,,1284458
+416,Publica,1,Malta,1420789
+417,Publica,1,Dulces,1489371
+418,Privada,1,Malta,2294462
+419,Privada,1,Dulces,2436980
+420,Comercial,0,,1144757
+421,Comercial,0,,2024720
+422,Cuenta propia,1,Malta,796939
+423,Privada,0,,2342522
+424,Comercial,0,,1516326
+425,Privada,1,Malta,2050298
+426,Cuenta propia,1,Cerveza,111901
+427,Privada,0,,2087702
+428,Privada,0,,2083135
+429,Cuenta propia,1,Cerveza,528509
+430,Publica,1,Helados,1593249
+431,Publica,1,Empanadas,331452
+432,Cuenta propia,1,Malta,2101276
+433,Cuenta propia,0,,258976
+434,Publica,1,Malta,1219788
+435,Publica,1,Refrescos,1360615
+436,Comercial,1,Helados,1705408
+437,Comercial,0,,126877
+438,Cuenta propia,0,,1997033
+439,Cuenta propia,1,Helados,1418109
+440,Privada,1,Empanadas,716391
+441,Comercial,0,,950431
+442,Comercial,1,Refrescos,606818
+443,Privada,0,,2402136
+444,Publica,0,,1737897
+445,Privada,1,Refrescos,589240
+446,Comercial,1,Empanadas,110465
+447,Comercial,1,Malta,1526567
+448,Privada,1,Dulces,827435
+449,Publica,1,Malta,1810035
+450,Cuenta propia,0,,1426542
+451,Publica,0,,913247
+452,Privada,1,Dulces,1439469
+453,Privada,1,Malta,425388
+454,Privada,1,Dulces,1747988
+455,Privada,1,Empanadas,2297077
+456,Publica,1,Cerveza,1401814
+457,Privada,1,Dulces,1136278
+458,Privada,1,Helados,302943
+459,Comercial,1,Empanadas,2173278
+460,Comercial,0,,1202071
+461,Cuenta propia,0,,606158
+462,Comercial,1,Malta,2101585
+463,Comercial,0,,692739
+464,Comercial,0,,1254472
+465,Comercial,1,Helados,602222
+466,Privada,1,Helados,1894112
+467,Cuenta propia,0,,1037839
+468,Publica,0,,1511888
+469,Comercial,1,Dulces,753521
+470,Publica,0,,833619
+471,Cuenta propia,1,Malta,429039
+472,Privada,1,Refrescos,1932735
+473,Comercial,1,Cerveza,1209308
+474,Comercial,1,Dulces,2397259
+475,Privada,0,,879616
+476,Comercial,0,,2466645
+477,Comercial,0,,2410437
+478,Privada,0,,2334091
+479,Publica,0,,2234378
+480,Cuenta propia,0,,2376553
+481,Privada,0,,2038271
+482,Cuenta propia,1,Dulces,316905
+483,Publica,0,,1547616
+484,Publica,0,,2157563
+485,Comercial,0,,1716354
+486,Privada,0,,173453
+487,Publica,1,Refrescos,524472
+488,Comercial,0,,1917799
+489,Privada,0,,542911
+490,Cuenta propia,0,,1497313
+491,Cuenta propia,0,,2407121
+492,Comercial,1,Helados,1899423
+493,Privada,0,,2430529
+494,Publica,1,Helados,1314841
+495,Cuenta propia,0,,1798511
+496,Publica,1,Cerveza,2241767
+497,Privada,1,Cerveza,187441
+498,Privada,1,Malta,1623799
+499,Privada,1,Dulces,717289
+500,Privada,1,Dulces,167532
+501,Comercial,0,,217914
+502,Cuenta propia,0,,2413445
+503,Cuenta propia,1,Malta,512738
+504,Privada,0,,774956
+505,Comercial,1,Cerveza,662527
+506,Comercial,0,,2449976
+507,Cuenta propia,0,,567400
+508,Privada,0,,315835
+509,Cuenta propia,1,Dulces,2063016
+510,Cuenta propia,0,,1015449
+511,Comercial,1,Dulces,1880183
+512,Comercial,0,,1207116
+513,Privada,0,,2042719
+514,Publica,0,,1419243
+515,Privada,1,Refrescos,1943844
+516,Cuenta propia,0,,1216886
+517,Privada,0,,2230062
+518,Cuenta propia,1,Cerveza,1271525
+519,Comercial,1,Dulces,1132431
+520,Comercial,1,Empanadas,2166447
+521,Comercial,1,Malta,667755
+522,Comercial,1,Dulces,2308390
+523,Cuenta propia,0,,1203122
+524,Cuenta propia,0,,580302
+525,Privada,0,,1640445
+526,Comercial,0,,2067670
+527,Privada,1,Refrescos,790424
+528,Publica,1,Dulces,2055149
+529,Comercial,1,Empanadas,534632
+530,Cuenta propia,0,,1167103
+531,Comercial,1,Empanadas,1631677
+532,Privada,0,,2106356
+533,Publica,0,,1714219
+534,Privada,0,,1100636
+535,Comercial,1,Empanadas,1092620
+536,Privada,1,Empanadas,2455462
+537,Cuenta propia,1,Cerveza,1209375
+538,Comercial,1,Refrescos,1016955
+539,Privada,1,Helados,1474335
+540,Publica,1,Malta,1812057
+541,Publica,1,Refrescos,2159114
+542,Privada,0,,725848
+543,Comercial,0,,1269362
+544,Privada,0,,130602
+545,Privada,0,,1037373
+546,Cuenta propia,1,Cerveza,1601237
+547,Privada,0,,1058478
+548,Privada,1,Dulces,1152895
+549,Comercial,1,Cerveza,2434683
+550,Cuenta propia,1,Cerveza,161741
+551,Comercial,1,Helados,1932205
+552,Cuenta propia,1,Refrescos,1970834
+553,Privada,0,,1750560
+554,Cuenta propia,1,Dulces,1772737
+555,Publica,1,Malta,1797576
+556,Privada,0,,2087369
+557,Privada,0,,338978
+558,Privada,0,,794202
+559,Privada,1,Malta,502944
+560,Cuenta propia,1,Dulces,1185524
+561,Publica,0,,121815
+562,Privada,0,,1862168
+563,Privada,0,,2458819
+564,Privada,0,,514969
+565,Comercial,1,Refrescos,2064914
+566,Comercial,1,Malta,1860124
+567,Publica,1,Cerveza,798927
+568,Publica,0,,999911
+569,Comercial,0,,429020
+570,Privada,1,Malta,1181911
+571,Publica,0,,1331047
+572,Publica,0,,1102854
+573,Privada,1,Cerveza,1437132
+574,Comercial,0,,1421615
+575,Cuenta propia,1,Empanadas,672829
+576,Privada,1,Dulces,1155689
+577,Privada,1,Cerveza,2335853
+578,Publica,0,,749350
+579,Comercial,1,Refrescos,1861963
+580,Cuenta propia,0,,189212
+581,Comercial,0,,1859645
+582,Publica,0,,234937
+583,Publica,1,Malta,422906
+584,Comercial,1,Refrescos,2311486
+585,Privada,0,,2442178
+586,Cuenta propia,0,,142961
+587,Privada,0,,244677
+588,Privada,1,Cerveza,1687178
+589,Cuenta propia,1,Dulces,1027596
+590,Comercial,0,,935072
+591,Privada,0,,746691
+592,Comercial,0,,347078
+593,Privada,1,Malta,238000
+594,Comercial,1,Refrescos,2107323
+595,Privada,0,,539615
+596,Publica,0,,1778481
+597,Publica,0,,1452800
+598,Comercial,1,Empanadas,814355
+599,Cuenta propia,1,Empanadas,1290167
+600,Publica,0,,512044
+601,Privada,0,,480283
+602,Cuenta propia,0,,1596883
+603,Publica,1,Cerveza,1365642
+604,Cuenta propia,0,,1834850
+605,Publica,1,Empanadas,682038
+606,Comercial,0,,929404
+607,Publica,0,,2090428
+608,Publica,1,Dulces,1408068
+609,Privada,0,,77174
+610,Comercial,1,Dulces,1183138
+611,Cuenta propia,1,Helados,1155214
+612,Publica,0,,1789755
+613,Cuenta propia,1,Malta,1752132
+614,Privada,0,,2416515
+615,Publica,0,,2054306
+616,Publica,0,,1460865
+617,Privada,1,Dulces,755901
+618,Cuenta propia,1,Helados,2478921
+619,Cuenta propia,1,Cerveza,1142018
+620,Cuenta propia,0,,1816134
+621,Publica,1,Refrescos,2308437
+622,Cuenta propia,1,Dulces,472312
+623,Comercial,1,Helados,928917
+624,Publica,1,Cerveza,1626554
+625,Publica,0,,1659307
+626,Publica,0,,2174747
+627,Privada,1,Cerveza,1537530
+628,Publica,1,Empanadas,989349
+629,Cuenta propia,0,,850258
+630,Privada,0,,1935970
+631,Privada,1,Dulces,389558
+632,Comercial,1,Malta,2004135
+633,Publica,1,Helados,630094
+634,Comercial,0,,1879095
+635,Cuenta propia,1,Refrescos,1297912
+636,Publica,0,,1589237
+637,Comercial,1,Malta,941271
+638,Privada,1,Cerveza,2024645
+639,Cuenta propia,0,,1745074
+640,Comercial,0,,1869504
+641,Publica,1,Helados,460397
+642,Publica,1,Refrescos,2154031
+643,Privada,1,Helados,2360321
+644,Cuenta propia,0,,915113
+645,Publica,1,Dulces,2277697
+646,Cuenta propia,1,Empanadas,1475532
+647,Cuenta propia,1,Empanadas,2375397
+648,Comercial,0,,1927394
+649,Cuenta propia,0,,445909
+650,Publica,0,,1335960
+651,Publica,0,,2159706
+652,Privada,1,Refrescos,2302114
+653,Privada,0,,606234
+654,Comercial,1,Malta,295677
+655,Privada,1,Refrescos,2105479
+656,Cuenta propia,0,,1548125
+657,Privada,0,,1248985
+658,Privada,0,,333484
+659,Cuenta propia,1,Cerveza,287386
+660,Privada,0,,363767
+661,Cuenta propia,0,,1794268
+662,Comercial,1,Cerveza,138613
+663,Privada,0,,1096242
+664,Comercial,0,,547087
+665,Cuenta propia,1,Dulces,1822287
+666,Cuenta propia,1,Malta,2295063
+667,Privada,0,,1155749
+668,Privada,1,Cerveza,1993435
+669,Cuenta propia,1,Helados,1565659
+670,Publica,1,Dulces,74801
+671,Cuenta propia,1,Refrescos,2413562
+672,Privada,1,Helados,1038890
+673,Publica,0,,2411335
+674,Cuenta propia,1,Refrescos,143800
+675,Comercial,0,,881873
+676,Publica,1,Helados,59672
+677,Cuenta propia,0,,1332110
+678,Publica,0,,1126916
+679,Privada,1,Empanadas,2397256
+680,Comercial,1,Cerveza,1590565
+681,Cuenta propia,1,Malta,141316
+682,Publica,1,Helados,2318258
+683,Privada,1,Empanadas,1351324
+684,Comercial,0,,466103
+685,Cuenta propia,1,Helados,555920
+686,Privada,1,Refrescos,1951693
+687,Publica,1,Cerveza,388834
+688,Publica,1,Dulces,335214
+689,Cuenta propia,1,Helados,545431
+690,Publica,1,Dulces,1300196
+691,Cuenta propia,0,,1741013
+692,Privada,1,Helados,1210083
+693,Cuenta propia,0,,8898
+694,Publica,1,Cerveza,1431536
+695,Comercial,0,,750142
+696,Publica,1,Helados,931814
+697,Privada,0,,1993928
+698,Publica,0,,154711
+699,Publica,1,Helados,230634
+700,Comercial,0,,2071237
+701,Cuenta propia,1,Dulces,468207
+702,Comercial,1,Refrescos,1462222
+703,Privada,0,,381200
+704,Comercial,1,Malta,1889107
+705,Cuenta propia,0,,1479972
+706,Comercial,1,Helados,2237567
+707,Privada,0,,265426
+708,Cuenta propia,0,,126398
+709,Cuenta propia,1,Helados,1496102
+710,Cuenta propia,0,,2432991
+711,Publica,1,Dulces,1767464
+712,Comercial,1,Malta,173616
+713,Publica,0,,504800
+714,Comercial,1,Cerveza,141642
+715,Cuenta propia,0,,720715
+716,Cuenta propia,0,,1178350
+717,Privada,0,,328418
+718,Comercial,0,,843936
+719,Cuenta propia,1,Dulces,1238331
+720,Cuenta propia,0,,1114255
+721,Privada,0,,2380371
+722,Privada,0,,164356
+723,Cuenta propia,1,Malta,467564
+724,Privada,1,Cerveza,686274
+725,Privada,1,Empanadas,419393
+726,Cuenta propia,0,,1179065
+727,Cuenta propia,0,,1772644
+728,Cuenta propia,1,Malta,706847
+729,Comercial,1,Helados,2404457
+730,Comercial,0,,1909026
+731,Privada,1,Empanadas,765662
+732,Privada,1,Helados,1734765
+733,Publica,1,Empanadas,978368
+734,Comercial,1,Dulces,1853962
+735,Privada,0,,1968106
+736,Privada,1,Dulces,242080
+737,Cuenta propia,1,Malta,1198251
+738,Comercial,0,,558673
+739,Privada,0,,2110766
+740,Cuenta propia,1,Cerveza,1561700
+741,Comercial,0,,1647801
+742,Privada,0,,544967
+743,Cuenta propia,1,Refrescos,474058
+744,Comercial,1,Empanadas,1900812
+745,Privada,1,Empanadas,266676
+746,Cuenta propia,1,Helados,1950459
+747,Privada,1,Dulces,2357780
+748,Publica,0,,1174267
+749,Publica,1,Dulces,33131
+750,Publica,0,,1117194
+751,Comercial,1,Empanadas,755329
+752,Privada,1,Empanadas,1248965
+753,Privada,0,,1034905
+754,Publica,1,Cerveza,1525874
+755,Cuenta propia,0,,94257
+756,Privada,1,Malta,1482906
+757,Publica,1,Empanadas,1642060
+758,Cuenta propia,0,,563689
+759,Publica,0,,951201
+760,Privada,0,,2193281
+761,Publica,1,Dulces,1537264
+762,Cuenta propia,0,,895963
+763,Publica,1,Cerveza,338720
+764,Comercial,0,,1334223
+765,Privada,0,,2450947
+766,Comercial,1,Malta,1610385
+767,Comercial,1,Dulces,2150879
+768,Publica,1,Empanadas,1663150
+769,Publica,0,,539255
+770,Publica,1,Empanadas,370845
+771,Cuenta propia,1,Refrescos,1150889
+772,Publica,1,Refrescos,2102139
+773,Comercial,1,Helados,927483
+774,Cuenta propia,1,Refrescos,776976
+775,Publica,1,Empanadas,1136365
+776,Publica,0,,1158444
+777,Comercial,1,Dulces,2108081
+778,Privada,1,Empanadas,2443725
+779,Cuenta propia,1,Cerveza,804224
+780,Privada,0,,1032920
+781,Privada,1,Malta,1401841
+782,Publica,1,Dulces,1806741
+783,Publica,0,,1046762
+784,Comercial,1,Empanadas,1196637
+785,Publica,0,,1216688
+786,Cuenta propia,0,,80489
+787,Privada,1,Helados,540467
+788,Cuenta propia,1,Malta,756832
+789,Cuenta propia,1,Empanadas,2231518
+790,Publica,0,,2142920
+791,Cuenta propia,1,Malta,702675
+792,Comercial,1,Empanadas,2431100
+793,Cuenta propia,1,Refrescos,99095
+794,Publica,0,,793676
+795,Cuenta propia,0,,1804152
+796,Privada,1,Helados,1038655
+797,Privada,1,Refrescos,2046058
+798,Cuenta propia,0,,1292317
+799,Cuenta propia,0,,784861
+800,Comercial,0,,656594
+801,Privada,1,Malta,1996161
+802,Publica,0,,12263
+803,Cuenta propia,0,,1386844
+804,Cuenta propia,0,,326515
+805,Comercial,1,Helados,2076468
+806,Cuenta propia,0,,885549
+807,Privada,0,,878565
+808,Cuenta propia,1,Helados,1325123
+809,Comercial,1,Cerveza,1154810
+810,Comercial,0,,96685
+811,Publica,1,Helados,63649
+812,Comercial,0,,2482360
+813,Publica,0,,457100
+814,Privada,1,Helados,537579
+815,Comercial,1,Dulces,187145
+816,Comercial,0,,2288171
+817,Cuenta propia,1,Helados,221266
+818,Comercial,0,,37699
+819,Privada,1,Refrescos,74895
+820,Cuenta propia,0,,58927
+821,Comercial,1,Cerveza,1293135
+822,Cuenta propia,1,Malta,1781984
+823,Cuenta propia,1,Malta,1117261
+824,Privada,0,,1758482
+825,Privada,1,Cerveza,432436
+826,Comercial,1,Empanadas,252730
+827,Comercial,1,Empanadas,2347148
+828,Publica,0,,1717293
+829,Privada,0,,1281487
+830,Publica,0,,918595
+831,Comercial,0,,1622238
+832,Privada,1,Malta,2246916
+833,Privada,1,Dulces,1674504
+834,Comercial,0,,568619
+835,Privada,0,,2308844
+836,Publica,0,,946344
+837,Publica,0,,716087
+838,Privada,1,Cerveza,2396839
+839,Publica,1,Cerveza,2431699
+840,Comercial,1,Malta,1537490
+841,Comercial,1,Refrescos,1612683
+842,Cuenta propia,1,Cerveza,2037413
+843,Comercial,1,Helados,1822560
+844,Publica,1,Cerveza,983994
+845,Comercial,0,,1753211
+846,Cuenta propia,1,Malta,1015365
+847,Cuenta propia,1,Refrescos,1333531
+848,Privada,1,Cerveza,1837136
+849,Privada,1,Empanadas,809866
+850,Comercial,1,Malta,1445226
+851,Cuenta propia,1,Helados,960428
+852,Publica,0,,1027912
+853,Cuenta propia,0,,534220
+854,Privada,0,,800403
+855,Privada,0,,185222
+856,Publica,1,Malta,1735447
+857,Privada,1,Helados,15004
+858,Privada,1,Cerveza,1060123
+859,Publica,1,Malta,1996141
+860,Privada,1,Cerveza,908289
+861,Publica,0,,646509
+862,Cuenta propia,1,Dulces,26503
+863,Comercial,1,Cerveza,1256216
+864,Cuenta propia,1,Empanadas,1780209
+865,Comercial,0,,911089
+866,Cuenta propia,1,Malta,1708314
+867,Privada,1,Helados,548633
+868,Publica,0,,941747
+869,Publica,0,,1539608
+870,Publica,1,Refrescos,852317
+871,Privada,1,Refrescos,2079925
+872,Publica,0,,479096
+873,Publica,0,,1765735
+874,Cuenta propia,1,Cerveza,801397
+875,Publica,0,,709439
+876,Publica,0,,2034867
+877,Publica,1,Empanadas,2499111
+878,Cuenta propia,1,Refrescos,674249
+879,Publica,0,,2285839
+880,Comercial,1,Malta,189384
+881,Cuenta propia,1,Empanadas,1129637
+882,Publica,0,,1604971
+883,Comercial,0,,2338111
+884,Comercial,1,Cerveza,2482179
+885,Cuenta propia,0,,2361161
+886,Cuenta propia,1,Malta,1099468
+887,Comercial,0,,561039
+888,Cuenta propia,0,,2451649
+889,Publica,1,Malta,660930
+890,Comercial,0,,1480914
+891,Privada,1,Helados,1907909
+892,Comercial,0,,1095896
+893,Publica,0,,1512110
+894,Publica,1,Refrescos,288045
+895,Publica,1,Helados,2246644
+896,Privada,0,,164885
+897,Publica,1,Helados,310720
+898,Privada,0,,246125
+899,Publica,0,,312882
+900,Comercial,0,,1062357
+901,Publica,0,,2320451
+902,Cuenta propia,1,Empanadas,267453
+903,Publica,1,Helados,267089
+904,Privada,0,,742447
+905,Publica,0,,1323229
+906,Privada,0,,1626566
+907,Publica,0,,1197323
+908,Comercial,0,,868537
+909,Publica,1,Empanadas,1920567
+910,Cuenta propia,1,Empanadas,145067
+911,Publica,0,,1160894
+912,Privada,0,,1143212
+913,Publica,0,,2026873
+914,Privada,0,,305692
+915,Cuenta propia,0,,169742
+916,Privada,1,Helados,1639275
+917,Publica,1,Cerveza,1693988
+918,Comercial,1,Refrescos,1384652
+919,Comercial,0,,847417
+920,Comercial,0,,774779
+921,Publica,1,Helados,754700
+922,Cuenta propia,0,,1266509
+923,Publica,1,Refrescos,1866505
+924,Privada,0,,1827203
+925,Privada,1,Malta,389110
+926,Publica,0,,1469113
+927,Publica,1,Helados,816887
+928,Publica,1,Refrescos,243138
+929,Cuenta propia,1,Malta,860676
+930,Cuenta propia,0,,1280629
+931,Cuenta propia,0,,1333502
+932,Publica,1,Helados,2279047
+933,Privada,0,,1647138
+934,Publica,1,Refrescos,115033
+935,Comercial,1,Malta,1775427
+936,Comercial,1,Helados,788143
+937,Publica,1,Cerveza,309178
+938,Privada,1,Dulces,1391877
+939,Comercial,1,Empanadas,945016
+940,Comercial,0,,1941881
+941,Cuenta propia,0,,1962326
+942,Comercial,0,,780115
+943,Cuenta propia,0,,906973
+944,Privada,1,Helados,70224
+945,Privada,1,Malta,728453
+946,Cuenta propia,0,,1745096
+947,Privada,1,Helados,1470278
+948,Privada,0,,2072699
+949,Privada,0,,1850159
+950,Comercial,0,,690592
+951,Privada,0,,1260741
+952,Comercial,1,Malta,923385
+953,Publica,1,Dulces,376384
+954,Privada,0,,289565
+955,Comercial,1,Malta,65470
+956,Privada,0,,1058086
+957,Publica,0,,285353
+958,Cuenta propia,0,,1988122
+959,Publica,1,Malta,1334990
+960,Cuenta propia,0,,1387746
+961,Publica,1,Malta,721862
+962,Comercial,1,Refrescos,1402106
+963,Publica,1,Dulces,1944514
+964,Publica,1,Refrescos,2435997
+965,Cuenta propia,1,Helados,521537
+966,Publica,0,,643238
+967,Comercial,0,,1513415
+968,Cuenta propia,0,,158281
+969,Privada,1,Refrescos,648889
+970,Privada,1,Refrescos,1895836
+971,Comercial,0,,1395153
+972,Comercial,1,Malta,2447139
+973,Comercial,1,Empanadas,1055
+974,Publica,1,Malta,1096236
+975,Publica,0,,2444852
+976,Publica,1,Malta,777958
+977,Privada,1,Cerveza,2423055
+978,Comercial,1,Cerveza,1199659
+979,Cuenta propia,1,Refrescos,68667
+980,Comercial,0,,492759
+981,Publica,0,,320955
+982,Cuenta propia,1,Cerveza,636573
+983,Privada,1,Refrescos,446058
+984,Cuenta propia,0,,1999320
+985,Cuenta propia,1,Refrescos,1352946
+986,Comercial,0,,1815461
+987,Privada,1,Refrescos,2324601
+988,Publica,0,,756337
+989,Cuenta propia,0,,1634853
+990,Publica,0,,594626
+991,Privada,1,Dulces,1738390
+992,Cuenta propia,1,Refrescos,1448351
+993,Comercial,1,Malta,1059808
+994,Publica,0,,2364675
+995,Publica,0,,1656051
+996,Comercial,0,,435472
+997,Cuenta propia,0,,320324
+998,Comercial,0,,239146
+999,Publica,1,Malta,910392
+1000,Publica,1,Helados,411181

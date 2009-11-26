@@ -1,0 +1,3 @@
+TRUNCATE "planilla" CASCADE;
+TRUNCATE "sector" CASCADE;
+TRUNCATE "estado" CASCADE;
