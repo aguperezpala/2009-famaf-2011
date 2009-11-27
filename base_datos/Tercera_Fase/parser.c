@@ -32,7 +32,7 @@ typedef struct {
  * ej: field0,field1,field2,etc\n
  * NOTE: Siempre debemos terminar con -1 en el arreglo de fields
 */
-tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\'"}, \
+tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\'"}, \
 		/*{NULL, "planilla-familias.txt", {4,2,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, " \'"}, \*/
 		{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL} \
 		};
