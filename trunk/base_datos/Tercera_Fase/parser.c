@@ -11,7 +11,7 @@
 
 #define MAX_FIELD_SIZE		100
 #define CHAR_FIELD_SEPARATOR	','	/* como estan separados los campos en archivos */
-#define TABLE_NAME	"tabla_prueba"
+#define TABLE_NAME	"comunidad"
 
 typedef struct {
 	FILE *file;
@@ -32,9 +32,9 @@ typedef struct {
  * ej: field0,field1,field2,etc\n
  * NOTE: Siempre debemos terminar con -1 en el arreglo de fields
 */
-tuple_t map[] = {{NULL, "planilla-jefe_familia.txt", {4,2,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\'\' "}, \
-		{NULL, "planilla-familias.txt", {4,2,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, " \'"}, \
-  		{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1}, NULL} \
+tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\'"}, \
+		/*{NULL, "planilla-familias.txt", {4,2,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, " \'"}, \*/
+		{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL} \
 		};
 
 
@@ -187,6 +187,7 @@ int main(void)
 		return 1;
 	}
 	
+	memset(result, '\0', 500);
 	/* iteramos ahora */
 	while(!isFinish) {
 		/* limpiamos */
