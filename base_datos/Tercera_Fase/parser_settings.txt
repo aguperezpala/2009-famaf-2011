@@ -5,3 +5,11 @@ tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {4,-1,
 		};
 
 
+				COMUNIDAD
+
+tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\'"}, \
+		{NULL, "null-table.txt", {0,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, "  "}, \
+		{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL}, \
+		{NULL, "planilla-estado-municipio-parroquia-sector.txt", {4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}," "}, \
+		
+		};
