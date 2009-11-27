@@ -11,12 +11,12 @@
 
 #define MAX_FIELD_SIZE		100
 #define CHAR_FIELD_SEPARATOR	','	/* como estan separados los campos en archivos */
-#define TABLE_NAME	"encuestador"
+#define TABLE_NAME	"grupo_familiar"
 
 typedef struct {
 	FILE *file;
 	char *fileName;
-	int fields[20];		/*! kakaso */
+	int fields[50];		/*! kakaso */
 	char *scapeChars;	/* aca determinamos que caracter va a encerar
 				 * el valor, por ejemplo si el campo 1 del archivo
 				 * es del tipo int, entonces scapeChars[0] = ' '
@@ -32,7 +32,9 @@ typedef struct {
  * ej: field0,field1,field2,etc\n
  * NOTE: Siempre debemos terminar con -1 en el arreglo de fields
 */
-tuple_t map[] = {{NULL, "planilla-encuestador.txt", {0,1,3,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"  \'\'"} 
+tuple_t map[] = {{NULL, "planilla-jefe_familia.txt", 
+	{1,0,1,9,3,2,8,6,12,7,4,525,5,9,10,11,521,521,521,521,521,521,-1},
+	"   \'\'\'\'  \'\' \'\'\'\'      "} 
 		};
 
 
@@ -133,6 +135,12 @@ char * get_field(char * line, int fieldPos)
 	assert (result != NULL);
 	memset(result, '\0', MAX_FIELD_SIZE + 1);
 	
+	/*! devolvemos NULL como string */
+	if (fieldPos > 500) {
+		strcpy(result, "NULL");
+		return result;
+	}
+		
 	/* ahora parseamos el campo determinado */
 	
 	while(cPos < fieldPos) {
