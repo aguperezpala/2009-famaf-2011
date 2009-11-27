@@ -9,7 +9,7 @@ implementación de la BD.
    Para salvar estos problemas se decidió modificar ligeramente el esquema ER,
 del cual se efectúa una nueva entrega. Cabe mencionar que esto afectó la
 descomposición de tablas obtenidas durante la 2º fase. El resultado final es el
-que aparece impl,ementado en la página de la materia[0]
+que aparece implementado en la página de la materia[0]
 
    A continuación se lista la serie de problemas hallados, y las modificaciones
 efectuadas para resolverlos:
@@ -17,12 +17,12 @@ efectuadas para resolverlos:
  1) # La Parroquia
     No era posible identificar una Parroquia a partir de una Planilla, pues la
     cadena de relaciones que las comunicaban era:
-    (Planilla) *--1 (Comunidad) 1--* (Sector) 1--* (Parroquia)
+    (Planilla) * -- 1 (Comunidad) 1 -- * (Sector) 1 -- * (Parroquia)
     Como puede verse hay 2 relaciones "uno a muchos" que hacían que desde una
     única Planilla no pueda llegarse a la Parroquia relacionada.
     # Solución
-    Se eliminó la relación (Sector) 1--* (Parroquia) y se generó una nueva
-    (Planilla) *--1 (Parroquia), de manera que desde una Planilla se pueda
+    Se eliminó la relación (Sector) 1 -- * (Parroquia) y se generó una nueva
+    (Planilla) * -- 1 (Parroquia), de manera que desde una Planilla se pueda
     identificar la Parroquia asociada.
     En las tablas esto implicó la eliminación de parroquia_sector y la creación
     de planilla_parroquia
@@ -124,5 +124,17 @@ efectuadas para resolverlos:
        NOTA: usar un valor por defecto para cuando no se cumpla esta restricción.
     e) TODO: revisar la dep.func. paricipación_comunitaria -> constitución
        ¿qué quisimos decir con eso?
+
+ 8) # Dominios y tipos
+    Al ver que en los datos entregados muchos de los campos que habían sido
+    elegidos como varchar (debido a la presencia de una opción "Otros") no
+    salían de 4 ó 5 valores fijos, se decidió restringir el dominio según las
+    opciones que listaba el formulario.
+    En estos casos se dejó el campo 'Otros' como UNA opción más, y NO como un
+    casillero donde rellenar con el valor no estándard de que se trate.
+    Un caso especial es el del campo "servicios.medios" de Planilla, cuyos
+    valores se extrajeron del archivo planilla-informacion.txt. Para este campo
+    se creó un tipo nuevo que representa un arreglo de 4 booleanos, para
+    facilitar la interpretación de los datos entregados.
 
 [0] https://kali.famaf.unc.edu.ar/2009/bd/grupo3/web/
