@@ -11,7 +11,7 @@
 
 #define MAX_FIELD_SIZE		100
 #define CHAR_FIELD_SEPARATOR	','	/* como estan separados los campos en archivos */
-#define TABLE_NAME	"municipio"
+#define TABLE_NAME	"encuestador"
 
 typedef struct {
 	FILE *file;
@@ -32,7 +32,7 @@ typedef struct {
  * ej: field0,field1,field2,etc\n
  * NOTE: Siempre debemos terminar con -1 en el arreglo de fields
 */
-tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {2,4,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\' \'"} 
+tuple_t map[] = {{NULL, "planilla-encuestador.txt", {0,1,3,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"  \'\'"} 
 		};
 
 
