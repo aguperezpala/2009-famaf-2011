@@ -17,6 +17,5 @@ tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {5,4,-
 		
 		
 				MUNICIPIO
-tuple_t map[] = {{NULL, "planilla-estado-municipio-parroquia-sector.txt", {2,4,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"\' \'"} 
+tuple_t map[] = {{NULL, "planilla-encuestador.txt", {0,1,3,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},"  \'\'"} 
 		};
-
