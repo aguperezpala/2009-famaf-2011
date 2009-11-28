@@ -11,7 +11,7 @@
 
 #define MAX_FIELD_SIZE		100
 #define CHAR_FIELD_SEPARATOR	','	/* como estan separados los campos en archivos */
-#define TABLE_NAME	"grupo_familiar"
+#define TABLE_NAME	"planilla"
 
 typedef struct {
 	FILE *file;
@@ -32,15 +32,46 @@ typedef struct {
  * ej: field0,field1,field2,etc\n
  * NOTE: Siempre debemos terminar con -1 en el arreglo de fields
 */
-tuple_t map[] = {{NULL, "planilla-familias.txt", 
-	{4,0,-1,9,2,1,7,5,8,527,3,6,555,529,510,511,521,521,521,521,521,521,-1},
-	"  "},
-	{NULL, "no_ci.txt", 
-	{0,-1,9,2,1,7,5,8,527,3,6,555,529,510,511,521,521,521,521,521,521,-1},
-	" "},
-	{NULL, "planilla-familias2.txt", 
-	{9,2,1,7,5,8,527,3,6,555,529,510,511,521,521,521,521,521,521,-1},
-	"\'\'\'\'   \'\'          "},
+tuple_t map[] = {{NULL, "planilla-vivienda.txt", 
+	{0,520,521,529,522,521,527,525,528,527,523,556,555,2,510,511,1,520,520,520,520,-1},
+	"             \'  \'"},
+	/*! comienza campo 22 */
+	{NULL, "planilla-transporte.txt", 
+	{512,512,512,512,1,521,-1},
+	"    \' "},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 29 */
+	{NULL, "planilla-telefono.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 30 */
+	{NULL, "planilla-informacion.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 31 */
+	{NULL, "planilla-salud.txt", 
+	{1, 2,555,555,555,555,555,-1},
+	"\'\'     "},
+	/*! comienza campo 38 */
+	{NULL, "planilla-trabajo.txt", 
+	{521,521,521,4,1,2,3,-1},
+	"    \'\'\'"},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	
 	{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL}
 		};
 

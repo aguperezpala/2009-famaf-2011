@@ -21,9 +21,73 @@ tuple_t map[] = {{NULL, "planilla-encuestador.txt", {0,1,3,2,-1,-1,-1,-1,-1,-1,-
 		};
 		
 		
-				GRUPO_FAMILIA
+				GRUPO_FAMILIA JEFE
 tuple_t map[] = {{NULL, "planilla-jefe_familia.txt", 
 	{1,0,1,9,3,2,8,6,12,7,4,525,5,9,10,11,521,521,521,521,521,521,-1},
 	"   \'\'\'\'  \'\' \'\'\'\'      "} 
 		};
+		
+		
+		
+				GRUPO FAMILIA FAMILIARES
+tuple_t map[] = {{NULL, "planilla-familias.txt", 
+	{4,0,-1,9,2,1,7,5,8,527,3,6,555,529,510,511,521,521,521,521,521,521,-1},
+	"  "},
+	{NULL, "no_ci.txt", 
+	{0,-1,9,2,1,7,5,8,527,3,6,555,529,510,511,521,521,521,521,521,521,-1},
+	" "},
+	{NULL, "planilla-familias2.txt", 
+	{9,2,1,7,5,8,527,3,6,555,529,510,511,521,521,521,521,521,521,-1},
+	"\'\'\'\'   \'\'          "},
+	{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL}
+		};
+
+		
+		
+		
+		
+				PLANILLA (FALTA COMPLETAR)
+tuple_t map[] = {{NULL, "planilla-vivienda.txt", 
+	{0,520,521,529,522,521,527,525,528,527,523,556,555,2,510,511,1,520,520,520,520,-1},
+	"             \'  \'"},
+	/*! comienza campo 22 */
+	{NULL, "planilla-transporte.txt", 
+	{512,512,512,512,1,521,-1},
+	"    \' "},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 29 */
+	{NULL, "planilla-telefono.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 30 */
+	{NULL, "planilla-informacion.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 31 */
+	{NULL, "planilla-salud.txt", 
+	{1, 2,555,555,555,555,555,-1},
+	"\'\'     "},
+	/*! comienza campo 38 */
+	{NULL, "planilla-trabajo.txt", 
+	{521,521,521,4,1,2,3,-1},
+	"    \'\'\'"},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	/*! comienza campo 28 */
+	{NULL, "planilla-electrico.txt", 
+	{1,-1},
+	"\'"},
+	
+	{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL}
+		};
+
 
