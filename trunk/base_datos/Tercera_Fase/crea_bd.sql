@@ -60,7 +60,7 @@ CREATE TABLE "planilla" (
 	"servicios.servicios_comunales" varchar(50),
 	"servicios.electricidad" varchar(50),
 	"servicios.telefonia" telefonia,
-	"servicios.medios" varchar(50) ,
+	"servicios.medios" medios,
 	"salud.ayuda_especial" varchar(50) DEFAULT NULL,
 	"salud.historia_familiar" enfermedades,
 	"situacion_de_exclusion.tercera_edad" uint DEFAULT 0,
