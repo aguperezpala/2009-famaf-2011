@@ -66,7 +66,10 @@ CREATE DOMAIN telefonia AS VARCHAR
 		(VALUE LIKE 'Prepago') );
 
 
---CREATE DOMAIN medios AS 
+CREATE TYPE medios AS ( Television BOOLEAN,
+			Radio	   BOOLEAN,
+			Prensa	   BOOLEAN,
+			Internet   BOOLEAN );
 
 
 CREATE DOMAIN enfermedades AS VARCHAR
