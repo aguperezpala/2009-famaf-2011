@@ -64,8 +64,8 @@ tuple_t map[] = {{NULL, "planilla-vivienda.txt",
 	"\'"},
 	/*! comienza campo 30 */
 	{NULL, "planilla-informacion.txt", 
-	{1,-1},
-	"\'"},
+	{1,2,3,4,-1},
+	"(((("},
 	/*! comienza campo 31 */
 	{NULL, "planilla-salud.txt", 
 	{1, 2,555,555,555,555,555,-1},
@@ -73,20 +73,11 @@ tuple_t map[] = {{NULL, "planilla-vivienda.txt",
 	/*! comienza campo 38 */
 	{NULL, "planilla-trabajo.txt", 
 	{521,521,521,4,1,2,3,-1},
-	"    \'\'\'"},
-	/*! comienza campo 28 */
-	{NULL, "planilla-electrico.txt", 
-	{1,-1},
+	"    \'(("},
+	/*! comienza campo 44 */
+	{NULL, "planilla-estado-municipio-parroquia-sector.txt", 
+	{5,4,-1},
 	"\'"},
-	/*! comienza campo 28 */
-	{NULL, "planilla-electrico.txt", 
-	{1,-1},
-	"\'"},
-	/*! comienza campo 28 */
-	{NULL, "planilla-electrico.txt", 
-	{1,-1},
-	"\'"},
-	
 	{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL}
 		};
 
