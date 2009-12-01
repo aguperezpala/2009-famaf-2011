@@ -34,11 +34,11 @@ typedef struct {
 */
 tuple_t map[] = {{NULL, "planilla-vivienda.txt", 
 	{0,520,521,529,522,521,527,525,528,527,523,556,555,2,510,511,1,520,520,520,520,-1},
-	"             \'  \'"},
+	"             \'  \'     "},
 	/*! comienza campo 22 */
 	{NULL, "planilla-transporte.txt", 
 	{512,512,512,512,1,521,-1},
-	"    \' "},
+	"    \'  "},
 	/*! comienza campo 28 */
 	{NULL, "planilla-electrico.txt", 
 	{1,-1},
@@ -49,29 +49,20 @@ tuple_t map[] = {{NULL, "planilla-vivienda.txt",
 	"\'"},
 	/*! comienza campo 30 */
 	{NULL, "planilla-informacion.txt", 
-	{1,-1},
-	"\'"},
+	{1,2,3,4,-1},
+	"(((("},
 	/*! comienza campo 31 */
 	{NULL, "planilla-salud.txt", 
 	{1, 2,555,555,555,555,555,-1},
-	"\'\'     "},
+	"\'\'        "},
 	/*! comienza campo 38 */
 	{NULL, "planilla-trabajo.txt", 
 	{521,521,521,4,1,2,3,-1},
-	"    \'\'\'"},
-	/*! comienza campo 28 */
-	{NULL, "planilla-electrico.txt", 
-	{1,-1},
+	"    \'((("},
+	/*! comienza campo 44 */
+	{NULL, "planilla-estado-municipio-parroquia-sector.txt", 
+	{5,4,-1},
 	"\'"},
-	/*! comienza campo 28 */
-	{NULL, "planilla-electrico.txt", 
-	{1,-1},
-	"\'"},
-	/*! comienza campo 28 */
-	{NULL, "planilla-electrico.txt", 
-	{1,-1},
-	"\'"},
-	
 	{NULL, NULL, {-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}, NULL}
 		};
 
