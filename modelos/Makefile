@@ -63,10 +63,13 @@ MY_CFLAGS =
 MY_LIBS   = -lbluetooth
 
 # The pre-processor options used by the cpp (man cpp for more).
-CPPFLAGS  = -Wall -ansi -pedantic -Werror
-
+CPPFLAGS  = = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
+	 -Wcast-qual -Wstrict-prototypes -Wmissing-declarations \
+	 -Wmissing-prototypes -Wno-unused-parameter -Werror -pedantic \
+	 -g -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/
+	 
 # The options used in linking as well as in any direct use of ld.
-LDFLAGS   =
+LDFLAGS   = -lglib-2.0 -lm
 
 # The directories in which source files reside.
 # If not specified, only the current directory will be serached.
@@ -74,7 +77,7 @@ SRCDIRS   =
 
 # The executable file name.
 # If not specified, current directory name or `a.out' will be used.
-PROGRAM   =
+PROGRAM   = laundry_sim
 
 ## Implicit Section: change the following only when necessary.
 ##==========================================================================
