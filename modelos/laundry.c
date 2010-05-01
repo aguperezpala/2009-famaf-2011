@@ -22,8 +22,9 @@ int main (int argc, char **argv)
 		     Nsim = 0;	/* # de simulaciones a correr */
 	/** Variables internas */
 	bool no_failure = true;	/* ¿El sistema aun es operativo? */
-	unsigned long time = 0;	/* Tiempo  */
+	unsigned long time = 0, failureTimes = 0; /* Tiempo  */
 	unsigned int Nbroken = 0; /* # total de maquinas no operativas */
+	
 	
 	parse_args (argc, argv, N, S, M, Tf, Tr, Nsim);
 	
@@ -66,10 +67,6 @@ int main (int argc, char **argv)
 			time++;
 		}
 	}
-	
-	get_mean ()
-	
-	get_next (serv_machines);
 	
 	return 0;
 }
