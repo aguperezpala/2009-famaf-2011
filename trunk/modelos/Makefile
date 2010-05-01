@@ -63,7 +63,7 @@ MY_CFLAGS =
 MY_LIBS   = -lbluetooth
 
 # The pre-processor options used by the cpp (man cpp for more).
-CPPFLAGS  = = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
+CPPFLAGS  =  -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 	 -Wcast-qual -Wstrict-prototypes -Wmissing-declarations \
 	 -Wmissing-prototypes -Wno-unused-parameter -Werror -pedantic \
 	 -g -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/
