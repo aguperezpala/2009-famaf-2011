@@ -1,8 +1,20 @@
 #include <stdio.h>
 
-int main (void)
+int main (int argc, char **argv)
 {
-	Mecanico M=NULL;
+	mechanic_t *m = NULL;
+	wm_t *op_machines = NULL, *serv_machines = NULL;
+	
+	parse_args (argc, argv, N, S, Tf, Tr, Nsim);
+	
+	op_machines = create_op_machines (N);
+	serv_machines = create_serv_machines (S);
+	
+	
+	
+	
+	get_next (serv_machines);
+	
 	return 0;
 }
 
@@ -14,7 +26,7 @@ int main (void)
 
 
 /*
- * TAD Mecanico
+ * TAD mechanic_t	// OPACO
  *
  * int rrt	/* Tiempo absoluto hasta la proxima maquina que sale del taller *
  * GQueue rq	/* Cola de espera de reparacion *
@@ -22,7 +34,7 @@ int main (void)
 
 
 /*
- * TAD Lavarropa
+ * TAD wm_t		// TRASPARENTE
  *
  * int nbt	/* Tiempo absoluto hasta la proxima ruptura *
  */
