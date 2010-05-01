@@ -3,7 +3,9 @@
 int main (int argc, char **argv)
 {
 	mechanic_t *m = NULL;
-	wm_t *op_machines = NULL, *serv_machines = NULL, *broken_machines = NULL;
+	wm_t *op_machines = NULL,
+	     *serv_machines = NULL,
+	     *broken_machines = NULL;
 	
 	parse_args (argc, argv, N, S, Tf, Tr, Nsim);
 	
