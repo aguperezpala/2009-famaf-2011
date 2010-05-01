@@ -6,7 +6,7 @@
 #include <glib.h>
 
 #include "washingm.h"
-#include "rg.h"		/* donde tenemos 
+#include "rg.h"		
 
 typedef struct _mechanic * mechanic_t;
 
