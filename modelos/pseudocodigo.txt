@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+int main (void)
+{
+	Mecanico M=NULL;
+	return 0;
+}
+
+
+
+
+
+
+
+
+/*
+ * TAD Mecanico
+ *
+ * int rrt	/* Tiempo absoluto hasta la proxima maquina que sale del taller *
+ * GQueue rq	/* Cola de espera de reparacion *
+ */
+
+
+/*
+ * TAD Lavarropa
+ *
+ * int nbt	/* Tiempo absoluto hasta la proxima ruptura *
+ */
+
+
+/*
+ * Modulo: generador de v.a.
+ *
+ * INTERFAZ
+ * gen_poisson (lambda);
+ * gen_exp (lambda);
+ * gen_uni_dis (a,b);
+ * gen_uni_cont (a,b);
+ *
+ * INTERNAS
+ * ran2 ();
+ * mzran13 ();
+ *
+ */
