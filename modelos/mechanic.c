@@ -69,6 +69,10 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 		return NULL;
 	}
 	
+	/* verificamos si tenemos o no maquinas que devolver */
+	if (g_queue_is_empty(m->rq))
+		return NULL;
+	
 	/* vamos a verificar si ya esta arreglada la maquina */
 	if (m->rrt == month) {
 		/* SI esta arreglada ==> la extraemos y la devolvemos */
@@ -106,7 +110,7 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 * 	m 	!= NULL
 * 	wm	!= NULL
 */
-void mechanic_repair_machine(mechanic_t m, wm_t wm)
+void mechanic_repair_machine(mechanic_t m, wm_t wm, int month)
 {
 	if (!m || !wm) {
 		printf("Intentando agregar una maquina en un mecanico NULL "
@@ -118,7 +122,7 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm)
 	 * distinta de vacio */
 	if (g_queue_is_empty(m->rq))
 		/* la arreglamos ya ... y veamos cuanto va a tardar.. */
-		m->rrt = rg_gen_exp((double) 1.0/m->TR);
+		m->rrt = ceil(rg_gen_exp((double) 1.0/m->TR)) + month;
 	else
 		/* hay maquinas arreglandose, simplemente la encolamos */
 		g_queue_push_tail(m->rq, wm);
