@@ -36,7 +36,7 @@ struct _laundry {
 	int time;		/* Tiempo de operación de la lavandería */
 	/* Punteros a los arreglos */
 	int *broken_order;	/* Indices de orden */
-	int s;			/* Primera máquinas de servicio libre */
+	int s;			/* Primera máquinas de servicio libre + 1 */
 }
 
 
@@ -45,18 +45,19 @@ struct _laundry {
 /* Traemos a servicio las maquinas recién reparadas */
 static void get_from_mechanics (laundry_t *l)
 {
-	unsigned int i = 0;
-	wm_t RMachine = NULL;
+	unsigned int i = 0, last = 0;
+	wm_t RMachine = NULL;	/* Lavadora reparada */
 	
 	INV
 	
+	last = l->s;
 	for (i=0 ; i < l->M ; i++) {
 		/* Le preguntamos al mecánico si ya tiene una lavadora lista */
 		RMachine = mechanic_get_rm (l->m[i], l->time);
 		if (RMachine != NULL) {
 			/* Reparó una => la pasamos a servicio */
-			l->serv_machines[l->s] = RMachine;
-			l->s++;
+			l->serv_machines[last] = RMachine;
+			last++;
 		}
 	}
 	return;
@@ -65,7 +66,15 @@ static void get_from_mechanics (laundry_t *l)
 
 
 
-/* Lleva al taller las lavadoras que acaban de romperse */
+/* Lleva al taller las lavadoras operativas que acaban de romperse
+ * PRE:
+ *	INV
+ * POS:
+ *	Toda máquina referenciada en la lista de operativas de la lavadora
+ *	tiene tiempo de ruptura > tiempo actual. En código:
+ *	(l->op_machines[i]).nbt > l->time  |
+ *	ó sino l->op_machines[i] == NULL   | para todo i
+ */
 static void give_to_mechanics (laundry_t *l)
 {
 	int i = 0, j = 0;
@@ -73,14 +82,14 @@ static void give_to_mechanics (laundry_t *l)
 	
 	INV
 	
-	/* Reinicializamos la lista de lavadoras rotas */
-	memset ( l->broken_order, -1, N * sizeof(int));
+	/* Reinicializamos la lista de orden de lavadoras rotas */
+	l->broken_order = memset (l->broken_order, -1, l->N * sizeof(int));
 	
-	/* Qiutamos las lavadoras que se rompieron este mes */
+	/* Quitamos las lavadoras que se rompieron este mes */
 	for (i=0 ; i < l->N ; i++) {
 		BMachine = (l->op_machines[i]).nbt == l->time ? \
 				l->op_machines[i] : NULL;
-		/* Si la máquina está rota... */
+		/* Si la i-ésima máquina está rota... */
 		if ( BMachine != NULL ) {
 			/* ...lo registramos... */
 			l->broken_machines[j] = BMachine;
@@ -122,7 +131,9 @@ static void repair_machine (laundry_t *l, wm_t machine)
 }
 
 
-/* Reemplazamos los vacios con las maquinas de servicio */
+
+/* Reemplazamos los espacios vacios de las máquinas operativas
+ *con las maquinas de servicio */
 static void bring_to_operation (laundry_t *l)
 {
 	int i = 0;
@@ -165,20 +176,17 @@ void wash_clothes (laundry_t *l)
 	give_to_mechanics (l);
 	/* Reemplazamos los vacios con las maquinas de servicio */
 	bring_to_operation (l);
+#ifdef _WASH
 	/* Lavamos la ropa */
 	wash();
-	
-	return;
-}
-
-
-static void wash (void)
-{
-#ifdef _WASH
-	printf ("Washing, washing...\n");
 #endif
 	return;
 }
+
+
+static void wash (void) { printf ("washing washing...\n"); return; }
+
+
 
 
 /* Indica si la lavandería dejó de ser operativa, ie: si tiene menos máquinas
