@@ -48,67 +48,37 @@ int main (int argc, char **argv)
 	Tf = get_param (4, argv);
 	Tr = get_param (5, argv);
 	Nsim = get_param (6, argv);
-
-	/* Creamos los arreglos que contendran nuestras estructuras */
-	op_machines	= create_machines (N);
-	serv_machines	= create_machines (S);
-	broken_machines = malloc (N);
-	m = create_mechanics (M);
-	/* Para facilitar la reinicialización de una simulac. crearemos un... */
-
-	/* Todas las máquinas de la lavandería */
-	all_machines	= create_machines (N+S);
-	/* Máquinas en operación */
-	op_machines	= (wm_t *) malloc (N * sizeof(struct wm_t));
-	/* Máquinas en servicio (disponibles) */
-	serv_machines	= (wm_t *) malloc (S * sizeof(struct wm_t));
-	/* Máquinas que se acaban de romper al inicio de un mes */
-	broken_machines	= (wm_t *) malloc (N * sizeof(struct wm_t));
-	/* Indices que indican la posicion de las maquinas rotas */
-	broken_order = (int *) calloc (N, sizeof(int));
-
+	
+	laundry = create_laundry (N, S, M, Tf, Tr);
+	
 	out = fopen ("laundry_sim.out","w");
 
 	for (i=0 ; i<Nsim ; i++) {
 
 		/* Reinicializamos el experimento */
-		reset_laundry (all_machines, op_machines, N, serv_machines, S, m);
-		time = 0;
-		no_failure = true;
+		reset_laundry (laundry);
 
 		/** Iniciamos una nueva simulación */
-		while (no_failure) {
-	/* Obtenemos las máquinas que se acaban de romper
-	* y las sacamos de entre las operativas */
-			Nbroken = get_broken (op_machines, time,
-					broken_machines, broken_order);
-
-			/* Vemos cuantas máquinas hay en taller */
-			Nbroken += get_repairing (m);
-
+		while ( true ) {
+			
+			/* Hacer lo que haya que hacer este mes */
+			wash_clothes (laundry);
+			
 			/* ¿El sistema dejo de ser operativo? */
-			if (Nbroken > S) {
-				no_failure = false;
-				continue;
-			}
-
-			/* Traemos a servicio las maquinas recién reparadas */
-			get_from_mechanics (m, serv_machines);
-			/* Reemplazamos los vacios con las maquinas de servicio */
-			bring_to_operation (serv_machines, op_machines, (int) time);
-			/* Llevamos al taller las maquinas recién rotas */
-			give_to_mechanics (broken_machines, m);
-
-			time++;
+			if (laundry_failure (laundry))
+				break;
+			
+			/* Ya pasó un mes */
+			laundry_increase_month (laundry);
 		}
 		/* Acumulamos el tiempo obtenido en este experimento */
-		ft  += time;
+		ft  += laundry_get_failure_time();
 		ft2 += time*time;
 	}
 
 	printf ("Tiempo medio de fallo del sistema y su desviación estándard "
-			"para %d simulaciones\nE[X] = %.6f\nDE[X] = %.6f\n",
-	ft/(double));/** TODO TODO */
+		"para %d simulaciones\nE[X] = %.6f\nDE[X] = %.6f\n",
+		ft/(double)Nsim, );/** TODO TODO */
 
 	/* Limpiamos nuestras estructuras */
 	all_machines = destroy_machines (all_machines);
