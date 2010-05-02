@@ -7,7 +7,6 @@
 #include "rg.h"
 #include "mechanic.h"
 #include "washingm.h"
-#include "laundry_aux.h"
 
 
 
@@ -180,6 +179,84 @@ static void wash (void) { printf ("washing washing...\n"); return; }
 
 
 
+/* Funcion que devuelve un arreglo de tamaño N de wm_t
+* RETURNS:
+*	NULL		on error
+* NOTE: genera un NULL al final de la lista para indicar eso
+*/
+static wm_t *create_machines(uint N)
+{
+	wm_t *result = NULL;
+	int i = 0;
+	
+	result = (wm_t *) calloc(N+1, sizeof(*result));
+	if (!result)
+		return NULL;
+	
+	for (i = 0; i < N; i++)
+		result[i] = wm_create();
+	
+	return result;
+}
+
+/* Funcion que devuelve un arreglo de tamaño N de mechanics
+* RETURNS:
+*	NULL		on error
+* NOTE: genera un NULL al final de la lista para indicar eso
+*/
+static mechanics_t *create_mechanics(uint N)
+{
+	mechanics_t *result = NULL;
+	
+	result = (mechanics_t *) calloc(N+1, sizeof(*result));
+	return result;
+}
+
+/* Destructor de un arreglo de maquinas
+* REQUIRES:
+*  	wm != NULL
+*/
+static wm_t *destroy_machines(wm_t *wm)
+{
+	int i = 0;
+	
+	if(!wm)
+		return NULL;
+	
+	while(wm[i] != NULL){
+		wm[i] = wm_destroy(wm[i]);
+		i++;
+	}
+	
+	free(wm);
+	
+	return NULL;
+}
+/* Destructor de un arreglo de mecanicos
+ * REQUIRES:
+ *  	m != NULL
+ */
+static mechanics_t *destroy_mechanics(mechanics_t *m)
+{
+	int i = 0;
+	
+	if(!m)
+		return NULL;
+	
+	while(m[i] != NULL){
+		m[i] = mechanic_destroy(m[i]);
+		i++;
+	}
+	
+	free(m);
+	
+	return NULL;
+}
+
+
+
+
+
 /** ------------------------------------------------------------------------- *
  ** ~~~~~~~~~~~~~~~~~~~~~~     FUNCIONES PÚBLICAS     ~~~~~~~~~~~~~~~~~~~~~~~ *
  ** ------------------------------------------------------------------------- */
@@ -207,8 +284,8 @@ laundry_t laundry_create (uint Nop, uint Nserv, uint Nmech, uint Tf, uint Tr)
 	l->Tf = Tf;
 	l->Tr = Tr;
 	l->all_machines  = create_machines (Nop + Nserv);
-	l->op_machines	 = (wm_t *) malloc (Nop   * sizeof(wm_t));
-	l->serv_machines = (wm_t *) malloc (Nserv * sizeof(wm_t));
+	l->op_machines	 = (wm_t *) calloc (Nop,   sizeof(wm_t));
+	l->serv_machines = (wm_t *) calloc (Nserv, sizeof(wm_t));
 	l->s = Nserv;
 	l->m = create_mechanics (Nmech);
 	l->time = 0;
@@ -308,3 +385,34 @@ int laundry_get_failure_time (laundry_t l)
 }
 
 
+/* Funcion que reseta toda la estructura de laundry, dejandola en 0km.
+* REQUIRES:
+* 	l != NULL
+*/
+void laundry_reset(laundry_t l)
+{
+	int i = 0;
+	int j = 0;
+	
+	assert(l != NULL);
+	
+	/* reinicializamos las variables internas */
+	l->time = 0;
+	l->failure = false;
+	memset(l->op_machines, 0, l->N * sizeof(*l->op_machines));
+	memset(l->serv_machines, 0, l->S * sizeof(*l->serv_machines));
+	/* reinicializamos los mecanicos */
+	for (i = 0; i < l->M; i++)
+		mechanic_reinitialize(l->m[i]);
+	
+	/* ahora distribuimos N maquinas en el arreglo de maquinas operativas
+	 * y S maquinas en el arreglo de maquinas de servicio */
+	for (i = 0; i < l->N; i++) {
+		l->op_machines[i] = l->all_machines[i];
+		l->op_machines[i].nbt = rg_gen_poisson(l->Tf) + l->time;
+	}
+	for (j = i; j < l->S + l->N; j++)
+		l->serv_machines[j-i] = l->all_machines[j];
+	
+	l->s = l->N;
+}
