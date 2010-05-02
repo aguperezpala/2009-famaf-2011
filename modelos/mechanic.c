@@ -46,7 +46,7 @@ void mechanic_reinitialize(mechanic_t m)
 		return;
 	
 	g_queue_clear(m->rq);
-	m->rrt = -1:
+	m->rrt = -1;
 }
 
 
@@ -65,7 +65,7 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 	
 	
 	if (!m) {
-		printf("Error, estamos recibiendo un mecanico NULL\n")
+		printf("Error, estamos recibiendo un mecanico NULL\n");
 		return NULL;
 	}
 	
@@ -89,9 +89,10 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 				 * tiempo va a ser reparada, recordemos que 
 				 * la media de la exponencial es 1/lambda. 
 				 * y vamos a tomar el techo del valor.. */
-				m->rrt = ceil(gen_exp((double)1.0/m->TR)) 
+				m->rrt = ceil(rg_gen_exp((double)1.0/m->TR)) 
 							+ month;
 			}
+		}
 	}
 	
 	/* si no tenemos ninguna maquina devolvemos NULL, si no, devolvemos la
@@ -107,7 +108,7 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 */
 void mechanic_repair_machine(mechanic_t m, wm_t wm)
 {
-	if (!m || ! wm) {
+	if (!m || !wm) {
 		printf("Intentando agregar una maquina en un mecanico NULL "
 			" o intentando meter una maquina NULL\n");
 		return;
@@ -117,7 +118,7 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm)
 	 * distinta de vacio */
 	if (g_queue_is_empty(m->rq))
 		/* la arreglamos ya ... y veamos cuanto va a tardar.. */
-		m->rrt = gen_exp((double) 1.0/m->TR);
+		m->rrt = rg_gen_exp((double) 1.0/m->TR);
 	else
 		/* hay maquinas arreglandose, simplemente la encolamos */
 		g_queue_push_tail(m->rq, wm);
@@ -144,6 +145,7 @@ mechanic_t mechanic_destroy(mechanic_t m)
 	if (m) {
 		g_queue_free(m->rq);
 		free(m);
+	}
 	
 	return NULL;
 }

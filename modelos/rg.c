@@ -2,7 +2,7 @@
 
 typedef unsigned long int unlong;
 
-static unlong mzran13()
+static unlong mzran13(void)
 { 
 	long int s;
 	static unlong x=521288629, y=362436069, z=16163801, c=1, n=1131199209;
@@ -27,7 +27,7 @@ int rg_gen_poisson(double lambda)
 	double U = 0;
 	
 	p = F = exp(-lambda);
-	U = (double)mzran13()/(double)ULONG_MAX;
+	U = ((double)mzran13()/(double)ULONG_MAX);
 	
 	while(U >= F){
 		p = p * lambda/(double)(i+1);

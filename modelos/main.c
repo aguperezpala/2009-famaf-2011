@@ -33,6 +33,7 @@ static int get_param(int p, char **argv)
 int main (int argc, char **argv)
 {
 	laundry_t laundry = NULL;
+	unsigned int i = 0;
 	unsigned int N = 0,	/* # total de maquinas operativas */
 		     S = 0,	/* # total de maquinas de servicio */
 		     M = 0,	/* # de mecanicos */
@@ -67,7 +68,7 @@ int main (int argc, char **argv)
 	Nsim = get_param (6, argv);
 	
 	/* Creamos la lavandería con todas sus lavadoras y mecánicos */
-	laundry = create_laundry (N, S, M, Tf, Tr);
+	laundry = laundry_create (N, S, M, Tf, Tr);
 	out = fopen ("laundry_sim.out","w");
 	
 	/** ALGORITMO PRINCIPAL */
@@ -79,13 +80,13 @@ int main (int argc, char **argv)
 		while ( !laundry_failure (laundry) ) {
 			
 			/* Hacer lo que haya que hacer este mes */
-			wash_clothes (laundry);
+			laundry_wash_clothes (laundry);
 			
 			/* ¿El sistema dejo de ser operativo? */
 			if ( !laundry_failure (laundry))
 				laundry_increase_month (laundry);
 		}
-		ftime = laundry_get_failure_time(); 
+		ftime = laundry_get_failure_time(laundry); 
 		/* Acumulamos el tiempo obtenido en este experimento */
 		ft  += ftime;
 		ft2 += ftime*ftime;
