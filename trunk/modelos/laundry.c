@@ -1,13 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
+#include <limits.h>
 #include <assert.h>
 #include "mechanic.h"
 #include "washingm.h"
 
 
 
-#define INV assert(l!=NULL);
+#define INV assert(l != NULL); \
+	    assert(l->all_machines != NULL); \
+	    assert(l->op_machines != NULL); \
+	    assert(l->serv_machines != NULL); \
+	    assert(l->broken_machines != NULL); \
+	    assert(l->m != NULL); \
+	    assert(l->broken_order != NULL);
 
 
 
@@ -17,7 +25,6 @@ struct _laundry {
 	wm_t *op_machines;	/* Referencia a las maquinas operativas */
 	wm_t *serv_machines;	/* Referencia a las maquinas de servicio */
 	wm_t *broken_machines;	/* Referencia a las maquinas actualmente rotas */
-	int *broken_order;	/* Indices de orden */
 	/* Mecanicos */
 	mechanic_t *m;		/* Mecanicos */
 	/* Cantidades */
@@ -27,27 +34,90 @@ struct _laundry {
 	unsigned int Tf;	/* Tiempo medio de fallo de una lavadora */
 	unsigned int Tr;	/* Tiempo medio de raparación de una lavadora */
 	int time;		/* Tiempo de operación de la lavandería */
+	/* Punteros a los arreglos */
+	int *broken_order;	/* Indices de orden */
+	int s;			/* Primera máquinas de servicio libre */
 }
 
 
 /* Traemos a servicio las maquinas recién reparadas */
 static void get_from_mechanics (laundry_t *l)
 {
-	int i = 0;
+	unsigned int i = 0;
+	wm_t RMachine = NULL;
 	
 	INV
 	
-	for (i=1 ; i<l->M ; i++) {
-		
+	for (i=0 ; i < l->M ; i++) {
+		/* Le preguntamos al mecánico si ya tiene una lavadora lista */
+		RMachine = mechanic_get_rm (l->m[i], l->time);
+		if (RMachine != NULL) {
+			/* Reparó una => la pasamos a servicio */
+			l->serv_machines[l->s] = RMachine;
+			l->s++;
+		}
+	}
+	return;
 }
-/* Llevamos al taller las maquinas recién rotas */
-static void give_to_mechanics (laundry_t *l);
+
+
+/* Lleva al taller las lavadoras que acaban de romperse */
+static void give_to_mechanics (laundry_t *l)
+{
+	int i = 0, j = 0;
+	wm_t BMachine = NULL;	/* Lavadora rota */
+	
+	INV
+	
+	/* Reinicializamos la lista de lavadoras rotas */
+	memset ( l->broken_order, -1, N * sizeof(int));
+	
+	/* Qiutamos las lavadoras que se rompieron este mes */
+	for (i=0 ; i < l->N ; i++) {
+		BMachine = (l->op_machines[i]).nbt == l->time ? \
+				l->op_machines[i] : NULL;
+		/* Si la máquina está rota... */
+		if ( BMachine != NULL ) {
+			/* ...lo registramos... */
+			l->broken_machines[j] = BMachine;
+			l->broken_order[j] = i;
+			j++;
+			/* ...y la mandamos a arreglar */
+			repair_machine (l, BMachine);
+		}
+	}
+	
+	return;
+}
+
+
+/* Mete en el taller la máquina lavadora pasada como 2º argumento,
+ * entregándosela al mecánico con cola de reparación más corta
+ */
+static void repair_machine (laundry_t *l, wm_t machine)
+{
+	int i = 0, min = INT_MAX;
+	mechanic_t m = NULL;
+	
+	INV
+	
+	for (i=0 ; i<M ; i++) {
+		mech_q_len = mechanic_get_n_rmachines (l->m[i]);
+		if (min > mech_q_len) {
+			min
+	}
+	
+	return;
+}
+
 /* Reemplazamos los vacios con las maquinas de servicio */
 static void bring_to_operation (laundry_t *l);
 			
 
 
-void wash_clothes (laundry_t *l) {
+void wash_clothes (laundry_t *l)
+{
+	INV
 	
 	/* Traemos a servicio las maquinas recién reparadas */
 	get_from_mechanics (m, serv_machines);
@@ -65,6 +135,21 @@ void wash_clothes (laundry_t *l) {
 bool laundry_failure (laundry) {
 	return true;
 }
+
+
+
+/* Devuelve el tiempo en el que ocurrió el último fallo del sistema
+ * REQUIRES:
+ *	l != NULL
+ * RETURNS
+ * 	ftime > 0 , si el sistema falló tras "ftime" meses de operación
+ * 	ftime < 0 , si el sistema aún no falló
+ */
+int laundry_get_failure_time (laundry_t l)
+{
+	return res;
+}
+
 
 
 int main (int argc, char **argv)
