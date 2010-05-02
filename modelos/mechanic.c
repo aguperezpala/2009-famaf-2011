@@ -35,6 +35,21 @@ mechanic_t mechanic_create(double tr)
 	return result;
 }
 
+/* Funcion que reinicializa el mecanico, limpiando y sacando todas las maquinas
+* que actualmente tiene en "su poder"
+* REQUIRES:
+* 	m != NULL
+*/
+void mechanic_reinitialize(mechanic_t m)
+{
+	if (!m)
+		return;
+	
+	g_queue_clear(m->rq);
+	m->rrt = -1:
+}
+
+
 /* Funcion que devuelve una washing machine en caso de que haya una reparada
 * o NULL en caso contrario.
 * REQUIRES:
@@ -72,8 +87,9 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 			else {
 				/* si hay maquinas => determinamos en cuanto
 				 * tiempo va a ser reparada, recordemos que 
-				 * la media de la exponencial es 1/lambda. */
-				m->rrt = gen_exp((double) 1.0/m->TR);
+				 * la media de la exponencial es 1/lambda. 
+				 * y vamos a tomar el techo del valor.. */
+				m->rrt = ceil(gen_exp((double)1.0/m->TR))+month;
 			}
 	}
 	
@@ -124,7 +140,8 @@ int mechanic_get_n_rmachines(mechanic_t m)
 */
 mechanic_t mechanic_destroy(mechanic_t m)
 {
-	if (m)
+	if (m) {
+		g_queue_free(m->rq);
 		free(m);
 	
 	return NULL;

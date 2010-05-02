@@ -20,6 +20,13 @@ typedef struct _mechanic * mechanic_t;
  */
 mechanic_t mechanic_create(double tr);
 
+/* Funcion que reinicializa el mecanico, limpiando y sacando todas las maquinas
+ * que actualmente tiene en "su poder"
+ * REQUIRES:
+ * 	m != NULL
+ */
+void mechanic_reinitialize(mechanic_t m);
+
 /* Funcion que devuelve una washing machine en caso de que haya una reparada
  * o NULL en caso contrario.
  * REQUIRES:
