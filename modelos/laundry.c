@@ -224,7 +224,7 @@ laundry_t laundry_create (uint Nop, uint Nserv, uint Nmech, uint Tf, uint Tr)
  * POS:
  *	todos los recursos de memoria de 'l' fueron liberados
  */
-void laundry_destroy (laundry_t l)
+laundry_t laundry_destroy (laundry_t l)
 {
 	assert (l != NULL);
 	
@@ -235,7 +235,7 @@ void laundry_destroy (laundry_t l)
 	
 	free(l); l = NULL;
 
-	return;
+	return l;
 }
 
 

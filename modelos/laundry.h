@@ -32,14 +32,14 @@ laundry_t laundry_create (uint Nop, uint Nserv, uint Nmech, uint Tf, uint Tr);
  * POS:
  *	todos los recursos de memoria de 'l' fueron liberados
  */
-void laundry_destroy (laundry_t l);
+laundry_t laundry_destroy (laundry_t l);
 
 
 /* Lleva a cabo la operación normal de la lavandería durante un mes, es decir:
- * 1: llevamos a servicio las máquinas que salgan de taller
- * 2: llevamos a taller las máquinas operativas que se rompieron
- * 3: reemplazamos los vacíos operativos con máquinas de servicio
- * 4: lavamos ropa
+ *	1: llevamos a servicio las máquinas que salgan de taller
+ *	2: llevamos a taller las máquinas operativas que se rompieron
+ *	3: reemplazamos los vacíos operativos con máquinas de servicio
+ *	4: lavamos ropa
  * PRE:
  *	l != NULL
  */
@@ -52,7 +52,7 @@ void laundry_wash_clothes (laundry_t l);
  * POS:
  *	el tiempo de operación de la lavandería fue incrementado en una unidad
  */
-int laundry_increase_month (laundry_t laundry);
+int laundry_increase_month (laundry_t l);
 
 
 /* Indica si la lavandería dejó de ser operativa, ie: si tiene menos máquinas
