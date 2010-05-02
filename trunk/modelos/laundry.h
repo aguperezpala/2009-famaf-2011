@@ -73,4 +73,10 @@ bool laundry_failure (laundry_t l);
 int laundry_get_failure_time (laundry_t l);
 
 
+/* Funcion que reseta toda la estructura de laundry, dejandola en 0km.
+ * REQUIRES:
+ * 	l != NULL
+ */
+void laundry_reset(laundry_t l);
+
 #endif

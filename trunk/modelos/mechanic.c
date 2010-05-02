@@ -89,7 +89,8 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 				 * tiempo va a ser reparada, recordemos que 
 				 * la media de la exponencial es 1/lambda. 
 				 * y vamos a tomar el techo del valor.. */
-				m->rrt = ceil(gen_exp((double)1.0/m->TR))+month;
+				m->rrt = ceil(gen_exp((double)1.0/m->TR)) 
+							+ month;
 			}
 	}
 	

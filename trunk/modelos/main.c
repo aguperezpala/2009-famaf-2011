@@ -5,6 +5,29 @@
 #include <math.h>
 #include "mechanic.h"
 #include "washingm.h"
+#include "laundry.h"
+
+/* Funcion que castea el parametro p
+* RETURNS:
+* 	< 0 	on error
+* 	>=0	cc
+*/
+static int get_param(int p, char **argv)
+{
+	int result = -1;
+	long int n = 0;
+	char *err = NULL;
+	
+	n = strtol(argv[p], &err, 10);
+	if (err[0] != '\0') {
+		perror("error en el argumento recibido\n");
+		return result;
+	}
+	result = (int) n;
+	
+	return result;
+}
+
 
 
 int main (int argc, char **argv)
@@ -51,7 +74,7 @@ int main (int argc, char **argv)
 	for (i=0 ; i<Nsim ; i++) {
 	
 		/* Reinicializamos el experimento */
-		reset_laundry (laundry);
+		laundry_reset (laundry);
 		/* Iniciamos una nueva simulación */
 		while ( !laundry_failure (laundry) ) {
 			
