@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <math.h>
 #include "mechanic.h"
 #include "washingm.h"
 
@@ -18,6 +19,7 @@ int main (int argc, char **argv)
 	int ftime = 0,	/* Tiempo de fallo de un experimento */
 	    ft    = 0,	/* Tiempo acumulado de fallos */
 	    ft2   = 0;	/* Para calcular varianza */
+	double E = 0.0, V = 0.0;	/* Esperanza y varianza */
 	FILE *out = NULL;	/* Para registro de resultados */
 
 	if (argc != 7) {
@@ -64,10 +66,12 @@ int main (int argc, char **argv)
 	}
 	/** FIN ALGORITMO PRINCIPAL */
 	
+	E  = ft/ (double) Nsim;		/* E[X] = #(exitos) / #(experimentos) */
+	V  = ft2/(double)Nsim - E*E;	/* V[X] = E[X^2] - (E[X])^2 */
 	
-	printf ("Tiempo medio de fallo del sistema y su desviación estándard "
-		"para %d simulaciones\nE[X] = %.6f\nDE[X] = %.6f\n",
-		Nsim, ft/(double)Nsim, ft2/(double);/** TODO TODO */
+	printf ("Tiempo medio de fallo del sistema y su desviación estándard\n"
+		"para %d simulaciones corridas\nE[X] = %.6f\nDE[X] = %.6f\n",
+		Nsim, E, sqrt(V));
 
 	/* Limpiamos nuestras estructuras */
 	laundry = laundry_destroy (laundry);
