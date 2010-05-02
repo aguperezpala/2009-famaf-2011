@@ -6,6 +6,67 @@
 #include "washingm.h"
 
 
+
+#define INV assert(l!=NULL);
+
+
+
+struct _laundry {
+	/* Máquinas lavadoras */
+	wm_t *all_machines;	/* Todas las máquinas */
+	wm_t *op_machines;	/* Referencia a las maquinas operativas */
+	wm_t *serv_machines;	/* Referencia a las maquinas de servicio */
+	wm_t *broken_machines;	/* Referencia a las maquinas actualmente rotas */
+	int *broken_order;	/* Indices de orden */
+	/* Mecanicos */
+	mechanic_t *m;		/* Mecanicos */
+	/* Cantidades */
+	unsigned int N; 	/* # total de maquinas operativas */
+	unsigned int S; 	/* # total de maquinas de servicio */
+	unsigned int M; 	/* # de mecanicos */
+	unsigned int Tf;	/* Tiempo medio de fallo de una lavadora */
+	unsigned int Tr;	/* Tiempo medio de raparación de una lavadora */
+	int time;		/* Tiempo de operación de la lavandería */
+}
+
+
+/* Traemos a servicio las maquinas recién reparadas */
+static void get_from_mechanics (laundry_t *l)
+{
+	int i = 0;
+	
+	INV
+	
+	for (i=1 ; i<l->M ; i++) {
+		
+}
+/* Llevamos al taller las maquinas recién rotas */
+static void give_to_mechanics (laundry_t *l);
+/* Reemplazamos los vacios con las maquinas de servicio */
+static void bring_to_operation (laundry_t *l);
+			
+
+
+void wash_clothes (laundry_t *l) {
+	
+	/* Traemos a servicio las maquinas recién reparadas */
+	get_from_mechanics (m, serv_machines);
+	/* Llevamos al taller las maquinas recién rotas */
+	give_to_mechanics (broken_machines, m);
+	/* Reemplazamos los vacios con las maquinas de servicio */
+	bring_to_operation (serv_machines, op_machines, (int) time);
+			
+}
+
+
+/* Se fija en el total de máquinas que están siendo reparadas
+ * ie: las que están en todos los mecánicos, y sus colas de reparación
+ */
+bool laundry_failure (laundry) {
+	return true;
+}
+
+
 int main (int argc, char **argv)
 {
 	/** Estructuras */
@@ -94,10 +155,10 @@ int main (int argc, char **argv)
 			
 			/* Traemos a servicio las maquinas recién reparadas */
 			get_from_mechanics (m, serv_machines);
-			/* Reemplazamos los vacios con las maquinas de servicio */
-			bring_to_operation (serv_machines, op_machines, (int) time);
 			/* Llevamos al taller las maquinas recién rotas */
 			give_to_mechanics (broken_machines, m);
+			/* Reemplazamos los vacios con las maquinas de servicio */
+			bring_to_operation (serv_machines, op_machines, (int) time);
 			
 			time++;
 		}
