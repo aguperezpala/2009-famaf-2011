@@ -95,7 +95,7 @@ static void repair_machine (laundry_t l, wm_t machine)
 		}
 	}
 	/* ...y le damos la lavadora para que la arregle */
-	mechanic_repair_machine (l->m[pos], machine);
+	mechanic_repair_machine (l->m[pos], machine, l->time);
 	
 	return;
 }

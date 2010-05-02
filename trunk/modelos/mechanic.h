@@ -43,7 +43,7 @@ wm_t mechanic_get_rm(mechanic_t m, int month);
  * 	m 	!= NULL
  * 	wm	!= NULL
  */
-void mechanic_repair_machine(mechanic_t m, wm_t wm);
+void mechanic_repair_machine(mechanic_t m, wm_t wm, int month);
 
 /* Funcion que devuelve la cantidad de maquinas que tiene el mecanico 
  * actualmente (tanto en la cola como la que esta reparando
