@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <assert.h>
+#include "rg.h"
 #include "mechanic.h"
 #include "washingm.h"
 #include "laundry_aux.h"
@@ -149,7 +150,7 @@ static void repair_machine (laundry_t l, wm_t machine)
  */
 static void bring_to_operation (laundry_t l)
 {
-	int i = 0;
+	int i = 0, nbt = 0;
 	
 	INV
 	
@@ -157,9 +158,12 @@ static void bring_to_operation (laundry_t l)
 		/* Si esta lavadora estaba rota y la llevaron al taller... */
 		if (l->op_machines[i] == NULL) {
 			if (l->s > 0) {
-				/* ...la reemplazamos por una de servicio */
+				/* ...la reemplazamos por una de servicio... */
 				l->s--;
 				l->op_machines[i] = l->serv_machines[l->s];
+				/* ...y le damos un nuevo tiempo de ruptura */
+				nbt = rg_gen_poisson(l->Tf);
+				l->op_machines[i].nbt = l->time + nbt;
 			} else {
 			/* Si ya no hay en servicio => FALLO DEL SISTEMA */
 				l->failure = true;
