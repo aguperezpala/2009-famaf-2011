@@ -23,7 +23,7 @@ typedef struct _laundry *laundry_t;
  *	Tf:	tiempo medio de fallo de una lavadora operativa
  *	Tr	tiempo medio de reparación de un mecánico
  */
-laundry_t laundry_create (uint Nop, uint Nserv, uint Nmech, uint Tf, uint Tr);
+laundry_t laundry_create (unsigned int Nop, unsigned int Nserv, unsigned int Nmech, unsigned int Tf, unsigned int Tr);
 
 
 /* Destructor del TAD
@@ -52,7 +52,7 @@ void laundry_wash_clothes (laundry_t l);
  * POS:
  *	el tiempo de operación de la lavandería fue incrementado en una unidad
  */
-int laundry_increase_month (laundry_t l);
+void laundry_increase_month (laundry_t l);
 
 
 /* Indica si la lavandería dejó de ser operativa, ie: si tiene menos máquinas
