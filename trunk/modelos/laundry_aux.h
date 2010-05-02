@@ -36,13 +36,14 @@ mechanics_t *destroy_mechanics(mechanics_t *m);
 
 
 /* Funcion que reinicializa toda la lavanderia
+ * Reinicializa todos los tiempos de ruptura
  * REQUIRES:
- * 	opm 	!= NULL
- * 	bm	!= NULL
- * 	sm	!= NULL
+ * 	am	!= NULL
+ * 	om	!= NULL
+ * 	sm 	!= NULL
  * 	m	!= NULL
  */
-void reset_laundry(wm_t *opm, wm_t *bm, wm_t *sm, mechanics_t *m);
+void reset_laundry(wm_t *am, wm_t *om, int N, wm_t *sm, int S, mechanics_t *m);
 
 
 /* Obtenemos las máquinas que se acaban de romper y las sacamos de entre las 
@@ -73,7 +74,7 @@ void get_from_mechanics (mechanics_t *m, wm_t *sm);
  * 	sm 	!= NULL
  * 	om	!= NULL
  */
-void bring_to_operation (wm_t *sm, wm_t *om)
+void bring_to_operation (wm_t *sm, wm_t *om, int time)
 
 /* Llevamos al taller las maquinas recién rotas 
 * REQUIRES:
