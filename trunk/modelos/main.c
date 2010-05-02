@@ -20,6 +20,8 @@ int main (int argc, char **argv)
 	    ft    = 0,	/* Tiempo acumulado de fallos */
 	    ft2   = 0;	/* Para calcular varianza */
 	double E = 0.0, V = 0.0;	/* Esperanza y varianza */
+	char auxBuf[15];
+	int buffSize = 0;
 	FILE *out = NULL;	/* Para registro de resultados */
 
 	if (argc != 7) {
@@ -60,9 +62,14 @@ int main (int argc, char **argv)
 			if ( !laundry_failure (laundry))
 				laundry_increase_month (laundry);
 		}
+		ftime = laundry_get_failure_time(); 
 		/* Acumulamos el tiempo obtenido en este experimento */
-		ft  += laundry_get_failure_time();
-		ft2 += time*time;
+		ft  += ftime;
+		ft2 += ftime*ftime;
+		
+		/* ahora imprimimos en archivo el tiempo de falla */
+		buffSize = sprintf(auxBuf, "%d\n", ftime);
+		fwrite(auxBuf, 1, buffSize, out);
 	}
 	/** FIN ALGORITMO PRINCIPAL */
 	
@@ -75,6 +82,7 @@ int main (int argc, char **argv)
 
 	/* Limpiamos nuestras estructuras */
 	laundry = laundry_destroy (laundry);
+	fclose(out);
 
 	return 0;
 }
