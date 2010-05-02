@@ -31,8 +31,8 @@ struct _laundry {
 	unsigned int N; 	/* # total de maquinas operativas */
 	unsigned int S; 	/* # total de maquinas de servicio */
 	unsigned int M; 	/* # de mecanicos */
-	unsigned int Tf;	/* Tiempo medio de fallo de una lavadora */
-	unsigned int Tr;	/* Tiempo medio de raparación de una lavadora */
+	double Tf;		/* Tiempo medio de fallo de una lavadora */
+	double Tr;	/* Tiempo medio de raparación de una lavadora */
 	int time;		/* Tiempo operativo continuo de la lavandería */
 	/* Auxiliares */
 	int s;			/* Última máquina de servicio lista + 1 */
@@ -202,11 +202,15 @@ static wm_t *create_machines(unsigned int N)
 *	NULL		on error
 * NOTE: genera un NULL al final de la lista para indicar eso
 */
-static mechanic_t *create_mechanics(unsigned int N)
+static mechanic_t *create_mechanics(unsigned int N, double tr)
 {
 	mechanic_t *result = NULL;
+	unsigned int i = 0;
 	
 	result = (mechanic_t *) calloc(N+1, sizeof(*result));
+	for (i = 0; i < N; i++)
+		result[i] = mechanic_create(tr);
+	
 	return result;
 }
 
@@ -269,7 +273,8 @@ static mechanic_t *destroy_mechanics(mechanic_t *m)
  *	Tf:	tiempo medio de fallo de una lavadora operativa
  *	Tr	tiempo medio de reparación de un mecánico
  */
-laundry_t laundry_create (unsigned int Nop, unsigned int Nserv, unsigned int Nmech, unsigned int Tf, unsigned int Tr)
+laundry_t laundry_create (unsigned int Nop, unsigned int Nserv, 
+			   unsigned int Nmech, double Tf, double Tr)
 {
 	laundry_t l = NULL;
 	
@@ -285,7 +290,7 @@ laundry_t laundry_create (unsigned int Nop, unsigned int Nserv, unsigned int Nme
 	l->op_machines	 = (wm_t *) calloc (Nop,   sizeof(wm_t));
 	l->serv_machines = (wm_t *) calloc (Nserv, sizeof(wm_t));
 	l->s = Nserv;
-	l->m = create_mechanics (Nmech);
+	l->m = create_mechanics (Nmech, Tr);
 	l->time = 0;
 	l->failure = false;
 	
@@ -412,5 +417,5 @@ void laundry_reset(laundry_t l)
 	for (j = i; j < l->S + l->N; j++)
 		l->serv_machines[j-i] = l->all_machines[j];
 	
-	l->s = l->N;
+	l->s = l->S;
 }

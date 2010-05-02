@@ -23,7 +23,8 @@ typedef struct _laundry *laundry_t;
  *	Tf:	tiempo medio de fallo de una lavadora operativa
  *	Tr	tiempo medio de reparación de un mecánico
  */
-laundry_t laundry_create (unsigned int Nop, unsigned int Nserv, unsigned int Nmech, unsigned int Tf, unsigned int Tr);
+laundry_t laundry_create (unsigned int Nop, unsigned int Nserv, 
+			   unsigned int Nmech, double Tf, double Tr);
 
 
 /* Destructor del TAD

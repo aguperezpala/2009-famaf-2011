@@ -12,20 +12,18 @@
 * 	< 0 	on error
 * 	>=0	cc
 */
-static int get_param(int p, char **argv)
+static double get_param(int p, char **argv)
 {
-	int result = -1;
-	long int n = 0;
+	double n = -1;
 	char *err = NULL;
 	
-	n = strtol(argv[p], &err, 10);
+	n = strtod(argv[p], &err);
 	if (err[0] != '\0') {
-		perror("error en el argumento recibido\n");
-		return result;
+		printf("error en el argumento recibido: %s\n", argv[p]);
+		return -1;
 	}
-	result = (int) n;
 	
-	return result;
+	return n;
 }
 
 
@@ -36,13 +34,13 @@ int main (int argc, char **argv)
 	unsigned int i = 0;
 	unsigned int N = 0,	/* # total de maquinas operativas */
 		     S = 0,	/* # total de maquinas de servicio */
-		     M = 0,	/* # de mecanicos */
-		     Tf = 0,	/* Tiempo medio de fallo de una lavadora */
-		     Tr = 0,	/* Tiempo medio de raparación de una lavadora */
+		     M = 0,	/* # de mecanicos */		    
 		     Nsim = 0;	/* # de simulaciones a correr */
-	int ftime = 0,	/* Tiempo de fallo de un experimento */
-	    ft    = 0,	/* Tiempo acumulado de fallos */
-	    ft2   = 0;	/* Para calcular varianza */
+	double  Tf = 0,		/* Tiempo medio de fallo de una lavadora */
+		Tr = 0;		/* Tiempo medio de raparación de una lavadora */
+	int ftime = 0,		/* Tiempo de fallo de un experimento */
+	    ft    = 0,		/* Tiempo acumulado de fallos */
+	    ft2   = 0;		/* Para calcular varianza */
 	double E = 0.0, V = 0.0;	/* Esperanza y varianza */
 	char auxBuf[15];
 	int buffSize = 0;
@@ -60,12 +58,12 @@ int main (int argc, char **argv)
 	}
 
 	/* Obtenemos los argumentos con que nos llamaron */
-	N  = get_param (1, argv);
-	S  = get_param (2, argv);
-	M  = get_param (3, argv);
+	N  = (unsigned int) get_param (1, argv);
+	S  = (unsigned int) get_param (2, argv);
+	M  = (unsigned int) get_param (3, argv);
 	Tf = get_param (4, argv);
 	Tr = get_param (5, argv);
-	Nsim = get_param (6, argv);
+	Nsim = (unsigned int) get_param (6, argv);
 	
 	/* Creamos la lavandería con todas sus lavadoras y mecánicos */
 	laundry = laundry_create (N, S, M, Tf, Tr);

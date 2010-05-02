@@ -10,7 +10,7 @@ wm_t wm_create(void)
 {
 	wm_t result = NULL;
 	
-	wm_t = (wm_t) malloc(sizeof(*result));
+	result = (wm_t) malloc(sizeof(*result));
 	
 	return result;
 }
