@@ -66,8 +66,8 @@ MY_LIBS   = -lbluetooth
 CPPFLAGS  =  -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 	 -Wcast-qual -Wstrict-prototypes -Wmissing-declarations \
 	 -Wmissing-prototypes -Wno-unused-parameter -Werror -pedantic \
-	 -g -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ -D_NDEBUG
-	 
+	 -g -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ -D_NDEBUG # -D_WASH
+	
 # The options used in linking as well as in any direct use of ld.
 LDFLAGS   = -lglib-2.0 -lm
 
