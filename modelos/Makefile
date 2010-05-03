@@ -239,10 +239,10 @@ ifneq ($(DEPS),)
 endif
 endif
 
-clean:
-	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).exe
+cleanonly:
+	$(RM) $(OBJS) $(PROGRAM) $(PROGRAM).exe *~
 
-distclean: clean
+clean: cleanonly
 	$(RM) $(DEPS) TAGS
 
 # Show help.
