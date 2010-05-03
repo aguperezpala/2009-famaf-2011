@@ -1,3 +1,17 @@
+/* Funciones de generación de valores de variables aleatorias con
+ * distribuciones de probabilidad específicas
+ * 
+ * Última revisión: 03/05/10
+ * 
+ * V.A. implementadas:
+ * 	Discretas:
+ * 		· Uniforme (a,b)
+ * 		· Poisson (lambda)
+ * 	Continuas
+ * 		· Uniforme (a,b)
+ * 		· Exponencial (lambda)
+ */
+
 #ifndef RANDOM_GENERATORS_H
 #define RANDOM_GENERATORS_H
 
