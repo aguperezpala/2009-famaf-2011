@@ -208,6 +208,8 @@ static mechanic_t *create_mechanics(unsigned int N, double tr)
 	unsigned int i = 0;
 	
 	result = (mechanic_t *) calloc(N+1, sizeof(*result));
+	if (!result)
+		return NULL;
 	for (i = 0; i < N; i++)
 		result[i] = mechanic_create(tr);
 	
