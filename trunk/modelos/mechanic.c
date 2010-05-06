@@ -1,4 +1,7 @@
+#include <assert.h>
+#include <stdbool.h>
 #include "mechanic.h"
+
 
 struct _mechanic {
 	int rrt; 	/* Tiempo absoluto hasta la proxima maquina que sale 
@@ -78,24 +81,25 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 		/* SI esta arreglada ==> la extraemos y la devolvemos */
 		wm = (wm_t) g_queue_pop_head(m->rq);
 		
-		if (!wm) 
+		if (!wm) {
 			/* que paso aca? como puede ser... */
 			printf("Algo esta andando mal en el mecanico\n");
+			assert(false);
+		}
+	
+		/* debemos ver ahora si tenemos que ponernos a reparar
+		* la otra ahora, o si no tenemos ninguna no hacemos
+		* nada */
+		if (g_queue_is_empty(m->rq))
+			/* no hay nada que reparar */
+			m->rrt = -1;
 		else {
-			/* debemos ver ahora si tenemos que ponernos a reparar
-			 * la otra ahora, o si no tenemos ninguna no hacemos
-			 * nada */
-			if (g_queue_is_empty(m->rq))
-				/* no hay nada que reparar */
-				m->rrt = -1;
-			else {
-				/* si hay maquinas => determinamos en cuanto
-				 * tiempo va a ser reparada, recordemos que 
-				 * la media de la exponencial es 1/lambda. 
-				 * y vamos a tomar el techo del valor.. */
-				m->rrt = ceil(rg_gen_exp((double)1.0/m->TR)) 
-							+ month;
-			}
+			/* si hay maquinas => determinamos en cuanto
+			* tiempo va a ser reparada, recordemos que 
+			* la media de la exponencial es 1/lambda. 
+			* y vamos a tomar el techo del valor.. */
+			
+			m->rrt = ceil(rg_gen_exp((double)1.0/m->TR)) + month;
 		}
 	}
 	
@@ -122,10 +126,10 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm, int month)
 	 * distinta de vacio */
 	if (g_queue_is_empty(m->rq))
 		/* la arreglamos ya ... y veamos cuanto va a tardar.. */
-		m->rrt = ceil(rg_gen_exp((double) 1.0/m->TR)) + month;
-	else
-		/* hay maquinas arreglandose, simplemente la encolamos */
-		g_queue_push_tail(m->rq, wm);
+		m->rrt = ceil(rg_gen_exp((double) 1.0/(double)m->TR)) + month;
+	
+	/* si o si la encolamos */
+	g_queue_push_tail(m->rq, wm);
 }
 
 /* Funcion que devuelve la cantidad de maquinas que tiene el mecanico 
