@@ -167,6 +167,8 @@ static void bring_to_operation (laundry_t l)
 				/* ...la reemplazamos por una de servicio... */
 				l->s--;
 				l->op_machines[i] = l->serv_machines[l->s];
+				/*! FIXME: faltaba esto, es necesario? */
+				l->serv_machines[l->s] = NULL;
 				/* ...y le damos un nuevo tiempo de ruptura */
 				nbt = rg_gen_poisson(l->Tf);
 				l->op_machines[i]->nbt = l->time + nbt;
