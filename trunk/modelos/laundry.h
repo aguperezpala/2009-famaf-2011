@@ -47,15 +47,6 @@ laundry_t laundry_destroy (laundry_t l);
 void laundry_wash_clothes (laundry_t l);
 
 
-/* Incrementa en uno el mes actual de la lavandería
- * PRE:
- *	l != NULL
- * POS:
- *	el tiempo de operación de la lavandería fue incrementado en una unidad
- */
-void laundry_increase_month (laundry_t l);
-
-
 /* Indica si la lavandería dejó de ser operativa, ie: si tiene menos máquinas
  * en operación de las que debería
  * PRE:
@@ -71,7 +62,7 @@ bool laundry_failure (laundry_t l);
  * 	ftime >=0 , si el sistema falló tras "ftime" meses de operación
  * 	ftime < 0 , si el sistema aún no falló
  */
-int laundry_get_failure_time (laundry_t l);
+double laundry_get_failure_time (laundry_t l);
 
 
 /* Funcion que reseta toda la estructura de laundry, dejandola en 0km.

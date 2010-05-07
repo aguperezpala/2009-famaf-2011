@@ -36,14 +36,25 @@ void mechanic_reinitialize(mechanic_t m);
  * 	wm	si hay maquina reparada
  * 	NULL	si no hay 
  */
-wm_t mechanic_get_rm(mechanic_t m, int month);
+wm_t mechanic_get_rm(mechanic_t m, double time);
+
+/* Funcion que devuelve el tiempo en el que va a estar lista la proxima wm
+ * o -1 si no hay.
+ * REQUIRES:
+ * 	m != NULL
+ * RETURNS:
+ * 	>= 0 si no hay error (tiempo absoluto en el que va a estar arreglada
+ * 			      la proxima maquina)
+ *	< 0 si no hay mquinas
+ */
+double mechanic_get_rrt(mechanic_t m);
 
 /* Funcion que agrega una maquina a reparar
  * REQUIRES:
  * 	m 	!= NULL
  * 	wm	!= NULL
  */
-void mechanic_repair_machine(mechanic_t m, wm_t wm, int month);
+void mechanic_repair_machine(mechanic_t m, wm_t wm, double time);
 
 /* Funcion que devuelve la cantidad de maquinas que tiene el mecanico 
  * actualmente (tanto en la cola como la que esta reparando

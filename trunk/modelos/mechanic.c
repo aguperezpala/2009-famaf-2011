@@ -4,7 +4,7 @@
 
 
 struct _mechanic {
-	int rrt; 	/* Tiempo absoluto hasta la proxima maquina que sale 
+	double rrt; 	/* Tiempo absoluto hasta la proxima maquina que sale 
 			 * del taller */
 	GQueue *rq; 	/* Cola de espera de reparacion */
 	double TR;	/* tiempo medio de reparacion (1/lambda) */
@@ -46,7 +46,7 @@ mechanic_t mechanic_create(double tr)
 void mechanic_reinitialize(mechanic_t m)
 {
 	if (!m)
-		return;
+		assert(false);
 	
 	g_queue_clear(m->rq);
 	m->rrt = -1;
@@ -62,7 +62,7 @@ void mechanic_reinitialize(mechanic_t m)
 * 	wm	si hay maquina reparada
 * 	NULL	si no hay 
 */
-wm_t mechanic_get_rm(mechanic_t m, int month)
+wm_t mechanic_get_rm(mechanic_t m, double time)
 {
 	wm_t wm = NULL;
 	
@@ -77,7 +77,7 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 		return NULL;
 	
 	/* vamos a verificar si ya esta arreglada la maquina */
-	if (m->rrt == month) {
+	if (m->rrt == time) {
 		/* SI esta arreglada ==> la extraemos y la devolvemos */
 		wm = (wm_t) g_queue_pop_head(m->rq);
 		
@@ -99,7 +99,7 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 			* la media de la exponencial es 1/lambda. 
 			* y vamos a tomar el techo del valor.. */
 			
-			m->rrt = ceil(rg_gen_exp((double)1.0/m->TR)) + month;
+			m->rrt = rg_gen_exp((double)1.0/m->TR) + time;
 		}
 	}
 	
@@ -109,12 +109,27 @@ wm_t mechanic_get_rm(mechanic_t m, int month)
 	return wm;
 }
 
+/* Funcion que devuelve el tiempo en el que va a estar lista la proxima wm
+* o -1 si no hay.
+* REQUIRES:
+* 	m != NULL
+* RETURNS:
+* 	>= 0 si no hay error (tiempo absoluto en el que va a estar arreglada
+* 			      la proxima maquina)
+*	< 0 si no hay mquinas
+*/
+double mechanic_get_rrt(mechanic_t m)
+{
+	assert(m != NULL);
+	return m->rrt;
+}
+
 /* Funcion que agrega una maquina a reparar
 * REQUIRES:
 * 	m 	!= NULL
 * 	wm	!= NULL
 */
-void mechanic_repair_machine(mechanic_t m, wm_t wm, int month)
+void mechanic_repair_machine(mechanic_t m, wm_t wm, double time)
 {
 	if (!m || !wm) {
 		printf("Intentando agregar una maquina en un mecanico NULL "
@@ -126,7 +141,7 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm, int month)
 	 * distinta de vacio */
 	if (g_queue_is_empty(m->rq))
 		/* la arreglamos ya ... y veamos cuanto va a tardar.. */
-		m->rrt = ceil(rg_gen_exp((double) 1.0/(double)m->TR)) + month;
+		m->rrt = rg_gen_exp((double) 1.0/(double)m->TR) + time;
 	
 	/* si o si la encolamos */
 	g_queue_push_tail(m->rq, wm);
