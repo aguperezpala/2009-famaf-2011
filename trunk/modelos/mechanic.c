@@ -154,8 +154,10 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm, double time)
 */
 int mechanic_get_n_rmachines(mechanic_t m)
 {
-	if (!m)
+	if (!m){
+		assert(false);
 		return -1;
+	}
 	return g_queue_get_length(m->rq);
 }
 
