@@ -45,7 +45,6 @@ struct _laundry {
  ** ~~~~~~~~~~~~~~~~~~~~~~     FUNCIONES PRIVADAS     ~~~~~~~~~~~~~~~~~~~~~~~ *
  ** ------------------------------------------------------------------------- */
 
-//./laundry_sim  5 2 1 1 0.125 10000
 
 
 /* Traemos a servicio las maquinas recién reparadas */
