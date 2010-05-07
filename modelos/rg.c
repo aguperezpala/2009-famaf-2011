@@ -45,7 +45,7 @@ double rg_gen_exp(double lambda)
 	
 	U = (double)mzran13()/(double)ULONG_MAX;
 	
-	return ((-1.0/lambda) * log(U));
+	return (((double) -1.0/ (double) lambda) * log(U));
 }
 
 /* funcion que genera una v.a. uniforme discreta en el intervalo [a,b] */

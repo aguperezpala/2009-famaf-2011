@@ -45,6 +45,7 @@ struct _laundry {
  ** ~~~~~~~~~~~~~~~~~~~~~~     FUNCIONES PRIVADAS     ~~~~~~~~~~~~~~~~~~~~~~~ *
  ** ------------------------------------------------------------------------- */
 
+//./laundry_sim  5 2 1 1 0.125 10000
 
 
 /* Traemos a servicio las maquinas recién reparadas */
@@ -65,6 +66,15 @@ static void get_from_mechanics (laundry_t l)
 			last++;
 		}
 	}
+	/*! FIXME: no entiendo porque mierda CON esta linea (l->s = last) se
+	 * caga clavando todo bolo, osea, no termina mas, queda infinitamente
+	 * dando vueltas... Yo se la agregue, porque me parece que si obtenemos
+	 * una maquina del mecanico y la colocamos en la de servicio, entonces
+	 * teniamos que aumentar l->s, si no siempre va a ir disminuyendo esto
+	 * y terminaria antes... el tema es que eso hace que no termine, 
+	 * sera que no es computable? XD
+	 */
+	l->s = last;
 	return;
 }
 

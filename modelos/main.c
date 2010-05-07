@@ -64,6 +64,8 @@ int main (int argc, char **argv)
 	Tf = get_param (4, argv);
 	Tr = get_param (5, argv);
 	Nsim = (unsigned int) get_param (6, argv);
+	printf("\n ingreso: N:%d\tS:%d\tM:%d\nTf:%.6f\tTr:%.6f\tNSIM:%d\n",
+		(int) N, (int) S, (int) M, Tf, Tr, (int) Nsim);
 	
 	/* Creamos la lavandería con todas sus lavadoras y mecánicos */
 	laundry = laundry_create (N, S, M, Tf, Tr);
