@@ -38,7 +38,7 @@ int main (int argc, char **argv)
 		     Nsim = 0;	/* # de simulaciones a correr */
 	double  Tf = 0,		/* Tiempo medio de fallo de una lavadora */
 		Tr = 0;		/* Tiempo medio de raparación de una lavadora */
-	int ftime = 0,		/* Tiempo de fallo de un experimento */
+	double ftime = 0,		/* Tiempo de fallo de un experimento */
 	    ft    = 0,		/* Tiempo acumulado de fallos */
 	    ft2   = 0;		/* Para calcular varianza */
 	double E = 0.0, V = 0.0;	/* Esperanza y varianza */
@@ -77,14 +77,9 @@ int main (int argc, char **argv)
 		/* Reinicializamos el experimento */
 		laundry_reset (laundry);
 		/* Iniciamos una nueva simulación */
-		while ( !laundry_failure (laundry) ) {
-			
+		while ( !laundry_failure (laundry) ) {			
 			/* Hacer lo que haya que hacer este mes */
 			laundry_wash_clothes (laundry);
-			
-			/* ¿El sistema dejo de ser operativo? */
-			if ( !laundry_failure (laundry))
-				laundry_increase_month (laundry);
 		}
 		ftime = laundry_get_failure_time(laundry); 
 		/* Acumulamos el tiempo obtenido en este experimento */
@@ -92,7 +87,7 @@ int main (int argc, char **argv)
 		ft2 += ftime*ftime;
 		
 		/* ahora imprimimos en archivo el tiempo de falla */
-		buffSize = sprintf(auxBuf, "%d\n", ftime);
+		buffSize = sprintf(auxBuf, "%.6f\n", ftime);
 		fwrite(auxBuf, 1, buffSize, out);
 	}
 	/** FIN ALGORITMO PRINCIPAL */

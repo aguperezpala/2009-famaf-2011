@@ -7,7 +7,7 @@
 /*! Vamos hacer este tad transparente para accederlo directamente */
 
 struct _wm {
-	int nbt;	/* Tiempo absoluto hasta la proxima ruptura */
+	double nbt;	/* Tiempo absoluto hasta la proxima ruptura */
 };
 
 typedef struct _wm * wm_t;
