@@ -3,7 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <limits.h>
+#include <float.h>
 #include <assert.h>
+#include <glib.h>
 #include "laundry.h"
 #include "rg.h"
 #include "mechanic.h"
@@ -15,123 +17,196 @@
 	    assert(l->all_machines != NULL); \
 	    assert(l->op_machines != NULL); \
 	    assert(l->serv_machines != NULL); \
-	    assert(l->m != NULL); \
-	    assert(!l->failure);
+	    assert(l->m != NULL);
 
 
 
 struct _laundry {
 	/* Máquinas lavadoras */
 	wm_t *all_machines;	/* Todas las máquinas */
-	wm_t *op_machines;	/* Referencia a las maquinas operativas */
-	wm_t *serv_machines;	/* Referencia a las maquinas de servicio */
-	/* Mecanicos */
+	GQueue *op_machines;	/* Referencia a las maquinas operativas */
+	GQueue *serv_machines;	/* Referencia a las maquinas de servicio */
+	/* Mecánicos */
 	mechanic_t *m;		/* Mecanicos del taller de reparación */
-	/* Cantidades */
+	int next_mech;		/* Próximo mecánico a sacar una máquina reparada */
+	/* Parámetros */
 	unsigned int N; 	/* # total de maquinas operativas */
 	unsigned int S; 	/* # total de maquinas de servicio */
 	unsigned int M; 	/* # de mecanicos */
 	double Tf;		/* Tiempo medio de fallo de una lavadora */
-	double Tr;	/* Tiempo medio de raparación de una lavadora */
-	double time;		/* Tiempo operativo continuo de la lavandería */
-	/* Auxiliares */
-	int s;			/* Última máquina de servicio lista + 1 */
-	bool failure;		/* ¿Hay fallo de sistema? */
+	double Tr;		/* Tiempo medio de raparación de una lavadora */
 };
 
 
 
 /** ------------------------------------------------------------------------- *
- ** ~~~~~~~~~~~~~~~~~~~~~~     FUNCIONES PRIVADAS     ~~~~~~~~~~~~~~~~~~~~~~~ *
+ ** ~~~~~~~~~~~~~~~~~~~~~ ###  FUNCIONES PRIVADAS  ### ~~~~~~~~~~~~~~~~~~~~~~ *
  ** ------------------------------------------------------------------------- */
 
-/* Funcion que agrega una maquina en un arreglo en la ultima posicion libre
- * (osea NULL)
- * REQUIRES:
- * 	wms != NULL
- * 	wm  != NULL
- * 	haber lugar en el arreglo wms
+
+
+/* Función auxiliar para comparar los futuros tiempos de ruptura
+ * de dos máquinas lavadoras m1 y m2 (de tipo wm_t)
+ * Se utiliza para mantener ordenada la cola de máquinas lavadoras operativas.
+ * PRE:
+ *	m1 != NULL
+ *	m2 != NULL
+ *	dummy == NULL
+ * RETURNS:
+ *	-1 <= si m1 se romperá antes que m2
+ *	 1 <= si m2 se romperá antes que m1
+ *	 0 <= si m1 y m2 se romperán en el mismo instante
  */
-static void insert_wm_wms(wm_t *wms, wm_t wm, int size)
+static int machine_breakage_order (const void *m1, const void *m2, void *dummy)
 {
-	int i = 0;
+	assert (m1 != NULL);
+	assert (m2 != NULL);
+	assert (dummy == NULL);
 	
-	assert(wms != NULL);
-	assert(wm != NULL);
-	
-	while (i < size && wms[i] != NULL)
-		i++;
-	if (i >= size)
-		/* intentando agregar donde no se puede */
-		assert(false);
-	wms[i] = wm;
-	
+	/* El compilador se queja porque para acceder a m1 y m2 tengo que
+	 * castearlos a (wm_t), y eso no respeta el calificador *const* */
+	if (((wm_t)m1)->nbt < ((wm_t)m2)->nbt)
+		return -1;
+	else if (((wm_t)m1)->nbt > ((wm_t)m2)->nbt)
+		return 1;
+	else
+		return 0;
+}
+
+
+
+/* Función auxiliar para actualizar los tiempos de ruptura de las lavadoras
+ * A cada lavadora de la lista se le disminuirá su nbt en "time" unidades
+ * PRE:
+ *	machine != NULL
+ *	time != NULL
+ */
+static void elapse_time (void *machine, void *time)
+{
+	assert (machine != NULL);
+	assert (time != NULL);
+	((wm_t)machine)->nbt -= *((double *) time);
 	return;
 }
 
-/* Funcion que devuelve la ultima wm de un arreglo, o NULL si no hay.
- * REQUIRES:
- * 	wms != NULL
- * RETURNS:
- * 	NULL		if no wm
- * 	wm		otherwise
- */
-static wm_t get_wm_wms(wm_t *wms, int size)
-{
-	int i = 0;
-	wm_t result = NULL;
-	
-	assert(wms != NULL);
-	
-	while(i < size && wms[i] != NULL)
-		i++;
-	i--;
-	/* hay maquinas? */
-	if (i < 0)
-		/* NO hay */
-		return NULL;
-	
-	/* si hay una maquina => la devolvemos */
-	result = wms[i];
-	wms[i] = NULL;
-	
-	return result;
-}
 
-/* Traemos a servicio las maquinas recién reparadas */
-static void get_from_mechanics (laundry_t l)
+
+/* Devuelve el próximo tiempo de ruptura (RELATIVO) de entre las máquinas
+ * lavadoras operativas.
+ * PRE:
+ *	INV
+ * POS:
+ *	El resultado devuelto es el tiempo de ruptura más cercano en el tiempo
+ */
+static double laundry_get_nbt (laundry_t l)
 {
-	unsigned int i = 0;/*, last = 0;*/
-	wm_t RMachine = NULL;	/* Lavadora reparada */
+	wm_t machine = NULL;
 	
 	INV
 	
-	/*last = l->s;*/
-	for (i=0 ; i < l->M ; i++) {
-		/* Le preguntamos al mecánico si ya tiene una lavadora lista */
-		RMachine = mechanic_get_rm (l->m[i], l->time);
-		if (RMachine != NULL) {
-			/* Reparó una => la pasamos a servicio 
-			l->serv_machines[last] = RMachine;
-			last++;
-			*/
-			/*! FIXME: estoy usando una version lenta pero segura =>
-			 *  el fixme de abajo era otro problema, aun asi no
-			 *  anda ni con esta version bolo :S(version lenta) */
-			insert_wm_wms(l->serv_machines, RMachine, l->S);
+	/* Sabemos que la cola de máquinas operativas está ordenada
+	 * La máquina con menor tiempo de ruptura futuro está primera */
+	machine = g_queue_peek_head (l->op_machines);
+	
+	return machine->nbt;
+}
+
+
+
+/* Devuelve el tiempo (RELATIVO) futuro en el que saldrá la próxima máquina
+ * de taller, de entre todos los mecánicos de la lavandería.
+ * PRE:
+ *	INV
+ * POS:
+ *	El resultado devuelto es el próximo tiempo de reparación
+ *	(el más cercano en el tiempo)
+ */
+static double laundry_get_nr (laundry_t l)
+{
+	unsigned int i = 0;
+	double	nr = DBL_MAX,	/* next repair time */
+		mnr = 0.0;	/* "this mechanic" next repair time */
+	
+	INV
+	
+	for (i=0 ; i<l->M ; i++) {
+		mnr = mechanic_get_rrt (l->m[i]);
+		if (mnr > 0 && mnr < nr) {
+			nr = mnr;	  /* Mínimo tiempo futuro de reparac. */
+			l->next_mech = i; /* Mecánico que lo realiza */
 		}
 	}
-	/*! FIXME: no entiendo porque mierda CON esta linea (l->s = last) se
-	 * caga clavando todo bolo, osea, no termina mas, queda infinitamente
-	 * dando vueltas... Yo se la agregue, porque me parece que si obtenemos
-	 * una maquina del mecanico y la colocamos en la de servicio, entonces
-	 * teniamos que aumentar l->s, si no siempre va a ir disminuyendo esto
-	 * y terminaria antes... el tema es que eso hace que no termine, 
-	 * sera que no es computable? XD
-	 */
-	/*l->s = last;*/
+	
+	return nr;
+}
+
+
+
+/* Hace que transcurran "elapsed" unidades de tiempo en la lavandería
+ * Es decir, disminuye en "elapsed" unidades todos los tiempos del sistema
+ *
+ * PRE:
+ *	INV
+ */
+static void laundry_update_time (laundry_t l, double elapsed)
+{
+	unsigned int i = 0;
+	
+	INV
+	
+	/* Actualizamos las lavadoras operativas... */
+	g_queue_foreach (l->op_machines, elapse_time, &elapsed);
+	
+	/* ...y los mecánicos */
+	for (i=0 ; i<l->M ; i++)
+		mechanic_elapse_time (l->m[i], elapsed);
+	
 	return;
 }
+
+
+
+/* De todo el grupo de mecánicos del taller de la lavandería
+ * busca al que tiene menor tiempo futuro de reparación.
+ * Le hace reparar su lavadora, se la quita, y le da la siguiente de su cola
+ * A la lavadora reparada la mete dentro de la lista de máquinas de servicio
+ *
+ * PRE:
+ *	INV
+ * RETURNS:
+ *	 0 , si se pudo hacer todo bien
+ *	-1 , si no se encontró al mecánico
+ */
+static int laundry_bring_from_repair (laundry_t l)
+{
+	INV
+	
+	if (l->next_mech < 0) {
+		/* No sabemos cual es el siguiente mecánico => lo buscamos */
+		double dummy = 0.0;
+		dummy = laundry_get_nr (l);
+	}
+	
+	if (l->next_mech < 0 || l->next_mech >= (int) l->M)
+		return -1;
+	else {
+		wm_t machine = NULL;
+		mechanic_t m = l->m[l->next_mech];
+		
+		/* Le quitamos la máquina al mecánico... */
+		machine = mechanic_get_rm (m);
+		if (machine == NULL)
+			return -1;
+		else
+			l->next_mech = -1;
+		
+		/* ...y la ponemos de servicio */
+		g_queue_push_tail (l->serv_machines, machine);
+	}
+	
+	return 0;
+}
+
 
 
 /* Mete en el taller la máquina lavadora pasada como 2º argumento,
@@ -149,7 +224,7 @@ static void repair_machine (laundry_t l, wm_t machine)
 	int pos = -1, min = INT_MAX, mech_q_len = 0;
 	
 	INV
-	assert (machine != NULL);
+			assert (machine != NULL);
 	
 	/* Buscamos al mecánico con cola de reparación más corta... */
 	for (i=0 ; i<l->M ; i++) {
@@ -160,135 +235,40 @@ static void repair_machine (laundry_t l, wm_t machine)
 		}
 	}
 	/* ...y le damos la lavadora para que la arregle */
-	mechanic_repair_machine (l->m[pos], machine, l->time);
+	mechanic_repair_machine (l->m[pos], machine);
 	
 	return;
 }
 
-/* Lleva al taller las lavadoras operativas que acaban de romperse
-* PRE:
-*	INV
-* POS:
-*	Toda máquina referenciada en la lista de operativas de la lavandería
-*	tiene tiempo de ruptura > tiempo actual. En código:
-*	(l->op_machines[i]).nbt > l->time  |
-*	ó sino l->op_machines[i] == NULL   | para todo i
-*/
-static void give_to_mechanics (laundry_t l)
-{
-	unsigned int i = 0;
-	wm_t BMachine = NULL;	/* Lavadora rota */
-	
-	INV
-	
-	/* Quitamos las lavadoras que se rompieron este mes */
-	for (i=0 ; i < l->N ; i++) {
-		BMachine = l->op_machines[i]->nbt == l->time ? \
-		l->op_machines[i] : NULL;
-		/* Si la i-ésima máquina está rota... */
-		if ( BMachine != NULL ) {
-			/* ...la sacamos de entre las operativas... */
-			l->op_machines[i] = NULL;
-			/* ...y la mandamos a arreglar */
-			repair_machine (l, BMachine);
-		}
-	}
-	
-	return;
-}
 
-/* Funcion que actualiza el tiempo donde ocurrira el proximo evento
- * REQUIRES:
- * 	l != NULL
- * POS:
- * 	el l->time = al tiempo en el que ocurria el proximo evento.
- */
-static void incrase_time(laundry_t l)
-{
-	unsigned int i = 0;
-	double min = 0, auxT = 0;
-	
-	INV
-	
-	/* debemos buscar el minimo tiempo entre la proxima reparacion de una
-	 * maquina o la proxima rotura de una maquina. Buscamos primero en los
-	 * mecanicos */
-	min = l->op_machines[0]->nbt; /* sabemos que esto existe por INV */
-	
-	for (i=0 ; i<l->M ; i++) {
-		auxT = mechanic_get_rrt(l->m[i]);
-		/* debemos verificar que el tiempo del mecanico sea > 0 */
-		if (auxT < 0)
-			continue;
-		if (min > auxT) {
-			min = auxT;
-		}
-	}
-	/* ahora debemos buscar entre las proximas "roturas" de las maquinas,
-	 * teniendo en cuenta el mismo minimo */
-	for (i = 0; i < l->N; i++) {
-		auxT = l->op_machines[i]->nbt;
-		if (min > auxT) {
-			min = auxT;
-		}
-	}
-	/* en este punto tenemos en min el tiempo en el que va a ocurrir
-	 * el proximo evento => actualizamos el tiempo al proximo evento
-	 */
-	l->time = min;
-	
-	/*! NOTE: recordemos que estamos trabajando con tiempos ABSOLUTOS,
-	 * 	 si no esto no andaria NADA */
-	
-	return;
-}
 
-/* Reemplazamos los espacios vacíos entre las máquinas operativas
- * con las máquinas lavadoras de servicio 
+/* Buscamos la próxima lavadora operativa que se está por romper.
+ * La llevamos al taller mecánico y la reemplazamos con una máquina de servicio
+ * 
  * PRE:
  *	INV
- * POS:
- *	Toda máquina referenciada en la lista de operativas de la lavandería
- *	tiene tiempo de ruptura > tiempo actual, ó sino la lavandería acaba
- *	de incurrir en un fallo de sistema
- *	
- * NOTE: ÉSTA ES LA FUNCIÓN QUE REVELA LOS FALLOS DE SISTEMA
+ *	"aún hay máquinas de servicio"
  */
-static void bring_to_operation (laundry_t l)
+static void laundry_send_to_repair (laundry_t l)
 {
-	unsigned int i = 0;
-	int nbt = 0;
-	wm_t sm = NULL;
+	wm_t machine = NULL;
 	
 	INV
+	assert (!g_queue_is_empty(l->serv_machines));
 	
-	for (i=0 ; i < l->N ; i++) {
-		/* Si esta lavadora estaba rota y la llevaron al taller... */
-		if (l->op_machines[i] == NULL) {
-			/*! FIXME: usando version muy lenta, pero segura */
-			sm = get_wm_wms(l->serv_machines, l->S);
-			if (sm != NULL) {
-				/* ...la reemplazamos por una de servicio... */
-				/*l->s--;*/
-				l->op_machines[i] = sm;
-				/*! FIXME: faltaba esto, es necesario? */
-				/*l->serv_machines[l->s] = NULL;*/
-				/* ...y le damos un nuevo tiempo de ruptura */
-				nbt = rg_gen_exp((double) 1.0/l->Tf);
-				l->op_machines[i]->nbt = l->time + nbt;
-			} else {
-			/* Si ya no hay en servicio => FALLO DEL SISTEMA */
-				l->failure = true;
-				break;
-			}
-		}
-	}
-	return;
+	/* Obtenemos la lavadora... */
+	machine = (wm_t) g_queue_pop_head (l->op_machines);
+	
+	/* ...la enviamos al taller... */
+	repair_machine (l, machine);
+	
+	/* ...y la reemplazamos con una de servicio */
+	machine = (wm_t) g_queue_pop_head (l->serv_machines);
+	machine->nbt = rg_gen_exp (1.0/l->Tf);
+	
+	/* Al meterla entre las operativas mantenemos el orden */
+	g_queue_insert_sorted (l->op_machines, machine, machine_breakage_order, NULL);
 }
-
-
-
-/*static void wash (void) { printf ("washing washing...\n"); return; }*/
 
 
 
@@ -312,6 +292,8 @@ static wm_t *create_machines(unsigned int N)
 	return result;
 }
 
+
+
 /* Funcion que devuelve un arreglo de tamaño N de mechanics
 * RETURNS:
 *	NULL		on error
@@ -331,7 +313,7 @@ static mechanic_t *create_mechanics(unsigned int N, double tr)
 	return result;
 }
 
-/* Destructor de un arreglo de maquinas
+/* Destructor de un arreglo de maquinas. Se detiene al primer NULL hallado
 * REQUIRES:
 *  	wm != NULL
 */
@@ -351,7 +333,10 @@ static wm_t *destroy_machines(wm_t *wm)
 	
 	return NULL;
 }
-/* Destructor de un arreglo de mecanicos
+
+
+
+/* Destructor de un arreglo de mecanicos. Se detiene al primer NULL hallado
  * REQUIRES:
  *  	m != NULL
  */
@@ -377,7 +362,7 @@ static mechanic_t *destroy_mechanics(mechanic_t *m)
 
 
 /** ------------------------------------------------------------------------- *
- ** ~~~~~~~~~~~~~~~~~~~~~~     FUNCIONES PÚBLICAS     ~~~~~~~~~~~~~~~~~~~~~~~ *
+ ** ~~~~~~~~~~~~~~~~~~~~~ ###  FUNCIONES PÚBLICAS  ### ~~~~~~~~~~~~~~~~~~~~~~ *
  ** ------------------------------------------------------------------------- */
 
 
@@ -404,12 +389,10 @@ laundry_t laundry_create (unsigned int Nop, unsigned int Nserv,
 	l->Tf = Tf;
 	l->Tr = Tr;
 	l->all_machines  = create_machines (Nop + Nserv);
-	l->op_machines	 = (wm_t *) calloc (Nop,   sizeof(wm_t));
-	l->serv_machines = (wm_t *) calloc (Nserv, sizeof(wm_t));
-	l->s = Nserv;
+	l->op_machines	 = g_queue_new();
+	l->serv_machines = g_queue_new();
 	l->m = create_mechanics (Nmech, Tr);
-	l->time = 0;
-	l->failure = false;
+	l->next_mech = -1;
 	
 	/* Al término de la creación aseguramos el invariante de la lavandería */
 	INV
@@ -422,16 +405,17 @@ laundry_t laundry_create (unsigned int Nop, unsigned int Nserv,
 /* Destructor del TAD
  * PRE:
  *	l != NULL
+ *	l fue creada con laundry_create()
  * POS:
  *	todos los recursos de memoria de 'l' fueron liberados
  */
 laundry_t laundry_destroy (laundry_t l)
 {
-	assert (l != NULL);
+	INV
 	
 	l->all_machines = destroy_machines (l->all_machines);
-	free (l->op_machines);   l->op_machines   = NULL;
-	free (l->serv_machines); l->serv_machines = NULL;
+	g_queue_clear (l->op_machines);   l->op_machines   = NULL;
+	g_queue_clear (l->serv_machines); l->serv_machines = NULL;
 	l->m = destroy_mechanics (l->m);
 	
 	free(l); l = NULL;
@@ -441,109 +425,106 @@ laundry_t laundry_destroy (laundry_t l)
 
 
 
-/* Lleva a cabo la operación normal de la lavandería durante un mes, es decir:
- * 1: llevamos a servicio las máquinas que salgan de taller
- * 2: llevamos a taller las máquinas operativas que se rompieron
- * 3: reemplazamos los vacíos operativos con máquinas de servicio
- * 4: lavamos ropa
+
+
+
+/* Simulación de una operación de la lavandería
+ * desde el tiempo inicial = 0 hasta el primer fallo del sistema
+ *
  * PRE:
- *	INV
+ *	l != NULL
+ *	l fue creada con laundry_create()
+ * POS:
+ *	Devuelve el tiempo transcurrido hasta el 1º fallo del sistema
  */
-void laundry_wash_clothes (laundry_t l)
+double laundry_simulation (laundry_t l)
 {
+	bool	fail = false;	/* Fallo del sistema */
+	double	nbt  = 0.0,	/* Prox. ruptura de entre todas las maq. op. */
+		nr   = 0.0,	/* Prox. reparación de entre todos los mecánicos */
+		time = 0.0;	/* Tiempo absoluto del sistema */
+	int err = 0;
+	
 	INV
+	laundry_reset (l);
+	time = 0.0;
 	
-	/* Algoritmos: 
-	 * 1) Traemos del mecanico las maquinas reparadas
-	 * 2) Mandamos al mecanico las maquinas rotas.
-	 * 3) Reponemos las maquinas rotas con las de servicio y le seteamos
-	 *    un tiempo de vida util.
-	 * 4) Verificamos si hubo fallo del sistema (si hubo no actualizamos
-	 *    ningun tiempo y salimos)
-	 * 5) Buscamos el menor tiempo para que suceda el proximo evento {se
-	 *    reparo una maquina | se rompio una maquina} y actualizamos
-	 *    el tiempo actual al tiempo del proximo evento.
-	 * NOTE: para que esto sea eficiente deberiamos tener que almacenar
-	 * si el evento proximo es de rotura de maquina, o de reparacion, o de
-	 * ambos (y guardar la posicion o el mecanico que producira el evento)
-	 */
+	while (!fail) {
+		/* El tiempo de la lavandería aumenta de a eventos.
+		 * El próximo evento, ya sea una ruptura o una reparación,
+		 * hace que el tiempo se adelante hasta él
+		 */
+		
+		nbt = laundry_get_nbt (l);	/* Laundry next breaking time */
+		nr  = laundry_get_nr  (l);	/* Laundry next repair time */
+		
+		if (nr <= nbt) {
+			/* Una reparación es el próximo evento:
+			 * Traemos la máquina reparada a servicio */
+			err = laundry_bring_from_repair (l);
+			if (!err) {
+				/* Reflejamos el transcurso del tiempo */
+				laundry_update_time (l, nr);
+				time += nr;
+			} else {
+				fprintf (stderr, "Error al reparar lavadora\n");
+				assert (false);
+			}
+		} else {
+			/* Una ruptura es el próximo evento:
+			 * llevamos la máquina rota al mecánico
+			 * y traemos a operación una máquina de servicio */
+			if (g_queue_is_empty (l->serv_machines))
+				/** FALLO DEL SISTEMA */
+				fail = true;
+			else
+				laundry_send_to_repair (l);
+			/* Reflejamos el transcurso del tiempo */
+			laundry_update_time (l, nbt);
+			time += nbt;
+		}
+	}
 	
-	/* Traemos a servicio las maquinas recién reparadas */
-	get_from_mechanics (l);
-	/* Llevamos al taller las maquinas recién rotas */
-	give_to_mechanics (l);
-	/* Reemplazamos los vacios con las maquinas de servicio */
-	bring_to_operation (l);
-	
-	/* ahora vamos a ver si actualizamos el tiempo o si no hacemos nada */
-	if(!l->failure)
-		incrase_time(l);
-	
-#ifdef _WASH
-	/* Lavamos la ropa */
-	wash();
-#endif
-	return;
+	return time;	/* time == system failure time */
 }
 
-
-
-
-/* Indica si la lavandería dejó de ser operativa, ie: si tiene menos máquinas
- * lavadoras en operación de las que debería
- * PRE:
- *	l != NULL
- */
-bool laundry_failure (laundry_t l) { assert (l!=NULL); return l->failure; }
-
-
-
-/* Devuelve el tiempo en el que ocurrió el último fallo del sistema
- * REQUIRES:
- *	l != NULL
- * RETURNS
- * 	ftime >=0 , si el sistema falló tras "ftime" meses de operación
- * 	ftime < 0 , si el sistema aún no falló
- */
-double laundry_get_failure_time (laundry_t l)
-{
-	assert (l!=NULL);
-	assert(l->failure);
-	if (laundry_failure (l))
-		return l->time;
-	else
-		return -1;
-}
 
 
 /* Funcion que reseta toda la estructura de laundry, dejandola en 0km.
-* REQUIRES:
-* 	l != NULL
-*/
-void laundry_reset(laundry_t l)
+ * REQUIRES:
+ *	l != NULL
+ *	l fue creada con laundry_create()
+ */
+void laundry_reset (laundry_t l)
 {
 	unsigned int i = 0;
-	unsigned int j = 0;
+	wm_t machine = NULL;
 	
-	assert(l != NULL);
+	INV
 	
-	/* reinicializamos las variables internas */
-	l->time = 0;
-	l->failure = false;
-	memset(l->op_machines, 0, l->N * sizeof(*l->op_machines));
-	memset(l->serv_machines, 0, l->S * sizeof(*l->serv_machines));
-	/* reinicializamos los mecanicos */
+	/* Limpiamos los conjuntos de lavadoras */
+	g_queue_clear (l->op_machines);
+	g_queue_clear (l->serv_machines);
+	/* Limpiamos el taller mecanico */
 	for (i = 0; i < l->M; i++)
 		mechanic_reinitialize(l->m[i]);
 	
-	/* ahora distribuimos N maquinas en el arreglo de maquinas operativas
-	 * y S maquinas en el arreglo de maquinas de servicio */
+	/* Distribuimos N lavadoras en el arreglo de maquinas operativas */
 	for (i = 0; i < l->N; i++) {
-		l->op_machines[i] = l->all_machines[i];
-		l->op_machines[i]->nbt = rg_gen_exp((double) 1.0/l->Tf) + l->time;
+		machine = l->all_machines[i];
+		/* Al ponerla en operación le damos un tiempo de ruptura futuro */
+		machine->nbt = rg_gen_exp (1.0/l->Tf);
+		g_queue_push_tail (l->op_machines, machine);
 	}
-	for (j = i; j < l->S + l->N; j++)
-		l->serv_machines[j-i] = l->all_machines[j];
+	/* Ordenamos de forma creciente las máquinas lavadoras operativas según
+	 * según sus tiempos de ruptura futuros
+	 * Así "próxima máquina a romperse" == head (l->op_machines)
+	 */
+	g_queue_sort (l->op_machines, &machine_breakage_order, NULL);
 	
-	l->s = l->S;
+	/* Distribuimos S lavadoras en el arreglo de maquinas de servicio */
+	for (i = l->N; i < l->S + l->N; i++)
+		g_queue_push_tail (l->serv_machines, l->all_machines[i]);
+	
+	return;
 }

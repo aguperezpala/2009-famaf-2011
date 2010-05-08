@@ -15,6 +15,7 @@ typedef struct _laundry *laundry_t;
 
 
 
+
 /* Creador de TAD. Deberá luego ser liberado con el destructor aquí provisto
  * Especificación de los parámetros:
  *	Nop:	# de máquinas operativas
@@ -30,45 +31,31 @@ laundry_t laundry_create (unsigned int Nop, unsigned int Nserv,
 /* Destructor del TAD
  * PRE:
  *	l != NULL
+ *	l fue creada con laundry_create()
  * POS:
  *	todos los recursos de memoria de 'l' fueron liberados
  */
 laundry_t laundry_destroy (laundry_t l);
 
 
-/* Lleva a cabo la operación normal de la lavandería durante un mes, es decir:
- *	1: llevamos a servicio las máquinas que salgan de taller
- *	2: llevamos a taller las máquinas operativas que se rompieron
- *	3: reemplazamos los vacíos operativos con máquinas de servicio
- *	4: lavamos ropa
+/* Simulación de una operación de la lavandería
+ * desde el tiempo inicial = 0 hasta el primer fallo del sistema
+ *
  * PRE:
  *	l != NULL
- */
-void laundry_wash_clothes (laundry_t l);
-
-
-/* Indica si la lavandería dejó de ser operativa, ie: si tiene menos máquinas
- * en operación de las que debería
- * PRE:
- *	l != NULL
- */
-bool laundry_failure (laundry_t l);
-
-
-/* Devuelve el tiempo en el que ocurrió el último fallo del sistema
- * PRE:
- *	l != NULL
+ *	l fue creada con laundry_create()
  * POS:
- * 	ftime >=0 , si el sistema falló tras "ftime" meses de operación
- * 	ftime < 0 , si el sistema aún no falló
+ *	Devuelve el tiempo transcurrido hasta el 1º fallo del sistema
  */
-double laundry_get_failure_time (laundry_t l);
+double laundry_simulation (laundry_t l);
 
 
 /* Funcion que reseta toda la estructura de laundry, dejandola en 0km.
  * REQUIRES:
  * 	l != NULL
+ *	l fue creada con laundry_create()
  */
 void laundry_reset(laundry_t l);
+
 
 #endif

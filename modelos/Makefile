@@ -60,14 +60,14 @@
 MY_CFLAGS =
 
 # The linker options.
-MY_LIBS   = -lbluetooth
+MY_LIBS   =
 
 # The pre-processor options used by the cpp (man cpp for more).
 CPPFLAGS = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 	   -Wcast-qual -Wstrict-prototypes -Wmissing-declarations \
 	   -Wmissing-prototypes -Wno-unused-parameter -pedantic \
 	   -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include/ \
-	   -g -D_NDEBUG # -D_WASH
+	   -g # -D_NDEBUG
 	
 # The options used in linking as well as in any direct use of ld.
 LDFLAGS   = -lglib-2.0 -lm
@@ -227,10 +227,10 @@ ctags: $(HEADERS) $(SOURCES)
 $(PROGRAM):$(OBJS)
 ifeq ($(SRC_CXX),)              # C program
 	$(LINK.c)   $(OBJS) $(MY_LIBS) -o $@
-	@echo Type ./$@ to execute the program.
+	@echo "\n Type ./$@ to execute the program.\n"
 else                            # C++ program
 	$(LINK.cxx) $(OBJS) $(MY_LIBS) -o $@
-	@echo Type ./$@ to execute the program.
+	@echo "\n Type ./$@ to execute the program.\n"
 endif
 
 ifndef NODEP
