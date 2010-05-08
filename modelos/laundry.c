@@ -115,7 +115,9 @@ static void get_from_mechanics (laundry_t l)
 			l->serv_machines[last] = RMachine;
 			last++;
 			*/
-			/*! FIXME: estoy usando una version lenta pero segura */
+			/*! FIXME: estoy usando una version lenta pero segura =>
+			 *  el fixme de abajo era otro problema, aun asi no
+			 *  anda ni con esta version bolo :S(version lenta) */
 			insert_wm_wms(l->serv_machines, RMachine, l->S);
 		}
 	}
@@ -222,7 +224,7 @@ static void incrase_time(laundry_t l)
 			min = auxT;
 		}
 	}
-	/* ahora debemos buscar entre las proximas "roturas de las maquinas,
+	/* ahora debemos buscar entre las proximas "roturas" de las maquinas,
 	 * teniendo en cuenta el mismo minimo */
 	for (i = 0; i < l->N; i++) {
 		auxT = l->op_machines[i]->nbt;
@@ -506,7 +508,7 @@ bool laundry_failure (laundry_t l) { assert (l!=NULL); return l->failure; }
 double laundry_get_failure_time (laundry_t l)
 {
 	assert (l!=NULL);
-	
+	assert(l->failure);
 	if (laundry_failure (l))
 		return l->time;
 	else
