@@ -88,8 +88,8 @@ int main (int argc, char **argv)
 	Nsim = get_iparam (6, argv);
 	
 	printf ("Valores ingresados:\n"
-			"N=%d\t\tS=%d\t\tM=%d\n"
-			"Tf=%.6f\tTr=%.6f\tNSIM=%d\n",
+			"N  = %d\t\tS  = %d\t\tM = %d\n"
+			"Tf = %.6f\tTr = %.6f\tNSIM = %d\n",
 		(int) N, (int) S, (int) M, Tf, Tr, (int) Nsim);
 	
 	/* Creamos la lavandería con todas sus lavadoras y mecánicos */

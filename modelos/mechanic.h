@@ -52,7 +52,7 @@ wm_t mechanic_get_rm(mechanic_t m);
  * RETURNS:
  * 	>= 0 si no hay error (tiempo absoluto en el que va a estar arreglada
  * 			      la proxima maquina)
- *	< 0 si no hay mquinas
+ *	< 0 si no hay máquinas
  */
 double mechanic_get_rrt(mechanic_t m);
 

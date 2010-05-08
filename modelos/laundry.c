@@ -131,6 +131,7 @@ static double laundry_get_nr (laundry_t l)
 	
 	for (i=0 ; i<l->M ; i++) {
 		mnr = mechanic_get_rrt (l->m[i]);
+		
 		if (mnr > 0 && mnr < nr) {
 			nr = mnr;	  /* Mínimo tiempo futuro de reparac. */
 			l->next_mech = i; /* Mecánico que lo realiza */
@@ -158,9 +159,12 @@ static void laundry_update_time (laundry_t l, double elapsed)
 	g_queue_foreach (l->op_machines, elapse_time, &elapsed);
 	
 	/* ...y los mecánicos */
-	for (i=0 ; i<l->M ; i++)
-		mechanic_elapse_time (l->m[i], elapsed);
-	
+	for (i=0 ; i<l->M ; i++) {
+		/* Si el mecánico estaba reparando => actualizamos su tiempo */
+		if (0 < mechanic_get_rrt(l->m[i]))
+			mechanic_elapse_time (l->m[i], elapsed);
+	}
+		
 	return;
 }
 
@@ -313,6 +317,8 @@ static mechanic_t *create_mechanics(unsigned int N, double tr)
 	return result;
 }
 
+
+
 /* Destructor de un arreglo de maquinas. Se detiene al primer NULL hallado
 * REQUIRES:
 *  	wm != NULL
@@ -425,12 +431,8 @@ laundry_t laundry_destroy (laundry_t l)
 
 
 
-
-
-
 /* Simulación de una operación de la lavandería
  * desde el tiempo inicial = 0 hasta el primer fallo del sistema
- *
  * PRE:
  *	l != NULL
  *	l fue creada con laundry_create()
@@ -454,34 +456,33 @@ double laundry_simulation (laundry_t l)
 		 * El próximo evento, ya sea una ruptura o una reparación,
 		 * hace que el tiempo se adelante hasta él
 		 */
-		
 		nbt = laundry_get_nbt (l);	/* Laundry next breaking time */
 		nr  = laundry_get_nr  (l);	/* Laundry next repair time */
 		
 		if (nr <= nbt) {
 			/* Una reparación es el próximo evento:
-			 * Traemos la máquina reparada a servicio */
+			 * reflejamos el transcurso del tiempo */
+			laundry_update_time (l, nr);
+			time += nr;
+			/* Traemos la máquina reparada a servicio */
 			err = laundry_bring_from_repair (l);
-			if (!err) {
-				/* Reflejamos el transcurso del tiempo */
-				laundry_update_time (l, nr);
-				time += nr;
-			} else {
+			if (err) {
 				fprintf (stderr, "Error al reparar lavadora\n");
-				assert (false);
+				exit (EXIT_FAILURE);
 			}
 		} else {
 			/* Una ruptura es el próximo evento:
-			 * llevamos la máquina rota al mecánico
+			 * reflejamos el transcurso del tiempo */
+			laundry_update_time (l, nbt);
+			time += nbt;
+			
+			/* Llevamos la máquina rota al mecánico
 			 * y traemos a operación una máquina de servicio */
 			if (g_queue_is_empty (l->serv_machines))
 				/** FALLO DEL SISTEMA */
 				fail = true;
 			else
 				laundry_send_to_repair (l);
-			/* Reflejamos el transcurso del tiempo */
-			laundry_update_time (l, nbt);
-			time += nbt;
 		}
 	}
 	
