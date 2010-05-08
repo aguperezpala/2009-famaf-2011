@@ -53,19 +53,33 @@ void mechanic_reinitialize(mechanic_t m)
 }
 
 
-/* Funcion que devuelve una washing machine en caso de que haya una reparada
-* o NULL en caso contrario.
-* REQUIRES:
-* 	month	(mes actual)
-* 	m 	!= NULL
-* RETURNS:
-* 	wm	si hay maquina reparada
-* 	NULL	si no hay 
-*/
-wm_t mechanic_get_rm(mechanic_t m, double time)
+/* Función que disminuye en "elapsed" unidades
+ * el tiempo de reparación actual del mecánico
+ * REQUIRES:
+ *	m != NULL
+ *	elpased <= m->rrt
+ */
+void mechanic_elapse_time (mechanic_t m, double elapsed)
+{
+	assert (m != NULL);
+	assert (elapsed <= m->rrt);
+	
+	m->rrt -= elapsed;
+	return;
+}
+
+
+/* Funcion que devuelve una washing machine en caso de que haya una
+ * en reparación, o NULL en caso contrario.
+ * REQUIRES:
+ *	m 	!= NULL
+ * RETURNS:
+ * 	wm	si hay maquina reparada
+ * 	NULL	si no hay 
+ */
+wm_t mechanic_get_rm (mechanic_t m)
 {
 	wm_t wm = NULL;
-	
 	
 	if (!m) {
 		printf("Error, estamos recibiendo un mecanico NULL\n");
@@ -76,35 +90,30 @@ wm_t mechanic_get_rm(mechanic_t m, double time)
 	if (g_queue_is_empty(m->rq))
 		return NULL;
 	
-	/* vamos a verificar si ya esta arreglada la maquina */
-	if (m->rrt == time) {
-		/* SI esta arreglada ==> la extraemos y la devolvemos */
-		wm = (wm_t) g_queue_pop_head(m->rq);
-		
-		if (!wm) {
-			/* que paso aca? como puede ser... */
-			printf("Algo esta andando mal en el mecanico\n");
-			assert(false);
-		}
+	/* Si estabamos arreglando ==> la extraemos y la devolvemos */
+	wm = (wm_t) g_queue_pop_head(m->rq);
 	
-		/* debemos ver ahora si tenemos que ponernos a reparar
-		* la otra ahora, o si no tenemos ninguna no hacemos
-		* nada */
-		if (g_queue_is_empty(m->rq))
-			/* no hay nada que reparar */
-			m->rrt = -1;
-		else {
-			/* si hay maquinas => determinamos en cuanto
-			* tiempo va a ser reparada, recordemos que 
-			* la media de la exponencial es 1/lambda. 
-			* y vamos a tomar el techo del valor.. */
-			
-			m->rrt = rg_gen_exp((double)1.0/m->TR) + time;
-		}
+	if (!wm) {
+		/* que paso aca? como puede ser... */
+		printf("Algo esta andando mal en el mecanico\n");
+		assert(false);
+	}
+
+	/* Nos ponemos a reparar la siguiente (si hay una siguiente) */
+	if (g_queue_is_empty(m->rq))
+		/* no hay nada que reparar */
+		m->rrt = -1;
+	else {
+		/* si hay maquinas => determinamos en cuanto
+		* tiempo va a ser reparada, recordemos que 
+		* la media de la exponencial es 1/lambda. 
+		* y vamos a tomar el techo del valor.. */
+		
+		m->rrt = rg_gen_exp(1.0/m->TR);
 	}
 	
-	/* si no tenemos ninguna maquina devolvemos NULL, si no, devolvemos la
-	 * primera en la cola */
+	/* si no teníamos ninguna máquina devolvemos NULL, si no devolvemos la
+	 * que estaba primera */
 	
 	return wm;
 }
@@ -129,7 +138,7 @@ double mechanic_get_rrt(mechanic_t m)
 * 	m 	!= NULL
 * 	wm	!= NULL
 */
-void mechanic_repair_machine(mechanic_t m, wm_t wm, double time)
+void mechanic_repair_machine(mechanic_t m, wm_t wm)
 {
 	if (!m || !wm) {
 		printf("Intentando agregar una maquina en un mecanico NULL "
@@ -137,11 +146,10 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm, double time)
 		return;
 	}
 	
-	/* veamos si tenemos arreglando una maquina.. osea si la cola es
-	 * distinta de vacio */
+	/* Si aún no estamos arreglando ninguna... (ie: si la cola es vacía) */
 	if (g_queue_is_empty(m->rq))
-		/* la arreglamos ya ... y veamos cuanto va a tardar.. */
-		m->rrt = rg_gen_exp((double) 1.0/(double)m->TR) + time;
+		/* ...la arreglamos ya, y veamos cuanto va a tardar.. */
+		m->rrt = rg_gen_exp (1.0/m->TR);
 	
 	/* si o si la encolamos */
 	g_queue_push_tail(m->rq, wm);

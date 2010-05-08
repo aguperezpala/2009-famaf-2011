@@ -27,16 +27,23 @@ mechanic_t mechanic_create(double tr);
  */
 void mechanic_reinitialize(mechanic_t m);
 
-/* Funcion que devuelve una washing machine en caso de que haya una reparada
- * o NULL en caso contrario.
+/* Función que disminuye en "elapsed" unidades
+ * el tiempo de reparación actual del mecánico
  * REQUIRES:
- * 	month	(mes actual)
- * 	m 	!= NULL
+ *	m != NULL
+ *	elapsed <= mechanic_get_rrt(m)
+ */
+void mechanic_elapse_time (mechanic_t m, double elapsed);
+
+/* Funcion que devuelve una washing machine en caso de que haya una
+ * en reparación, o NULL en caso contrario.
+ * REQUIRES:
+ *	m 	!= NULL
  * RETURNS:
  * 	wm	si hay maquina reparada
  * 	NULL	si no hay 
  */
-wm_t mechanic_get_rm(mechanic_t m, double time);
+wm_t mechanic_get_rm(mechanic_t m);
 
 /* Funcion que devuelve el tiempo en el que va a estar lista la proxima wm
  * o -1 si no hay.
@@ -54,10 +61,10 @@ double mechanic_get_rrt(mechanic_t m);
  * 	m 	!= NULL
  * 	wm	!= NULL
  */
-void mechanic_repair_machine(mechanic_t m, wm_t wm, double time);
+void mechanic_repair_machine(mechanic_t m, wm_t wm);
 
 /* Funcion que devuelve la cantidad de maquinas que tiene el mecanico 
- * actualmente (tanto en la cola como la que esta reparando
+ * actualmente (tanto en la cola como la que esta reparando)
  * REQUIRES:
  * 	m != NULL
  */

@@ -7,24 +7,46 @@
 #include "washingm.h"
 #include "laundry.h"
 
-/* Funcion que castea el parametro p
-* RETURNS:
-* 	< 0 	on error
-* 	>=0	cc
-*/
-static double get_param(int p, char **argv)
+/* Funcion que castea el parametro p de tipo INT
+ * RETURNS:
+ * 	< 0 	on error
+ * 	>=0	cc
+ */
+static int get_iparam (int p, char **argv)
+{
+	int n = -1;
+	char *err = NULL;
+	
+	n = (int) strtol (argv[p], &err, 10);
+	if (err[0] != '\0') {
+		printf("Error: en el argumento recibido: %s\n", argv[p]);
+		exit (EXIT_FAILURE);
+	}
+	
+	return n;
+}
+
+
+/* Funcion que castea el parametro p de tipo DOUBLE
+ * RETURNS:
+ * 	< 0 	on error
+ * 	>=0	cc
+ */
+static double get_dparam(int p, char **argv)
 {
 	double n = -1;
 	char *err = NULL;
 	
 	n = strtod(argv[p], &err);
 	if (err[0] != '\0') {
-		printf("error en el argumento recibido: %s\n", argv[p]);
-		return -1;
+		printf("Error: en el argumento recibido: %s\n", argv[p]);
+		exit (EXIT_FAILURE);
 	}
 	
 	return n;
 }
+
+
 
 
 
@@ -34,13 +56,13 @@ int main (int argc, char **argv)
 	unsigned int i = 0;
 	unsigned int N = 0,	/* # total de maquinas operativas */
 		     S = 0,	/* # total de maquinas de servicio */
-		     M = 0,	/* # de mecanicos */		    
+		     M = 0,	/* # de mecanicos */
 		     Nsim = 0;	/* # de simulaciones a correr */
-	double  Tf = 0,		/* Tiempo medio de fallo de una lavadora */
-		Tr = 0;		/* Tiempo medio de raparación de una lavadora */
-	double ftime = 0,		/* Tiempo de fallo de un experimento */
-	    ft    = 0,		/* Tiempo acumulado de fallos */
-	    ft2   = 0;		/* Para calcular varianza */
+	double	Tf = 0.0,	/* Tiempo medio de fallo de una lavadora */
+		Tr = 0.0;	/* Tiempo medio de raparación de una lavadora */
+	double	ftime = 0.0,	/* Tiempo de fallo de una simulación */
+		ft    = 0.0,	/* Tiempo acumulado de fallos */
+		ft2   = 0.0;	/* Para calcular varianza */
 	double E = 0.0, V = 0.0;	/* Esperanza y varianza */
 	char auxBuf[15];
 	int buffSize = 0;
@@ -58,13 +80,16 @@ int main (int argc, char **argv)
 	}
 
 	/* Obtenemos los argumentos con que nos llamaron */
-	N  = (unsigned int) get_param (1, argv);
-	S  = (unsigned int) get_param (2, argv);
-	M  = (unsigned int) get_param (3, argv);
-	Tf = get_param (4, argv);
-	Tr = get_param (5, argv);
-	Nsim = (unsigned int) get_param (6, argv);
-	printf("\n ingreso: N:%d\tS:%d\tM:%d\nTf:%.6f\tTr:%.6f\tNSIM:%d\n",
+	N  = get_iparam (1, argv);
+	S  = get_iparam (2, argv);
+	M  = get_iparam (3, argv);
+	Tf = get_dparam (4, argv);
+	Tr = get_dparam (5, argv);
+	Nsim = get_iparam (6, argv);
+	
+	printf ("Valores ingresados:\n"
+			"N=%d\t\tS=%d\t\tM=%d\n"
+			"Tf=%.6f\tTr=%.6f\tNSIM=%d\n",
 		(int) N, (int) S, (int) M, Tf, Tr, (int) Nsim);
 	
 	/* Creamos la lavandería con todas sus lavadoras y mecánicos */
@@ -73,26 +98,19 @@ int main (int argc, char **argv)
 	
 	/** ALGORITMO PRINCIPAL */
 	for (i=0 ; i<Nsim ; i++) {
-	
-		/* Reinicializamos el experimento */
-		laundry_reset (laundry);
-		/* Iniciamos una nueva simulación */
-		while ( !laundry_failure (laundry) ) {			
-			/* Hacer lo que haya que hacer este mes */
-			laundry_wash_clothes (laundry);
-		}
-		ftime = laundry_get_failure_time(laundry); 
-		/* Acumulamos el tiempo obtenido en este experimento */
+		
+		/* Simulamos una vez */
+		ftime = laundry_simulation (laundry);
+		/* Acumulamos resultados */
 		ft  += ftime;
 		ft2 += ftime*ftime;
-		
-		/* ahora imprimimos en archivo el tiempo de falla */
+		/* Registramos resultados en archivo */
 		buffSize = sprintf(auxBuf, "%.6f\n", ftime);
-		fwrite(auxBuf, 1, buffSize, out);
+		fwrite (auxBuf, sizeof(char), buffSize, out);
 	}
 	/** FIN ALGORITMO PRINCIPAL */
 	
-	E  = ft/ (double) Nsim;		/* E[X] = #(exitos) / #(experimentos) */
+	E  = ft/(double)Nsim;		/* E[X] = #(exitos) / #(experimentos) */
 	V  = ft2/(double)Nsim - E*E;	/* V[X] = E[X^2] - (E[X])^2 */
 	
 	printf ("Tiempo medio de fallo del sistema y su desviación estándard\n"
