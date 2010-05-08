@@ -63,7 +63,6 @@ void mechanic_elapse_time (mechanic_t m, double elapsed)
 {
 	assert (m != NULL);
 	assert (elapsed <= m->rrt);
-	
 	m->rrt -= elapsed;
 	return;
 }
