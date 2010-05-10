@@ -87,7 +87,7 @@ int main (int argc, char **argv)
 	Tr = get_dparam (5, argv);
 	Nsim = get_iparam (6, argv);
 	
-	printf ("Valores ingresados:\n"
+	printf ("\nValores ingresados:\n"
 			"N  = %d\t\tS  = %d\t\tM = %d\n"
 			"Tf = %.6f\tTr = %.6f\tNSIM = %d\n",
 		(int) N, (int) S, (int) M, Tf, Tr, (int) Nsim);
@@ -113,8 +113,8 @@ int main (int argc, char **argv)
 	E  = ft/(double)Nsim;		/* E[X] = #(exitos) / #(experimentos) */
 	V  = ft2/(double)Nsim - E*E;	/* V[X] = E[X^2] - (E[X])^2 */
 	
-	printf ("Tiempo medio de fallo del sistema y su desviación estándard\n"
-		"para %d simulaciones corridas\nE[X] = %.6f\nDE[X] = %.6f\n",
+	printf ("\nTiempo medio de fallo del sistema y su desv. est. "
+		"para %d simulaciones\nE[X]  = %.6f\nDE[X] = %.6f\n",
 		Nsim, E, sqrt(V));
 
 	/* Limpiamos nuestras estructuras */
