@@ -32,6 +32,7 @@ mechanic_t mechanic_create(double tr)
 		free(result);
 		return NULL;
 	}
+	assert(g_queue_is_empty(result->rq));
 	result->rrt = -1;
 	result->TR = tr;
 	
@@ -49,6 +50,7 @@ void mechanic_reinitialize(mechanic_t m)
 		assert(false);
 	
 	g_queue_clear(m->rq);
+	assert(g_queue_is_empty(m->rq));
 	m->rrt = -1;
 }
 
@@ -146,6 +148,7 @@ void mechanic_repair_machine(mechanic_t m, wm_t wm)
 	}
 	
 	/* Si aún no estamos arreglando ninguna... (ie: si la cola es vacía) */
+	
 	if (g_queue_is_empty(m->rq))
 		/* ...la arreglamos ya, y veamos cuanto va a tardar.. */
 		m->rrt = rg_gen_exp (1.0/m->TR);
