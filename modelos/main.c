@@ -94,7 +94,7 @@ int main (int argc, char **argv)
 	
 	/* Creamos la lavandería con todas sus lavadoras y mecánicos */
 	laundry = laundry_create (N, S, M, Tf, Tr);
-	out = fopen ("laundry_sim.out","w");
+	out = fopen ("laundry_sim.dat","w");
 	
 	/** ALGORITMO PRINCIPAL */
 	for (i=0 ; i<Nsim ; i++) {
