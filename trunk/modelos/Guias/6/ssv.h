@@ -1,13 +1,10 @@
-/* Valores estadisticos muestrales (Sample Statistical Values)		*
- *									*
- * Modo de uso:								*
- *	Caso inicial: 1) Invocar media_m para el paso 1 (ie: con n==1)	*
- *	Caso n-esimo: 1) Invocar media_m para el paso n			*
- *		      2) Invocar var_m para el paso n			*
- *									*
- * NOTE: las llamadas a media_m y var_m en el caso n-esimo deben	*
- *	 realizarse SIEMPRE en ese orden, incluso si no se desea	*
- *	 calcular el valor de la media muestral 			*/
+/* Valores estadisticos muestrales (Sample Statistical Values)		      *
+ *									      *
+ * Modo de uso: 1) Invocar media_m para el paso n			      *
+ *		2) Invocar var_m para el paso n 			      *
+ *									      *
+ * NOTE: las llamadas a media_m y var_m deben realizarse SIEMPRE en ese orden *
+ *	 incluso si no se desea calcular el valor de la media muestral 	      */
 
 #ifndef SAMPLE_STATISTICAL_VALUES_H
 #define SAMPLE_STATISTICAL_VALUES_H
