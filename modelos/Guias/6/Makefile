@@ -16,13 +16,13 @@ CFLAGS = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 	 -Wmissing-prototypes -Wno-unused-parameter -Werror -pedantic \
 	 -g #-D_VERBOSE
 LIBRARIES = -lm
-RANDOMIZERS=mzran13.c ran2.c permuter.c
+RANDOMIZERS=rdg.c permuter.c
 INCLUDES=.depend
 i=1
 
 $(i):p$(i)
 p$(i): p_$(i).o $(RANDOMIZERS)
-	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
 
 clean:
 	rm -f $(TARGET) .depend *.o p? *~ alias

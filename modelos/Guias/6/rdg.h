@@ -25,4 +25,9 @@ unlong mzran13 (void);
 /* Seeding routine for mzran13 */
 void ran13set(unlong xx, unlong yy, unlong zz, long nn);
 
+
+/* generadora de una v.a. exponencial con parametro lambda */
+double gen_exp(double lambda);
+
+
 #endif

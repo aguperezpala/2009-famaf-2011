@@ -46,8 +46,8 @@ static double media_m (double Xn, double n)
 static double var_m (double Xn, double n)
 {
 	/* Recordar:	var[va] = varianza anterior  = S^2(n-1) *
-	*		var[vs] = varianza siguiente = S^2(n)	*
-	*							*/
+	 *		var[vs] = varianza siguiente = S^2(n)	*
+	 *							*/
 	
 	va = vs;
 	vs = (vs+1) % SIZE;
@@ -93,7 +93,7 @@ int main (void)
 	X = media_m (Xn, n);
 	
 	/* Ciclo principal de simulacion */
-	while (n < 100.0 || S > TOL) {
+	while (n < 100.0 || S/sqrt(n) > TOL) {
 		
 		/* Generamos un nuevo dato y lo acumulamos */
 		U  = ran2 (&idum);
@@ -114,7 +114,7 @@ int main (void)
 		"La media muestral obtenida es:   X = %.8f\n"
 		"La varianza muestral fue:      S^2 = %.8f\n"
 		"El valor estimado de la integral es: %.8f\n\n",
-		floor(n), X, S*S, est);
+		floor(n), X, S*S, est/n);
 		
 	return 0;
 }
