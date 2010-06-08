@@ -16,7 +16,7 @@ CFLAGS = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 	 -Wmissing-prototypes -Wno-unused-parameter -Werror -pedantic \
 	 -g #-D_VERBOSE
 LIBRARIES = -lm
-RANDOMIZERS=rdg.c permuter.c
+RANDOMIZERS=rdg.c permuter.c ssv.c
 INCLUDES=.depend
 i=1
 
