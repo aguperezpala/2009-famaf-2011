@@ -21,7 +21,9 @@ int main (void)
 	
 	/* Variables relacionadas con las simulaciones */
 	unsigned int n = 0;
-	double	N = 0.0, Xn = 0.0, est = 0.0;
+	double	Ant = 0.0,	/* Valor "anterior" de la secuencia, 'Ui' */
+		Sig = 0.0,	/* Valor "siguiente" de la secuencia, 'Ui+1' */
+		Xn = 0.0, est = 0.0;
 	
 	/* Variables relacionadas con los resultados de las simulaciones */
 	double	X = 0.0,	/* media muestral en el paso 'n' */
@@ -38,10 +40,10 @@ int main (void)
 	est = 0.0;
 	for (n=0 ; n<SIM ; n++) {
 		
-		N = 0.0;
-		Xn = 0.0;
-		while (N < 1.0) {
-			N += ran2 (&idum);
+		Ant = Sig = Xn = 0.0;
+		while (Ant <= Sig) {
+			Ant = Sig;
+			Sig = ran2 (&idum);
 			Xn += 1.0;
 		}
 		est += Xn;
