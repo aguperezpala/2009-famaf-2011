@@ -54,3 +54,21 @@ double var_m (double Xn, double n)
 }
 
 
+/* Reinicializa la media, como si volviesemos al paso 0 */
+void reset_media_m (void)
+{
+	int i = 0;
+	for (i=0 ; i<SIZE ; i++)
+		media[i] = 0.0;
+	return;
+}
+
+
+/* Reinicializa la varianza, como si volviesemos al paso 0 */
+void reset_var_m (void)
+{
+	int i = 0;
+	for (i=0 ; i<SIZE ; i++)
+		var[i] = 0.0;
+	return;
+}

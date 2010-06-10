@@ -3,8 +3,11 @@
  * Modo de uso: 1) Invocar media_m para el paso n			      *
  *		2) Invocar var_m para el paso n 			      *
  *									      *
- * NOTE: las llamadas a media_m y var_m deben realizarse SIEMPRE en ese orden *
- *	 incluso si no se desea calcular el valor de la media muestral 	      */
+ * NOTE: Las llamadas a media_m y var_m deben realizarse SIEMPRE en ese orden *
+ *	 incluso si no se desea calcular el valor de la media muestral 	      *
+ *									      *
+ *	 Antes de iniciar una nueva simulacion y recomenzar desde el paso 1   *
+ *	 a calcular medias y varianzas debe invocarse a las funciones reset_  */
 
 #ifndef SAMPLE_STATISTICAL_VALUES_H
 #define SAMPLE_STATISTICAL_VALUES_H
@@ -24,6 +27,14 @@ double media_m (double Xn, double n);
  *	 ahora la varianza muestral
  */
 double var_m (double Xn, double n);
+
+
+/* Reinicializa la media, como si volviesemos al paso 0 */
+void reset_media_m (void);
+
+
+/* Reinicializa la varianza, como si volviesemos al paso 0 */
+void reset_var_m (void);
 
 
 #endif
