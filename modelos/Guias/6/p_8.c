@@ -186,7 +186,7 @@ int main (void)
 		S = 0.0;	/* desv. est. muestral en 'n' */
 	double sample[N];	/* Bootstrap: valores muestrales */
 	double mse = 0.0;	/* Error Cuadrático Medio (ECM) del estimador*/
-	
+	unsigned int i = 0;
 	
 	/* Simulamos el arribo de los clientes mientras TIEMPO_ABSOLUTO < 8 */
 	while (ta < T) {
@@ -232,11 +232,15 @@ int main (void)
 	
 	
 	/* Calculamos el error cuadrático medio del estimador con bootstrap */
-	mse = bootstrap ((double *) sample, n);
+	mse = bootstrap_media ((double *) sample, n);
+	
+	printf ("\nSample:");
+	for (i=0 ; i<n ; i++)
+		printf ("\t%.4f\n", sample[i]);
 	
 	/* Informamos los resultados */
-	printf ("\nSe registraron %ui arribos de clientes\n"
-		"%lu clientes fueron rechazados por falta de espacio\n\n"
+	printf ("\nSe registraron %u arribos de clientes\n"
+		"%lu clientes fueron rechazados por falta de espacio en el servidor\n\n"
 	        "El tiempo medio de espera en el sistema fue:   X = %.8f hs\n"
 	        "La varianza en los tiempos de espera fue de: S^2 = %.8f hs\n"
 	        "EL error cuadrático medio del estimador fue: ECM = %.8f \n\n",

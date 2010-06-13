@@ -1,4 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
+#include <sys/time.h>
 #include <limits.h>
 #include "rdg.h"
 
@@ -39,6 +43,10 @@ void ran13set (unlong xx, unlong yy, unlong zz, long nn) {
 /** ------------------------------------------------------------------------- */
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ### RAN2 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /** ------------------------------------------------------------------------- */
+
+#define PAD 40	/* Definido para arquitectura de 64 bits */
+long IDUM = -1;
+bool INIT = false;
 
 #define IM1 2147483563
 #define IM2 2147483399
@@ -136,11 +144,25 @@ float ran2(long *idum)
 /** ------------------------------------------------------------------------- */
 
 /* generadora de una v.a. exponencial con parametro lambda */
-double gen_exp(double lambda)
+double gen_exp (double lambda)
 {
 	double U = 0;
+	struct timeval tv;
 	
-	U = mzran13()/(double)ULONG_MAX;
+	if (!INIT) {
+		/* Inicializamos ran2 */
+		gettimeofday(&tv, NULL);
+		IDUM = (long) -((tv.tv_sec << PAD) >> PAD);
+		if (IDUM > 0)
+			IDUM = -IDUM;
+		INIT = true;
+	}
 	
+	/* NOTE:  mzran13 genera    determinismo
+	 *	    ran2  genera no determinismo
+	 */
+	U = ran2 (&IDUM);
+/*	U = mzran13()/(double)ULONG_MAX;
+*/		
 	return (((double) -1.0/ (double) lambda) * log(U));
 }
