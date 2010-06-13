@@ -1,21 +1,27 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <sys/time.h>
 #include "rdg.h"
 #include "ssv.h"
 
 #define SIZE 2
+#define TOL  6
+#define MONTECARLO_BOUND 10000
 
+#define PAD 40	/* Definido para arquitectura de 64 bits */
 
-/** Media muestral */
+/** Estructura Media muestral */
 double	media[SIZE] = {0.0, 0.0};
 unsigned int	ma = 0,  /* media[ma] = media anterior  = X(n-1) */
 		ms = 0;  /* media[ms] = media siguiente = X(n)   */
 
-/** Varianza muestral */
+/** Estructura Varianza muestral */
 double	var[SIZE] = {0.0, 0.0};		/* Varianza muestral */
 unsigned int	va = 0,  /* var[va] = varianza anterior  = S^2(n-1) */
 		vs = 0;  /* var[vs] = varianza siguiente = S^2(n)   */
+
 
 
 /* Media muestral para el n-esimo paso. Toma una nueva muestra Xn y
@@ -78,19 +84,85 @@ void reset_var_m (void)
 
 
 /* Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
- * de una muestra de 'n' datos pasada como primer argumento
+ * del estimador "Media muestral" con respecto a la verdadera media µ,
+ * dada una muestra de 'n' datos pasada como primer argumento
  *
- * Utiliza Montecarlo para devolver un valor aproximado del verdadero ECM
+ * Utiliza Montecarlo para devolver un valor que aproxima al ECM exacto
  *
  * PRE: sample != NULL
  */
-double bootstrap (double *sample, unsigned int n)
+double bootstrap_media (double *sample, unsigned int n)
 {
 	double ecm = 0.0;
+	unsigned int i = 0, j = 0, k = 0, row = 0, col = 0;
+	unsigned long N = 0;
+	double Xe = 0.0;	/* Media empírica de la muestra */
+	double Xc = 0.0;	/* Media muestral de una configuración */
+	int *config = NULL;	/* Configuración posible dada la muestra */
+	
+	long idum = 0;
+	struct timeval tv;
 	
 	assert (sample != NULL);
 	
-	/** TODO TODO TODO TODO TODO TODO TODO TODO TODO */
+	/* Metemos la media empírica de la muestra real en Xe */
+	for (i=0 ; i<n ; i++)
+		Xe += sample[i] / (double) n;
+	
+	N = pow ((double) n, (double) n);
+	ecm = 0.0;
+	
+	if (n < TOL) {
+		/* Vamos a calcular las cosas de manera exacta,
+		 * considerando todas las configuraciones posibles */
+		config = (int *) calloc (n , sizeof(int));
+		assert (config != NULL);
+		
+		for (i=0 ; i<N ; i++) {
+			
+			/* Determinamos cual es esta configuración */
+			row = i / n;
+			col = i % n;
+			config[row] += col;
+			
+			/* Guardamos su media muestral en Xc */
+			reset_media_m ();
+			for (j=0 ; j<n ; j++)
+				Xc  = media_m (sample[config[j]], j+1);
+			
+			/* Actualizamos el valor del ECM */
+			ecm += (pow (Xc - Xe, 2.0)) / (double) N;
+		}
+		free (config);
+		config = NULL;
+	
+	} else {
+		/* Vamos a aproximar el ECM empleando Montecarlo */
+		
+		/* Inicializamos ran2 */
+		gettimeofday(&tv, NULL);
+		idum = (long) -((tv.tv_sec << PAD) >> PAD);
+		if (idum > 0)
+			idum = -idum;
+		
+		for (i=0 ; i<MONTECARLO_BOUND ; i++) {
+			
+			/* Guardamos en Xc la media muestral de una
+			 * configuracion aleatoria de valores de la muestra */
+			reset_media_m ();
+			for (j=0 ; j<n ; j++) {
+				k = ran2(&idum) * n;
+/*				k = mzran13() % n;
+*/				Xc = media_m (sample[k], j+1);
+			}
+			
+			/* Actualizamos el valor del ECM */
+			ecm += (pow (Xc - Xe, 2.0)) / (double) MONTECARLO_BOUND;
+			
+			if (!(i%500))
+				printf ("loop # %u\tecm == %.4f\n", i, ecm);
+		}
+	}
 	
 	return ecm;
 }

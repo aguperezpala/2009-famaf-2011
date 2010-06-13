@@ -12,6 +12,10 @@
 #define PAD 40	/* Definido para arquitectura de 64 bits */
 
 
+/* Para inicialización y uso de la rutina ran2 */
+long idum = 1;
+
+
 /* Devuelve la permutacion aleatoria de un arreglo "a" de longitud "n" cuyos
  * elementos ocupan "size" bytes en memoria
  * Si el arreglo tiene punteros a otros bloques, no se copiaran los bloques en
@@ -52,19 +56,23 @@ void perm_int (int *a, unsigned int n)
 {
 	unsigned int nn=0, I=0;
 	struct timeval tv;	/* Para inicialización de ran2 */
-	long idum=0;
 	
 	assert (a != NULL);
 	
-	/* Inicializamos ran2 */
-	gettimeofday(&tv, NULL);
-	idum = (long) -((tv.tv_sec << PAD) >> PAD);
-	if (idum > 0)
-		idum = -idum;
+	if (idum > 0) {
+		/* Inicializamos ran2 */
+		gettimeofday(&tv, NULL);
+		idum = (long) -((tv.tv_sec << PAD) >> PAD);
+		if (idum > 0)
+			idum = -idum;
+	}
 	
+	/* NOTE:  mzran13 genera    determinismo
+	*	    ran2  genera no determinismo
+	*/
 	for (nn=n-1 ; n>0 ; n--) {
-		I = mzran13() % nn;
-/*		I = floor ((double) ran2(&idum) * nn);*/
+/*		I = mzran13() % nn;
+*/		I = floor ((double) ran2(&idum) * nn);
 		/* Swap entre a[I] y a[nn] */
 		a[I] += a[nn];
 		a[nn] = a[I] - a[nn];
