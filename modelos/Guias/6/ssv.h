@@ -37,4 +37,14 @@ void reset_media_m (void);
 void reset_var_m (void);
 
 
+/* Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
+ * de una muestra de 'n' datos pasada como primer argumento
+ *
+ * Utiliza Montecarlo para devolver un valor aproximado del verdadero ECM
+ *
+ * PRE: sample != NULL
+ */
+double bootstrap (double *sample, unsigned int n);
+
+
 #endif

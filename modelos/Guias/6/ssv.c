@@ -1,4 +1,6 @@
+#include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 #include "rdg.h"
 #include "ssv.h"
 
@@ -71,4 +73,24 @@ void reset_var_m (void)
 	for (i=0 ; i<SIZE ; i++)
 		var[i] = 0.0;
 	return;
+}
+
+
+
+/* Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
+ * de una muestra de 'n' datos pasada como primer argumento
+ *
+ * Utiliza Montecarlo para devolver un valor aproximado del verdadero ECM
+ *
+ * PRE: sample != NULL
+ */
+double bootstrap (double *sample, unsigned int n)
+{
+	double ecm = 0.0;
+	
+	assert (sample != NULL);
+	
+	/** TODO TODO TODO TODO TODO TODO TODO TODO TODO */
+	
+	return ecm;
 }
