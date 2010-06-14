@@ -6,6 +6,7 @@
 #include <float.h>
 #include "rdg.h"
 #include "queue.h"
+#include "actividad2.h"
 
 /** Variables globales */
 
@@ -20,6 +21,12 @@ double	T = 8.0,	/* Periodo de tiempo de atencion del servidor */
 	Ts = 4.5;	/* Tiempo medio de servicio del servidor */
 
 #define  MAX(x,y)  ( ((x)>(y)) ? (x) : (y) )
+
+#ifdef _DEBUG
+  #define debug(s,...) printf(s, ##__VA_ARGS__)
+#else
+  #define debug(s,...)
+#endif
 
 
 /** ------------------------------------------------------------------------- *
@@ -149,8 +156,6 @@ int main (void)
 			/* Tiempo absoluto de arribo del proximo cliente */
 			ta += gen_exp (Ta);
 			
-			printf ("sim # %u\tta = %.4f\n", i, ta);
-			
 			if (ta >= T)
 				/* Se acabo el horario de recepción de clientes
 				* Esto asegura que en el sub-ciclo que sigue
@@ -173,16 +178,23 @@ int main (void)
 			}
 		}
 		/* Registramos el cociente obtenido en este dia */
-		printf ("servedTime = %.4f\tserved = %lu\tsample = %.4f\n",
-			servedTime, served, servedTime / (double) served);
+		debug ("sim # %u\tservedTime = %.4f\tserved = %lu\n",
+			i, servedTime, served);
 		sample[i] = servedTime / (double) served;
 	}
 	
-	printf ("\nSample:");
+	debug ("%s","\nSample:");
 	for (i=0 ; i<SIM ; i++)
-		printf ("\t%.8f\n", sample[i]);
-	printf ("\n");
-	
+		debug ("\t%.8f\n", sample[i]);
+	debug ("%s","\n");
+/*
+	printf ("\nMedia:\t%.8f\n", act2_get_media  (sample, SIM));
+	printf ("\nVar:\t%.8f\n", act2_get_varianza (sample, SIM));
+	printf ("\nMin:\t%.8f\n", act2_get_min (sample, SIM));
+	printf ("\nMax:\t%.8f\n", act2_get_max (sample, SIM));
+	printf ("\nMediana:\t%.8f\n\n", act2_get_mediana (sample, SIM));
+	printf ("\nSkewness:\t%.8f\n\n", act2_get_skewness (sample, SIM));
+*/	
 	q = q_destroy (q);
 	
 	return 0;
