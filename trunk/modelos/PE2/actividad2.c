@@ -114,5 +114,26 @@ double act2_get_media(double *arr, int size)
 	return media;
 }
 
+/* Funcion que calcula la varianza dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	V(arr)
+*/
+double act2_get_varianza(double *arr, int size)
+{
+	double media = 0;
+	double varianza = 0;
+	int i = 0;
+	
+	assert(arr != NULL);
+	
+	media = act2_get_media(arr, size);
+	for(i = 0; i < size; i++)
+		varianza += pow(arr[i] - media, 2.0)/(double) (size - 1);
+	
+	return varianza;
+}
 
 

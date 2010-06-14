@@ -41,6 +41,15 @@ double act2_get_mediana(double *arr, int size);
 */
 double act2_get_media(double *arr, int size);
 
+/* Funcion que calcula la varianza dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	V(arr)
+*/
+double act2_get_varianza(double *arr, int size);
+
 
 
 #endif
