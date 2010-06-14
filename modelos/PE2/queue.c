@@ -101,3 +101,9 @@ double q_dequeue (queue_t q)
 		return q->q[q->f-1];
 }
 
+
+/* Borra todos los datos de la cola y la deja vacia
+ * PRE: q != NULL
+ * POS: q_is_empty(q)
+ */
+void q_clean (queue_t q) { assert (q != NULL); q->f = q->l = 0; return; }
