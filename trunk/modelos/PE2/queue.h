@@ -55,4 +55,7 @@ double q_first (queue_t q);
 double q_dequeue (queue_t q);
 
 
+void q_clean (queue_t q);
+
+
 #endif
