@@ -111,6 +111,47 @@ static bool receive_customer (queue_t q, double ta, bool *busy, double *tsal)
 }
 
 
+
+/* Imprime en archivos y por pantalla la info estadistica que contiene la
+ * muestra "sample", de tamanio 'n'
+ * PRE: sample != NULL
+ */
+static void results_processing (double *sample, unsigned int n)
+{
+	unsigned int i = 0;
+	FILE *fout = NULL;
+	
+	/* Histograma de valores obtenidos */
+	fout = fopen ("sample.dat","w");
+	assert (fout != NULL);
+	for (i=0 ; i<n ; i++)
+		fprintf (fout, "%.8f\n", sample[i]);
+	fclose (fout);
+	
+	/* Scatter plot */
+	fout = fopen ("scatter.dat","w");
+	assert (fout != NULL);
+	for (i=1 ; i<n ; i++)
+		fprintf (fout, "%.8f\t%.8f\n", sample[i-1], sample[i]);
+	fclose (fout);
+	
+	printf ("\nMedia:  \t%.8f"
+		"\nVarianza:\t%.8f\n"
+		"\nMinimo: \t%.8f"
+		"\nMaximo: \t%.8f"
+		"\nMediana:\t%.8f\n"
+		"\nSkewness:\t%.8f\n\n",
+		act2_get_media (sample, n),
+		act2_get_varianza (sample, n),
+		act2_get_min (sample, n),
+		act2_get_max (sample, n),
+		act2_get_mediana (sample, n),
+		act2_get_skewness (sample, n));
+	
+	return;
+}
+
+
 /** ------------------------------------------------------------------------- *
 ** ### ### ### ### ### RUTINA PRINCIPAL DEL SERVIDOR ### ### ### ### ### ### *
 ** ------------------------------------------------------------------------- */
@@ -180,21 +221,20 @@ int main (void)
 		/* Registramos el cociente obtenido en este dia */
 		debug ("sim # %u\tservedTime = %.4f\tserved = %lu\n",
 			i, servedTime, served);
-		sample[i] = servedTime / (double) served;
+		if (served != 0)
+			sample[i] = servedTime / (double) served;
+		else
+			sample[i] = 0.0;
 	}
 	
 	debug ("%s","\nSample:");
 	for (i=0 ; i<SIM ; i++)
 		debug ("\t%.8f\n", sample[i]);
 	debug ("%s","\n");
-/*
-	printf ("\nMedia:\t%.8f\n", act2_get_media  (sample, SIM));
-	printf ("\nVar:\t%.8f\n", act2_get_varianza (sample, SIM));
-	printf ("\nMin:\t%.8f\n", act2_get_min (sample, SIM));
-	printf ("\nMax:\t%.8f\n", act2_get_max (sample, SIM));
-	printf ("\nMediana:\t%.8f\n\n", act2_get_mediana (sample, SIM));
-	printf ("\nSkewness:\t%.8f\n\n", act2_get_skewness (sample, SIM));
-*/	
+	
+	/* Analizamos los resultados e imprimimos */
+	results_processing (sample, SIM);
+	
 	q = q_destroy (q);
 	
 	return 0;
