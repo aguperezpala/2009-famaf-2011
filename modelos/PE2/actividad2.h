@@ -50,6 +50,14 @@ double act2_get_media(double *arr, int size);
 */
 double act2_get_varianza(double *arr, int size);
 
+/* Funcion que calcula la skewness dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	skewness(arr)
+*/
+double act2_get_skewness(double *arr, int size);
 
 
 #endif
