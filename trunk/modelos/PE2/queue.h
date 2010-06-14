@@ -17,6 +17,13 @@ queue_t q_destroy (queue_t q);
 
 
 
+/* Indica si la cola de espera esta actualmente vacia
+ * PRE: q != NULL
+ */
+bool q_is_empty (queue_t q);
+
+
+
 /* Indica si la cola de espera esta actualmente llena
  * PRE: q != NULL
  */
@@ -55,6 +62,10 @@ double q_first (queue_t q);
 double q_dequeue (queue_t q);
 
 
+/* Borra todos los datos de la cola y la deja vacia
+ * PRE: q != NULL
+ * POS: q_is_empty(q)
+ */
 void q_clean (queue_t q);
 
 

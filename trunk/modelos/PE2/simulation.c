@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <float.h>
 #include "rdg.h"
-#include "ssv.h"
 #include "queue.h"
 
 /** Variables globales */
@@ -57,7 +56,7 @@ static bool serve_customer (queue_t q, double *tsal, double *wtime)
 	if (! q_is_empty(q) )
 		/* Generamos un tiempo (absoluto) de salida del servidor para
 		 * el proximo cliente que sera atendido */
-		*tsal = q_first (q) + gen_exp (1.0/Ts);
+		*tsal = q_first (q) + gen_exp (Ts);
 	else
 		busy = false;
 	
@@ -84,7 +83,7 @@ static bool serve_customer (queue_t q, double *tsal, double *wtime)
  */
 static bool receive_customer (queue_t q, double ta, bool *busy, double *tsal)
 {
-	bool accepted = false;
+	bool accepted = true;
 	
 	if (q_is_full(q))
 		/* Servidor lleno => se descarta al cliente */
@@ -95,7 +94,7 @@ static bool receive_customer (queue_t q, double ta, bool *busy, double *tsal)
 		
 		if (!(*busy)) {
 			/* Servidor vacío => se atiende al cliente directamente */
-			*tsal = ta + gen_exp (1.0/Ts);
+			*tsal = ta + gen_exp (Ts);
 			*busy = true;
 		}
 		/* else: Servidor ocupado => sólo encolabamos al cliente */
@@ -116,20 +115,18 @@ int main (void)
 	/* Variables relacionadas con la simulacion */
 	queue_t q = NULL;	/* Cola del servidor */
 	double ta = 0.0;	/* Tiempo (absoluto) de arribo del proximo *
-	* cliente al sistema			   */
+				 * cliente al sistema			   */
 	double tsal = 0.0;	/* Tiempo (absoluto) de salida del cliente *
-	* que actualmente esta siendo atendido    */
+				 * que actualmente esta siendo atendido    */
 	double wtime = 0.0;	/* Tiempo que estuvo en el sist. un cliente */
 	bool busy = false,	/* Servidor ocupado */
-	accepted = false;	/* Último cliente aceptado / descartado */
-	unsigned long rejected = 0;
-	double servedTime = 0.0;
-	unsigned long served = 0;
-	
+	     accepted = false;	/* Último cliente aceptado / descartado */
+	double servedTime = 0.0;	/* Tiempo total de atencion en un dia */
+	unsigned long served = 0;	/* # total de clientes en un dia */
 	
 	/* Variables relacionadas con los resultados de las simulaciones */
 	unsigned int i = 0;
-	double sample[SIM];	/* Cocientes obtenidos cada dia */
+	double sample[SIM];	/* Cocientes obtenidos de cada dia simulado */
 	
 	
 	/* NOTE: en el primer lugar de la cola 'q' estara el cliente actualmente
@@ -140,6 +137,8 @@ int main (void)
 	
 	for (i=0 ; i<SIM ; i++) {
 		
+		ta = 0.0;
+		tsal = 0.0;
 		served = 0;
 		servedTime = 0.0;
 		q_clean (q);
@@ -148,7 +147,9 @@ int main (void)
 		while (ta < T) {
 			
 			/* Tiempo absoluto de arribo del proximo cliente */
-			ta += gen_exp (1.0/Ta);
+			ta += gen_exp (Ta);
+			
+			printf ("sim # %u\tta = %.4f\n", i, ta);
 			
 			if (ta >= T)
 				/* Se acabo el horario de recepción de clientes
@@ -171,10 +172,16 @@ int main (void)
 					served++;
 			}
 		}
+		/* Registramos el cociente obtenido en este dia */
+		printf ("servedTime = %.4f\tserved = %lu\tsample = %.4f\n",
+			servedTime, served, servedTime / (double) served);
 		sample[i] = servedTime / (double) served;
 	}
 	
-	get_media()
+	printf ("\nSample:");
+	for (i=0 ; i<SIM ; i++)
+		printf ("\t%.8f\n", sample[i]);
+	printf ("\n");
 	
 	q = q_destroy (q);
 	
