@@ -136,4 +136,37 @@ double act2_get_varianza(double *arr, int size)
 	return varianza;
 }
 
+/* Funcion que calcula la skewness dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	skewness(arr)
+*/
+double act2_get_skewness(double *arr, int size)
+{
+	double 	media = 0,
+		varianza = 0,
+		sum1 = 0,
+		sum2 = 0;
+	int i = 0;
+	double result = 0;
+	
+	assert(arr != NULL);
+	
+	media = act2_get_media(arr, size);
+	varianza = act2_get_varianza(arr, size);
+	
+	
+	for(i = 0; i < size; i++)
+		sum1 += pow(arr[i] - media, 3)/(double)size;
+	
+	for(i = 0; i < size; i++)
+		sum2 += pow(arr[i] - media, 2)/(double)size;
+	
+	result = sum1/(pow(sum2, 1.5));
+	
+	return result;
+}
+
 
