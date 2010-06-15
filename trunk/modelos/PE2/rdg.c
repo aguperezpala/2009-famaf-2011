@@ -164,5 +164,5 @@ double gen_exp (double lambda)
 	U = ran2 (&IDUM);
 /*	U = mzran13()/(double)ULONG_MAX;
 */		
-	return (((double) -1.0/ (double) lambda) * log(U));
+	return (-log(U)/lambda);
 }
