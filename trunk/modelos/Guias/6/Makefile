@@ -24,6 +24,10 @@ $(i):p$(i)
 p$(i): p_$(i).o $(RANDOMIZERS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
 
+p: p-val
+p-val : p-value.o $(RANDOMIZERS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
+
 clean:
 	rm -f $(TARGET) .depend *.o p? *~ alias
 
