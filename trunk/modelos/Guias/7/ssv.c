@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <float.h>
 #include <assert.h>
 #include <sys/time.h>
 #include "rdg.h"
@@ -21,6 +22,12 @@ double	var[SIZE] = {0.0, 0.0};		/* Varianza muestral */
 unsigned int	va = 0,  /* var[va] = varianza anterior  = S^2(n-1) */
 		vs = 0;  /* var[vs] = varianza siguiente = S^2(n)   */
 
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~  MEDIA  -  VARIANZA  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
 
 
 /* Media muestral para el n-esimo paso. Toma una nueva muestra Xn y
@@ -82,6 +89,12 @@ void reset_var_m (void)
 
 
 
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~  BOOTSTRAP --> ERROR CUADRATICO MEDIO  ~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
 /* Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
  * del estimador "Media muestral" con respecto a la verdadera media µ,
  * dada una muestra de 'n' datos pasada como primer argumento
@@ -136,4 +149,53 @@ double bootstrap_media (double *sample, unsigned int n)
 	}
 	
 	return ecm;
+}
+
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~  SIMULACION  -  ESTADISTICOS  ~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
+
+/* Vuelve con el # de intervalo en el que cae el valor Xi
+ * ie:	Xi == 0.25
+ *	intervals ==  { [0.00 , 0.15),
+ *			[0.15 , 0.55),
+ *			[0.55 , 1.00)
+ *		      }
+ * (Xi, )
+ */
+static unsigned int find_interval (double Xi, double *I, unsigned int k)
+{
+
+}
+
+
+/* Estadistico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
+ * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
+ * donde se define al i-esimo intervalo Int(i) como:
+ *
+ * Int(i) = [ I[i] , I[i+1] )
+ *
+ * y para el ultimo intervalo vale que:
+ *
+ * Int(k) = [ I[k] , DBL_MAX )  ~  [ I[k] , inifinity )
+ *
+ * PRE: sample != NULL     &&  n == #(sample)
+ *	intervals != NULL  &&  k == #(I)
+ */
+double ji-cuad (double *sample, unsigned int n, double *I, unsigned int k)
+{
+	double t = 0.0;
+	unsigned int i = 0, j = 0, k = 0;
+	
+	assert (sample != NULL);
+	assert (I!= NULL);
+	
+	for (j=0 ; j<n ; j++) {
+		i = find_interval (sample[j], intervals);
+	}
 }
