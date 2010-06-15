@@ -58,14 +58,6 @@ static void q_enqueue (double ta)
 }
 
 
-/* Devuelve el tiempo de arribo absoluto al sistema
- * del cliente que actualmente esta siendo atendido en el servidor
- *
- * PRE: ! q_is_empty ()
- */
-static double q_first (void) { assert(!q_is_empty()); return q[first]; }
-
-
 /* Quita el primer elemento de la cola global 'q',
  * y devuelve su tiempo absoluto de arribo al sistema 'ta'
  * PRE: ! q_is_empty ()
@@ -114,7 +106,7 @@ static bool serve_customer (double *tsal, double *wtime)
 	if (! q_is_empty() )
 		/* Generamos un tiempo (absoluto) de salida del servidor para
 		 * el proximo cliente que sera atendido */
-		*tsal = q_first () + gen_exp (Ts);
+		*tsal = *tsal + gen_exp (Ts);
 	else
 		busy = false;
 	
