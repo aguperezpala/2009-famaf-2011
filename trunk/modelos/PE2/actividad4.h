@@ -1,11 +1,6 @@
 #ifndef ACTIVIDAD4_H
 #define ACTIVIDAD4_H
 
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#include "actividad2.h"
-#include "distrib.h"
 
 /* Funcion que devuelve el p-valor utilizando la aproximacion ji-cuadrada.
  * REQUIRES:
