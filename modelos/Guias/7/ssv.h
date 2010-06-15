@@ -68,11 +68,8 @@ double bootstrap_media (double *sample, unsigned int n);
 /* Estadistico del test Ji-cuadrado para una muestra de 'n' valores
  *
  * PRE: sample != NULL
- *	gradLib == k - 1 - m
- *		k = # de intervalos en los que se divide la muestra
- *		m = donde
  */
-double ji-cuad (double *sample, unsigned int n, unsigned int gradLib);
+double ji-cuad (double *sample, unsigned int n);
 
 
 #endif
