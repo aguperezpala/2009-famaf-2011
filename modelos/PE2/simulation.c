@@ -63,7 +63,7 @@ static bool serve_customer (queue_t q, double *tsal, double *wtime)
 	if (! q_is_empty(q) )
 		/* Generamos un tiempo (absoluto) de salida del servidor para
 		 * el proximo cliente que sera atendido */
-		*tsal = q_first (q) + gen_exp (Ts);
+		*tsal = *tsal + gen_exp (Ts);
 	else
 		busy = false;
 	
@@ -199,17 +199,22 @@ int main (void)
 			
 			if (ta >= T)
 				/* Se acabo el horario de recepción de clientes
-				* Esto asegura que en el sub-ciclo que sigue
-				* se atienda a todos los clientes que
-				* actualmente están dentro del servidor */
+				 * Esto asegura que en el sub-ciclo que sigue
+				 * se atienda a todos los clientes que
+				 * actualmente están dentro del servidor */
 				ta = DBL_MAX;
 			
 			while ((ta >= tsal) && busy) {
-				/* Ocurre antes la atencion del actual cliente en el
-				* servidor que el arribo del proximo cliente */
+				/* Ocurre antes la atencion del cliente que
+				 * actualmente esta en el servidor,
+				 * que el arribo del proximo cliente */
 				busy = serve_customer (q, &tsal, &wtime);
 				servedTime += wtime;
-			}
+
+/*				debug ("SALIDA # %u\ttsal %u = %.4f\n", k, k, tsal);
+				debug ("wtime %u = %.4f\n\n", k, wtime);
+				k++;
+*/			}
 			
 			if (ta < T) {
 				/* Metemos al cliente en el servidor, si se puede */
@@ -217,6 +222,13 @@ int main (void)
 				if (accepted)
 					served++;
 			}
+			
+/*			if (accepted) {
+				debug ("ARRIBO # %u\tta %u = %.4f\n\n", j, j, ta);
+				j++;
+			}
+				debug ("%s","Cliente rechazado (R)\n\n");
+*/			
 		}
 		/* Registramos el cociente obtenido en este dia */
 		debug ("sim # %u\tservedTime = %.4f\tserved = %lu\n",
