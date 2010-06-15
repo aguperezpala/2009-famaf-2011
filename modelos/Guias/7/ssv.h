@@ -13,6 +13,11 @@
 #define SAMPLE_STATISTICAL_VALUES_H
 
 
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~  MEDIA  -  VARIANZA  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
 /* Media muestral para el n-esimo paso. Toma una nueva muestra Xn y
  * devuelve el "proximo" valor de la media muestral = X(n)
  */
@@ -37,6 +42,12 @@ void reset_media_m (void);
 void reset_var_m (void);
 
 
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~  BOOTSTRAP --> ERROR CUADRATICO MEDIO  ~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
 /* Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
  * del estimador "Media muestral" con respecto a la verdadera media µ,
  * dada una muestra de 'n' datos pasada como primer argumento
@@ -46,6 +57,22 @@ void reset_var_m (void);
  * PRE: sample != NULL
  */
 double bootstrap_media (double *sample, unsigned int n);
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~  SIMULACION  -  ESTADISTICOS  ~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
+/* Estadistico del test Ji-cuadrado para una muestra de 'n' valores
+ *
+ * PRE: sample != NULL
+ *	gradLib == k - 1 - m
+ *		k = # de intervalos en los que se divide la muestra
+ *		m = donde
+ */
+double ji-cuad (double *sample, unsigned int n, unsigned int gradLib);
 
 
 #endif

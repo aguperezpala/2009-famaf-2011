@@ -7,7 +7,6 @@
 #include "ssv.h"
 
 #define SIZE 2
-#define TOL  6
 #define MONTECARLO_BOUND 10000
 
 #define PAD 40	/* Definido para arquitectura de 64 bits */
@@ -95,7 +94,6 @@ double bootstrap_media (double *sample, unsigned int n)
 {
 	double ecm = 0.0;
 	unsigned int i = 0, j = 0, k = 0, row = 0, col = 0;
-	unsigned long N = 0;
 	double Xe = 0.0;	/* Media empírica de la muestra */
 	double Xc = 0.0;	/* Media muestral de una configuración */
 	int *config = NULL;	/* Configuración posible dada la muestra */
@@ -105,63 +103,36 @@ double bootstrap_media (double *sample, unsigned int n)
 	
 	assert (sample != NULL);
 	
+	/* Inicializamos ran2 */
+	gettimeofday(&tv, NULL);
+	idum = (long) -((tv.tv_sec << PAD) >> PAD);
+	if (idum > 0)
+		idum = -idum;
+	
+	
 	/* Metemos la media empírica de la muestra real en Xe */
 	for (i=0 ; i<n ; i++)
 		Xe += sample[i] / (double) n;
 	
-	N = pow ((double) n, (double) n);
+	
+	/* Vamos a aproximar el ECM empleando Montecarlo */
 	ecm = 0.0;
-	
-	if (n < TOL) {
-		/* Vamos a calcular las cosas de manera exacta,
-		 * considerando todas las configuraciones posibles */
-		config = (int *) calloc (n , sizeof(int));
-		assert (config != NULL);
+	for (i=0 ; i<MONTECARLO_BOUND ; i++) {
 		
-		for (i=0 ; i<N ; i++) {
-			
-			/* Determinamos cual es esta configuración */
-			row = i / n;
-			col = i % n;
-			config[row] += col;
-			
-			/* Guardamos su media muestral en Xc */
-			reset_media_m ();
-			for (j=0 ; j<n ; j++)
-				Xc  = media_m (sample[config[j]], j+1);
-			
-			/* Actualizamos el valor del ECM */
-			ecm += (pow (Xc - Xe, 2.0)) / (double) N;
-		}
-		free (config);
-		config = NULL;
-	
-	} else {
-		/* Vamos a aproximar el ECM empleando Montecarlo */
-		
-		/* Inicializamos ran2 */
-		gettimeofday(&tv, NULL);
-		idum = (long) -((tv.tv_sec << PAD) >> PAD);
-		if (idum > 0)
-			idum = -idum;
-		
-		for (i=0 ; i<MONTECARLO_BOUND ; i++) {
-			
-			/* Guardamos en Xc la media muestral de una
-			 * configuracion aleatoria de valores de la muestra */
-			reset_media_m ();
-			for (j=0 ; j<n ; j++) {
-				k = ran2(&idum) * n;
+		/* Guardamos en Xc la media muestral de una
+			* configuracion aleatoria de valores de la muestra */
+		reset_media_m ();
+		for (j=0 ; j<n ; j++) {
+			k = ran2(&idum) * n;
 /*				k = mzran13() % n;
 */				Xc = media_m (sample[k], j+1);
-			}
-			
-			/* Actualizamos el valor del ECM */
-			ecm += (pow (Xc - Xe, 2.0)) / (double) MONTECARLO_BOUND;
-			
-			if (!(i%500))
-				printf ("loop # %u\tecm == %.4f\n", i, ecm);
 		}
+		
+		/* Actualizamos el valor del ECM */
+		ecm += (pow (Xc - Xe, 2.0)) / (double) MONTECARLO_BOUND;
+		
+		if (!(i%500))
+			printf ("loop # %u\tecm == %.4f\n", i, ecm);
 	}
 	
 	return ecm;
