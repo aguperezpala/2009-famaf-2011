@@ -1,3 +1,10 @@
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+
+#include "actividad2.h"
+#include "distrib.h"
+
 #include "actividad4.h"
 
 /* Funcion que devuelve el p-valor utilizando la aproximacion ji-cuadrada.
@@ -12,7 +19,7 @@
 */
 double get_p_value_ji(int k, double *arr, int size, double (*fun)(double), int gl)
 {
-	int N[k] = {0};
+	int *N = NULL;
 	double 	min = 0,
 		max = 0,
 		delta = 0,
@@ -25,6 +32,9 @@ double get_p_value_ji(int k, double *arr, int size, double (*fun)(double), int g
 	assert(fun != NULL);
 	assert(size > 0 && k >= 0);
 	
+	N = (int *) calloc (k, sizeof (int));
+	assert (N != NULL);
+	
 	/* calculamos el tamaño de los intervalos */
 	min = act2_get_min(arr, size);
 	max = act2_get_max(arr, size);
@@ -34,7 +44,7 @@ double get_p_value_ji(int k, double *arr, int size, double (*fun)(double), int g
 	for(i = 0; i < k; i++)
 		for(j = 0; j < size; j++)
 			if ((arr[j] < ((i+1)*delta)+min) &&
-				arr[j] >= ((i)*delta)+min))
+			     arr[j] >= ((i*delta)+min))
 				N[i]++;
 	
 	/* vamos a calcular T */
@@ -43,6 +53,9 @@ double get_p_value_ji(int k, double *arr, int size, double (*fun)(double), int g
 			(1.0/(double)size * fun(arr[i]));
 	
 	result = chi_cuadrada(gl, T);
+	
+	free (N);
+	N = NULL;
 	
 	return result;
 }
@@ -60,5 +73,6 @@ double get_p_value_ji(int k, double *arr, int size, double (*fun)(double), int g
 */
 double get_p_value_ks(int k, double *arr, int size, double (*Fun)(double), int gl)
 {
+	return 0.0;
 	/*! NOTE FIXME: */
 }

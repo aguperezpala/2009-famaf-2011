@@ -20,6 +20,8 @@ float factrl(int n)
 	return a[n];
 }
 
+
+
 float bico(int n, int k)
 {
 	float factln(int n);
@@ -27,10 +29,12 @@ float bico(int n, int k)
 //	The floor function cleans up roundoff error for smaller values of n and k.
 }
 
+
+
 float factln(int n)
 {
 	float gammln(float xx);
-//	A static array is automatically initialized to zero.
+	//	A static array is automatically initialized to zero.
 	static float a[101];
 	if (n < 0) printf("Negative factorial in routine factln");
 	if (n <= 1) return 0.0;
@@ -39,12 +43,6 @@ float factln(int n)
 		else return gammln(n+1.0);
 }
 
-/* Returns the value of the beta function B(z, w). */
-float beta(float z, float w)
-{
-	float gammln(float xx);
-	return exp(gammln(z)+gammln(w)-gammln(z+w));
-}
 
 
 /* Returns the value ln[Γ(xx)] for xx > 0. */
@@ -150,6 +148,14 @@ float gammp(float a, float x)
 //		and take its complement.
 		return 1.0-gammcf;
 	}
+}
+
+
+/* Returns the value of the beta function B(z, w). */
+float beta(float z, float w)
+{
+	float gammln(float xx);
+	return exp(gammln(z)+gammln(w)-gammln(z+w));
 }
 
 
