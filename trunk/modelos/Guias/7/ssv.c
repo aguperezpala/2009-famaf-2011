@@ -12,6 +12,8 @@
 
 #define PAD 40	/* Definido para arquitectura de 64 bits */
 
+#define  MAX(x,y)  ( ((x) > (y)) ? (x) : (y) )
+
 /** Estructura Media muestral */
 double	media[SIZE] = {0.0, 0.0};
 unsigned int	ma = 0,  /* media[ma] = media anterior  = X(n-1) */
@@ -183,7 +185,7 @@ static unsigned int find_interval (double Xj, double *I, unsigned int k)
 }
 
 
-/* Estadistico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
+/* Estadístico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
  * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
  * p[i] == "probabilidad de caer en el intervalo Int(i)"
  *
@@ -218,4 +220,48 @@ double ji_cuadrado (double *sample, unsigned int n,
 		t += pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]);
 	
 	return t;
+}
+
+
+
+
+/* Compara dos 'doubles' pasados por referencia y devuelve:
+ * a > b  =>  1
+ * a = b  =>  0
+ * a < b  => -1
+ */
+static int cmp_dbl (const void *a, const void *b)
+{
+	return  (*((const double *) a) > *((const double *) b)) ?  1 : \
+		(*((const double *) a) < *((const double *) b)  ? -1 : 0);
+}
+
+
+/* Estadístico del test Kolmogorov-Smirnov de una muestra 'sample' con 'n' datos
+ * 'F' es la función de probabilidad teórica a aplicar sobre los datos
+ *
+ * PRE: sample != NULL  &&  n == #(sample)
+ *	F != NULL
+ */
+ double kolmogorov_smirnov (double *sample, unsigned int n, double (*F) (double))
+{
+	double	d = -DBL_MAX,
+		j = 0.0,
+		m = (double) n,
+		Fj = 0.0;
+	
+	assert (sample != NULL);
+	assert (F != NULL);
+	
+	/* Ordenamos la muestra en orden creciente */
+	qsort (sample, (size_t) n, sizeof (double), cmp_dbl);
+	
+	/* Buscamos el estadístico */
+	for (j = 0.0 ; j < m ; j += 1.0) {
+		Fj = F (sample[(int)j]);
+		d = MAX (d , j/m - Fj );
+		d = MAX (d , Fj - (j-1.0)/m);
+	}
+	
+	return d;
 }
