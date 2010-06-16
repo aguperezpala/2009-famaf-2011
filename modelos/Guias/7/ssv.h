@@ -65,7 +65,7 @@ double bootstrap_media (double *sample, unsigned int n);
 /** ------------------------------------------------------------------------- */
 
 
-/* Estadistico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
+/* Estadístico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
  * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
  * p[i] == "probabilidad de caer en el intervalo Int(i)"
  *
@@ -81,5 +81,13 @@ double bootstrap_media (double *sample, unsigned int n);
 double ji_cuadrado (double *sample, unsigned int n,
 		    double *I, unsigned int k, double *p);
 
+
+/* Estadístico del test Kolmogorov-Smirnov de una muestra 'sample' con 'n' datos
+ * 'F' es la función de probabilidad teórica a aplicar sobre los datos
+ *
+ * PRE: sample != NULL  &&  n == #(sample)
+ *	F != NULL
+ */
+ double kolmogorov_smirnov (double *sample, unsigned int n, double (*F) (double));
 
 #endif
