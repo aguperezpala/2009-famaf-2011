@@ -2,13 +2,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <assert.h>
 #include <sys/time.h>
 #include <limits.h>
 #include "rdg.h"
 
+
+
 /** ------------------------------------------------------------------------- */
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~ ### MZRAN13 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~ GENERADORES DE VALORES ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /** ------------------------------------------------------------------------- */
+
+
+/** ### MZRAN13 */
 
 /* Default seed values */
 unlong x=521288629, y=362436069, z=16163801, c=1, n=1131199209;
@@ -39,10 +45,7 @@ void ran13set (unlong xx, unlong yy, unlong zz, long nn) {
 }
 
 
-
-/** ------------------------------------------------------------------------- */
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ### RAN2 ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/** ------------------------------------------------------------------------- */
+/** ### RAN2 */
 
 #define PAD 40	/* Definido para arquitectura de 64 bits */
 long IDUM = -1;
@@ -139,9 +142,40 @@ float ran2(long *idum)
 }
 
 
-/** ------------------------------------------------------------------------- */
-/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ### EXP ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/** ------------------------------------------------------------------------- */
+/** ### PROBABILIDAD ARBITRARIA */
+
+/* Genera un valor de entre los listados en 'X',
+ * segun la distribucion arbitraria especificada en 'p'
+ *
+ * Emplea el método de la transformada inversa
+ *
+ * PRE: X != NULL
+ *	p != NULL
+ *	n == #(X) == #(p)
+ */
+double gen_prob (double *X, double *p, unsigned int n)
+{
+	double F = 0.0, U = 0.0;
+	unsigned int i = 0;
+	
+	assert (X != NULL);
+	assert (p != NULL);
+	
+	U = mzran13()/(double)ULONG_MAX;
+	F = p[i];
+	
+	while (U > F && i<n) {
+		i++;
+		F += p[i];
+	}
+	/* 1 == sum(p[i]) => No deberíamos habernos pasado de n */
+	assert (i<n);
+	
+	return X[i];
+}
+
+
+/** ### EXP */
 
 /* generadora de una v.a. exponencial con parametro lambda */
 double gen_exp (double lambda)
@@ -171,7 +205,71 @@ double gen_exp (double lambda)
 
 
 /** ------------------------------------------------------------------------- */
-/** ~~~~~~~~~~~~~~~~~~~ ### BETA + GAMMA + Ji-2 ### ~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~ CALCULADORES DE PROBABILIDAD ~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
+/** ### BETA */
+/* Returns the value of the beta function B(z, w). */
+float beta(float z, float w)
+{
+	float gammln(float xx);
+	return exp(gammln(z)+gammln(w)-gammln(z+w));
+}
+
+/** ### GAMMA */
+
+/* Returns the incomplete gamma function P (a, x). */
+float gammp(float a, float x)
+{
+	float gamser,gammcf,gln;
+	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammp");
+	
+	if (x < (a+1.0)) {
+		/* Use the series representation. */
+		gser(&gamser,a,x,&gln);
+		return gamser;
+	} else {
+		/* Use the continued fraction representation... */
+		gcf(&gammcf,a,x,&gln);
+		/* ... and take its complement. */
+		return 1.0-gammcf;
+	}
+}
+
+
+
+/* Returns the incomplete gamma function Q(a, x) ≡ 1 − P (a, x). */
+float gammq(float a, float x)
+{
+	float gamser,gammcf,gln;
+	
+	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammq");
+	
+	if (x < (a+1.0)) {
+		/* Use the series representation... */
+		gser(&gamser,a,x,&gln);
+		/* ... and take its complement. */
+		return 1.0-gamser;
+	} else {
+		/* Use the continued fraction representation. */
+		gcf(&gammcf,a,x,&gln);
+		return gammcf;
+	}
+}
+
+
+/** ### Ji-2 */
+
+double chi_cuadrada(int gradosLibertad, double value)
+{
+	return gammq((double)gradosLibertad/(double)2.0,value/(double)2.0);
+}
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~~ AUXILIARES (IGNORAR) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /** ------------------------------------------------------------------------- */
 
 
@@ -211,7 +309,7 @@ float bico(int n, int k)
 	float factln(int n);
 	return floor(0.5+exp(factln(n)-factln(k)-factln(n-k)));
 	/* The floor function cleans up roundoff error
-	 * for smaller values of n and k. */
+	* for smaller values of n and k. */
 }
 
 
@@ -239,18 +337,18 @@ float factln(int n)
 float gammln(float xx)
 {
 	/* Internal arithmetic will be done in double precision, a nicety that 
-	 * you can omit if five-figure accuracy is good enough. */
+	* you can omit if five-figure accuracy is good enough. */
 	double x,y,tmp,ser;
 	static double cof[6]={76.18009172947146,-86.50532032941677,
-	24.01409824083091,-1.231739572450155,
-	0.1208650973866179e-2,-0.5395239384953e-5};
-	int j;
-	y=x=xx;
-	tmp=x+5.5;
-	tmp -= (x+0.5)*log(tmp);
-	ser=1.000000000190015;
-	for (j=0;j<=5;j++) ser += cof[j]/++y;
-	return -tmp+log(2.5066282746310005*ser/x);
+		24.01409824083091,-1.231739572450155,
+  0.1208650973866179e-2,-0.5395239384953e-5};
+  int j;
+  y=x=xx;
+  tmp=x+5.5;
+  tmp -= (x+0.5)*log(tmp);
+  ser=1.000000000190015;
+  for (j=0;j<=5;j++) ser += cof[j]/++y;
+  return -tmp+log(2.5066282746310005*ser/x);
 }
 
 
@@ -320,57 +418,3 @@ void gcf(float *gammcf, float a, float x, float *gln)
 	/* Put factors in front. */
 	*gammcf=exp(-x+a*log(x)-(*gln))*h;
 }
-
-
-
-/* Returns the incomplete gamma function P (a, x). */
-float gammp(float a, float x)
-{
-	float gamser,gammcf,gln;
-	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammp");
-	
-	if (x < (a+1.0)) {
-		/* Use the series representation. */
-		gser(&gamser,a,x,&gln);
-		return gamser;
-	} else {
-		/* Use the continued fraction representation... */
-		gcf(&gammcf,a,x,&gln);
-		/* ... and take its complement. */
-		return 1.0-gammcf;
-	}
-}
-
-
-/* Returns the value of the beta function B(z, w). */
-float beta(float z, float w)
-{
-	float gammln(float xx);
-	return exp(gammln(z)+gammln(w)-gammln(z+w));
-}
-
-
-/* Returns the incomplete gamma function Q(a, x) ≡ 1 − P (a, x). */
-float gammq(float a, float x)
-{
-	float gamser,gammcf,gln;
-	
-	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammq");
-	
-	if (x < (a+1.0)) {
-		/* Use the series representation... */
-		gser(&gamser,a,x,&gln);
-		/* ... and take its complement. */
-		return 1.0-gamser;
-	} else {
-		/* Use the continued fraction representation. */
-		gcf(&gammcf,a,x,&gln);
-		return gammcf;
-	}
-}
-
-double chi_cuadrada(int gradosLibertad, double value)
-{
-	return gammq((double)gradosLibertad/(double)2.0,value/(double)2.0);
-}
-

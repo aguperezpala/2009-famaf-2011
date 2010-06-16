@@ -5,6 +5,11 @@
 typedef unsigned long int unlong;
 
 
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~ GENERADORES DE VALORES ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
 /* Long period (> 2 × 10^18) random number generator of L’Ecuyer with Bays-Durham
  * shuffle and added safeguards. Returns a uniform random deviate between 0.0
  * and 1.0 (exclusive of the endpoint values).
@@ -26,8 +31,26 @@ unlong mzran13 (void);
 void ran13set(unlong xx, unlong yy, unlong zz, long nn);
 
 
-/* generadora de una v.a. exponencial con parametro lambda */
-double gen_exp(double lambda);
+/* Genera un valor de entre los listados en 'X',
+ * segun la distribucion arbitraria especificada en 'p'
+ *
+ * Emplea el método de la transformada inversa
+ *
+ * PRE: X != NULL
+ *	p != NULL
+ *	n == #(X) == #(p)
+ */
+double gen_prob (double *X, double *p, unsigned int n);
+
+
+/* Genera un valor según la distribución exponencial de parametro lambda */
+double gen_exp (double lambda);
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~ CALCULADORES DE PROBABILIDAD ~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
 
 
 /* Returns the value of the beta function B(z, w). */
@@ -42,8 +65,10 @@ float gammp(float a, float x);
 float gammq(float a, float x);
 
 
-/* generadora de chi-cuadrada */
-double chi_cuadrada(int gradosLibertad, double value);
+/* Para una funcion de distribucion chi-cuadrada con ciertos gradosLibertad,
+ * calcula la probabilidad acumulada: P (chi-cuadrada > value)
+ */
+double chi_cuadrada (int gradosLibertad, double value);
 
 
 
@@ -51,7 +76,7 @@ double chi_cuadrada(int gradosLibertad, double value);
 
 
 /** ------------------------------------------------------------------------- */
-/** ~~~~~~~~~~~~~~~~~~~ ### AUXILIARES (IGNORAR) ### ~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~~ AUXILIARES (IGNORAR) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /** ------------------------------------------------------------------------- */
 
 

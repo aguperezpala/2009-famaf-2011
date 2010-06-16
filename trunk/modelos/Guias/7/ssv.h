@@ -65,11 +65,21 @@ double bootstrap_media (double *sample, unsigned int n);
 /** ------------------------------------------------------------------------- */
 
 
-/* Estadistico del test Ji-cuadrado para una muestra de 'n' valores
+/* Estadistico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
+ * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
+ * p[i] == "probabilidad de caer en el intervalo Int(i)"
  *
- * PRE: sample != NULL
+ * Se define al i-esimo intervalo Int(i) como:
+ *	Int(i) = [ I[i] , I[i+1] )
+ * y para el ultimo intervalo vale que:
+ *	Int(k) = [ I[k] , inifinity )
+ *
+ * PRE: sample != NULL	&&  n == #(sample)
+ *	I != NULL	&&  k == #(I)
+ *	p != NULL	&&  k == #(p)
  */
-double ji-cuad (double *sample, unsigned int n);
+double ji_cuadrado (double *sample, unsigned int n,
+		    double *I, unsigned int k, double *p);
 
 
 #endif
