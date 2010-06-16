@@ -106,10 +106,9 @@ void reset_var_m (void)
 double bootstrap_media (double *sample, unsigned int n)
 {
 	double ecm = 0.0;
-	unsigned int i = 0, j = 0, k = 0, row = 0, col = 0;
+	unsigned int i = 0, j = 0, k = 0;
 	double Xe = 0.0;	/* Media empírica de la muestra */
 	double Xc = 0.0;	/* Media muestral de una configuración */
-	int *config = NULL;	/* Configuración posible dada la muestra */
 	
 	long idum = 0;
 	struct timeval tv;
@@ -161,41 +160,62 @@ double bootstrap_media (double *sample, unsigned int n)
 
 
 /* Vuelve con el # de intervalo en el que cae el valor Xi
- * ie:	Xi == 0.25
- *	intervals ==  { [0.00 , 0.15),
- *			[0.15 , 0.55),
- *			[0.55 , 1.00)
- *		      }
- * (Xi, )
+ *
+ * PRE: I != NULL
+ *	los valores en I están en orden estrictamente creciente
+ *
+ * ie:	Xj == 0.25		 |
+ *	 I == { [0.00 , 0.15),	 |
+ *		[0.15 , 0.55),	 |>  find_interval (Xj, I, 4) == 1
+ *		[0.55 , 1.12),	 |
+ *		[1.12 , 2.00) }  |
  */
-static unsigned int find_interval (double Xi, double *I, unsigned int k)
+static unsigned int find_interval (double Xj, double *I, unsigned int k)
 {
-
+	unsigned int i = 0;
+	
+	assert (I != NULL);
+	
+	while (i<k-1 && Xj > I[i+1]-DBL_EPSILON)
+		i++;
+	
+	return i;
 }
 
 
 /* Estadistico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
  * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
- * donde se define al i-esimo intervalo Int(i) como:
+ * p[i] == "probabilidad de caer en el intervalo Int(i)"
  *
- * Int(i) = [ I[i] , I[i+1] )
- *
+ * Se define al i-esimo intervalo Int(i) como:
+ *	Int(i) = [ I[i] , I[i+1] )
  * y para el ultimo intervalo vale que:
+ *	Int(k) = [ I[k] , inifinity )
  *
- * Int(k) = [ I[k] , DBL_MAX )  ~  [ I[k] , inifinity )
- *
- * PRE: sample != NULL     &&  n == #(sample)
- *	intervals != NULL  &&  k == #(I)
+ * PRE: sample != NULL	&&  n == #(sample)
+ *	I != NULL	&&  k == #(I)
+ *	p != NULL	&&  k == #(p)
  */
-double ji-cuad (double *sample, unsigned int n, double *I, unsigned int k)
+double ji_cuadrado (double *sample, unsigned int n,
+		    double *I, unsigned int k, double *p)
 {
 	double t = 0.0;
-	unsigned int i = 0, j = 0, k = 0;
+	unsigned int i = 0, j = 0;
+	unsigned int *N = NULL;
 	
 	assert (sample != NULL);
 	assert (I!= NULL);
 	
+	N = (unsigned int *) calloc (k, sizeof (unsigned int));
+	assert (N != NULL);
+	
 	for (j=0 ; j<n ; j++) {
-		i = find_interval (sample[j], intervals);
+		i = find_interval (sample[j], I, k);
+		N[i]++;
 	}
+	
+	for (i=0 ; i<k ; i++)
+		t += pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]);
+	
+	return t;
 }
