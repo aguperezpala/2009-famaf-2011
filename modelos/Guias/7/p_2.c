@@ -7,7 +7,9 @@
 
 
 /* # de intervalos en los que se divide el rango de la muestra */
-#define  NI  3
+#define  NI  6
+
+#define  SEXTO  0.1666666666
 
 /* # de simulaciones a ejecutar para ajustar el p-valor */
 unsigned int NSIM = 10000;
@@ -19,16 +21,16 @@ int main (void)
 	unsigned int i = 0, j = 0;
 	
 	/* Intervalos */
-	double I[NI] = {0.0, 1.0, 2.0};
+	double I[NI] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
 	/* Valores intermedios */
-	double X[NI] = {0.5, 1.5, 2.5};
+	double X[NI] = {1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
 	/* Probabilidades teoricas de caer en los intervalos */
-	double p[NI] = {0.25, 0.5, 0.25};
+	double p[NI] = {SEXTO, SEXTO, SEXTO, SEXTO, SEXTO, SEXTO};
 	
 	/* # de valores muestrales */
-	unsigned int n = 564;
+	unsigned int n = 1000;
 	/* Frecuencias muestrales */
-	double N[NI] = {141.0, 291.0, 132.0};
+	double N[NI] = {158.0, 172.0, 164.0, 181.0, 160.0, 165.0};
 	
 	/* Estadístico de la muestra */
 	double t = 0.0;
