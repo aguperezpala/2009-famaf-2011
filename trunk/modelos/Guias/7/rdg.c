@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -143,7 +144,6 @@ float ran2(long *idum)
 
 
 /** ### PROBABILIDAD ARBITRARIA */
-
 /* Genera un valor de entre los listados en 'X',
  * segun la distribucion arbitraria especificada en 'p'
  *
@@ -175,9 +175,70 @@ double gen_prob (double *X, double *p, unsigned int n)
 }
 
 
-/** ### EXP */
+/** ### GEOM */
+/* Genera un valor según la distribución geométrica de parámetro 'p' */
+unsigned int gen_geom (double p)
+{
+	double U = 0.0, q = 1.0-p;
+	struct timeval tv;
+	
+	if (!INIT) {
+		/* Inicializamos ran2 */
+		gettimeofday(&tv, NULL);
+		IDUM = (long) -((tv.tv_sec << PAD) >> PAD);
+		if (IDUM > 0)
+			IDUM = -IDUM;
+		INIT = true;
+	}
+/*	U = mzran13()/(double)ULONG_MAX;
+*/	U = ran2 (&IDUM);
+	return floor (log (U) / log (q)) + 1;
+}
 
-/* generadora de una v.a. exponencial con parametro lambda */
+
+/** ### BIN */
+/* Genera un valor según la distribución Binomial de parámetros (n,p) */
+unsigned int gen_bin (unsigned int n, double p)
+{
+	double	i = 0.0,
+		U = mzran13() / (double) ULONG_MAX,
+		c = p / (1.0-p),
+		pr = pow (1.0-p, (double) n),
+		F = pr;
+	
+	while (U > F) {
+		pr = pr * (((double) n - i) / (i+1.0)) * c;
+		F += pr;
+		i += 1.0;
+	}
+	
+	return (unsigned int) i;
+}
+
+
+/** ### POISSON */
+/* Genera un valor según la distribución Posisson de parámetro lambda */
+unsigned int gen_posisson (double lambda)
+{
+	double  i = 0.0,
+		U = 0.0,
+		p = pow (M_E, -lambda),
+		F = p;
+	
+	U = mzran13() / (double) ULONG_MAX;
+	
+	while (U > F) {
+		p *= (lambda / (i+1.0));
+		F += p;
+		i += 1.0;
+	}
+	
+	return (unsigned int) i;
+}
+
+
+/** ### EXP */
+/* Genera un valor según la distribución geométrica de parámetro lambda */
 double gen_exp (double lambda)
 {
 	double U = 0;
@@ -218,7 +279,6 @@ float beta(float z, float w)
 }
 
 /** ### GAMMA */
-
 /* Returns the incomplete gamma function P (a, x). */
 float gammp(float a, float x)
 {
