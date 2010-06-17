@@ -105,8 +105,8 @@ int main (void)
 			pSim += sim[j];
 		pSim = pSim / (double) (n*N);
 		
-		printf ("#%u pSim = %.4f\n", i, pSim);
-		
+/*		printf ("#%u pSim = %.4f\n", i, pSim);
+*/		
 		/* Recalculamos las probabilidades con este 'p' simulado */
 		prob_bin (n, pSim, probSim);
 		
