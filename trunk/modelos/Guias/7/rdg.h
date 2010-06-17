@@ -65,6 +65,19 @@ double gen_exp (double lambda);
 /** ------------------------------------------------------------------------- */
 
 
+/* Rellena el arreglo 'prob' con los valores P(X=x) para los x en {0..n}
+ * según la función de distribución de masa de una Binomial (n,p)
+ *
+ * PRE: prob != NULL  &&  n+1 == #(prob)
+ */
+void prob_bin (unsigned int n, double p, double *prob);
+
+
+/* Imprime por pantalla los valores P(X=x) para los x en {0..n}
+ * según la función de distribución de masa de una Binomial (n,p) */
+void print_bin (unsigned int n, double p);
+
+
 /* Returns the value of the beta function B(z, w). */
 float beta(float z, float w);
 
@@ -81,7 +94,6 @@ float gammq(float a, float x);
  * calcula la probabilidad acumulada: P (chi-cuadrada > value)
  */
 double chi_cuadrada (int gradosLibertad, double value);
-
 
 
 
