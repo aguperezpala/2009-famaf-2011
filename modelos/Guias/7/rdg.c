@@ -270,6 +270,50 @@ double gen_exp (double lambda)
 /** ------------------------------------------------------------------------- */
 
 
+
+/** ### BIN */
+/* Rellena el arreglo 'prob' con los valores P(X=x) para los x en {0..n}
+ * según la función de distribución de masa de una Binomial (n,p)
+ *
+ * PRE: prob != NULL  &&  n+1 == #(prob)
+ */
+void prob_bin (unsigned int n, double p, double *prob)
+{
+	unsigned int i = 0;
+	double	c = p / (1.0-p),
+		pi = pow (1.0-p, (double) n);
+	
+	assert (prob != NULL);
+	
+	do {
+		prob[i] = pi;
+		pi = pi * (((double)(n-i)) / (double)(i+1)) * c;
+		i++;
+	} while (i <= n);
+	
+	return;
+}
+
+/* Imprime por pantalla los valores P(X=x) para los x en {0..n}
+ * según la función de distribución de masa de una Binomial (n,p) */
+void print_bin (unsigned int n, double p)
+{
+	double	i = 0.0,
+		c = p / (1.0-p),
+		pi = pow (1.0-p, (double) n);
+	
+	printf ("Bin (n=%u, p=%.4f)\n", n, p);
+	printf ("p%.0f = %.6f\n", i, pi);
+	
+	for (i=0.0 ; (unsigned int) i < n ; i+=1.0) {
+		pi = pi * (((double) n - i) / (i+1.0)) * c;
+		printf ("p%.0f = %.6f\n", i+1.0, pi);
+	}
+	
+	return;
+}
+
+
 /** ### BETA */
 /* Returns the value of the beta function B(z, w). */
 float beta(float z, float w)
@@ -277,6 +321,7 @@ float beta(float z, float w)
 	float gammln(float xx);
 	return exp(gammln(z)+gammln(w)-gammln(z+w));
 }
+
 
 /** ### GAMMA */
 /* Returns the incomplete gamma function P (a, x). */
@@ -320,7 +365,6 @@ float gammq(float a, float x)
 
 
 /** ### Ji-2 */
-
 double chi_cuadrada(int gradosLibertad, double value)
 {
 	return gammq((double)gradosLibertad/(double)2.0,value/(double)2.0);

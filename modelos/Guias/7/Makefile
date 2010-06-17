@@ -28,8 +28,12 @@ p: p-val
 p-val : p-value.o $(RANDOMIZERS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
 
+bin: print-bin
+print-bin: print_bin.o $(RANDOMIZERS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
+
 clean:
-	rm -f $(TARGET) .depend *.o p? p-val *~ alias
+	rm -f $(TARGET) .depend *.o p? p-val print-bin *~ alias
 
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend
