@@ -59,6 +59,17 @@ unsigned int gen_posisson (double lambda);
 double gen_exp (double lambda);
 
 
+/* Genera dos valores según la distribución normal de parámetros (mu,sigma)
+ * Los valores son devueltos en los argumentos N1 y N2
+ *
+ * mu = media poblacional
+ * sigma = desviacion estandard poblacional
+ *
+ * PRE: N1 != NULL
+ *	N2 != NULL
+ */
+void gen_normal (double mu, double sigma, double *N1, double *N2);
+
 
 /** ------------------------------------------------------------------------- */
 /** ~~~~~~~~~~~~~~~~~~~ CALCULADORES DE PROBABILIDAD ~~~~~~~~~~~~~~~~~~~~~~~~ */

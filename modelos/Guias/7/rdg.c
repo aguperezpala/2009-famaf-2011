@@ -238,7 +238,7 @@ unsigned int gen_posisson (double lambda)
 
 
 /** ### EXP */
-/* Genera un valor según la distribución geométrica de parámetro lambda */
+/* Genera un valor según la distribución exponencial de parámetro lambda */
 double gen_exp (double lambda)
 {
 	double U = 0;
@@ -263,6 +263,44 @@ double gen_exp (double lambda)
 }
 
 
+/** ### NORMAL */
+/* Genera dos valores según la distribución normal de parámetros (mu,sigma)
+ * Los valores son devueltos en los argumentos N1 y N2
+ *
+ * mu = media poblacional
+ * sigma = desviacion estandard poblacional
+ *
+ * PRE: N1 != NULL
+ *	N2 != NULL
+ */
+void gen_normal (double mu, double sigma, double *N1, double *N2)
+{
+	double	U = 0.0,
+		V1 = 0.0, V2 = 0.0,	/* Coordenadas del punto en el circulo */
+		X = 0.0, Y = 0.0,	/* V.A. ~ N(0,1) a generar */
+		S = 0.0;		/* V1^2 + V2^2 */
+	
+	assert (N1 != NULL);
+	assert (N2 != NULL);
+	
+	/* Generamos el punto dentro del circulo de radio 1 */
+	do {
+		U = mzran13() / (double) ULONG_MAX;
+		V1 = (U * 2.0) - 1.0;
+		U = mzran13() / (double) ULONG_MAX;
+		V2 = (U * 2.0) - 1.0;
+		/* V1,V2 ~ U(-1,1) */
+		S = V1*V1 + V2*V2;
+	} while (S > 1.0);
+	
+	X = sqrt (-2.0 * log(S) / S) * V1;
+	Y = sqrt (-2.0 * log(S) / S) * V2;
+	
+	*N1 = X * sigma + mu;
+	*N2 = Y * sigma + mu;
+	
+	return;
+}
 
 
 /** ------------------------------------------------------------------------- */
