@@ -43,7 +43,19 @@ void ran13set(unlong xx, unlong yy, unlong zz, long nn);
 double gen_prob (double *X, double *p, unsigned int n);
 
 
-/* Genera un valor según la distribución exponencial de parametro lambda */
+/* Genera un valor según la distribución exponencial de parámetro 'p' */
+unsigned int gen_geom (double p);
+
+
+/* Genera un valor según la distribución Binomial de parámetros (n,p) */
+unsigned int gen_bin (unsigned int n, double p);
+
+
+/* Genera un valor según la distribución Poisson de parámetro lambda */
+unsigned int gen_posisson (double lambda);
+
+
+/* Genera un valor según la distribución geométrica de parametro lambda */
 double gen_exp (double lambda);
 
 
