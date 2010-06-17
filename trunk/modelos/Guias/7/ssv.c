@@ -14,6 +14,16 @@
 
 #define  MAX(x,y)  ( ((x) > (y)) ? (x) : (y) )
 
+
+/* Función para operación verborrágica */
+#ifdef _VERBOSE
+  #define show(s,...) printf(s, ##__VA_ARGS__)
+#else
+  #define show(s,...)
+#endif
+
+
+
 /** Estructura Media muestral */
 double	media[SIZE] = {0.0, 0.0};
 unsigned int	ma = 0,  /* media[ma] = media anterior  = X(n-1) */
@@ -258,10 +268,18 @@ static int cmp_dbl (const void *a, const void *b)
 	
 	/* Buscamos el estadístico */
 	for (j = 0.0 ; j < m ; j += 1.0) {
+		
 		Fj = F (sample[(int)j]);
-		d = MAX (d , j/m - Fj );
-		d = MAX (d , Fj - (j-1.0)/m);
+		
+		/* Notar que aquí 0 <= j < n, por lo cual usamos j+1 */
+		d = MAX (d , (j+1.0)/m - Fj );
+		d = MAX (d , Fj - j/m);
+		
+		show ("D%.0f+ = %.4f\tD%.0f- = %.4f\n",
+			j, (j+1.0)/m - Fj, j, Fj - j/m);
 	}
+	
+	show ("Estadístico K-S:  D = %.4f\n", d);
 	
 	return d;
 }
