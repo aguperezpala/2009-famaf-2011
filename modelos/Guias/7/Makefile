@@ -14,7 +14,7 @@ CC=gcc
 CFLAGS = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 	 -Wcast-qual -Wstrict-prototypes -Wmissing-declarations \
 	 -Wmissing-prototypes -Wno-unused-parameter -Werror -pedantic \
-	 -g #-D_VERBOSE
+	 -g --std=c99 #-D_VERBOSE
 LIBRARIES = -lm
 RANDOMIZERS=rdg.c ssv.c
 INCLUDES=.depend

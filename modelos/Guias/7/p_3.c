@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <limits.h>
 #include <assert.h>
 #include "rdg.h"
 #include "ssv.h"
@@ -8,8 +9,6 @@
 
 /* # de intervalos en los que se divide el rango de la muestra */
 #define  NI  10
-
-#define  DECIMO  0.1666666666
 
 /* # de simulaciones a ejecutar para ajustar el p-valor */
 unsigned int NSIM = 10000;
@@ -79,7 +78,7 @@ int main (void)
 	/** Test de K-S */
 	
 	/* Metemos en 'd' el estadístico de la muestra verdadera */
-	d = kolmogorov_smirnov (sim, n, F);
+	d = kolmogorov_smirnov (sample, n, F);
 	
 	/* Simulamos */
 	p_value = 0.0;
@@ -87,7 +86,7 @@ int main (void)
 		
 		/* Simulamos una muestra según la distr. hip. 'p' */
 		for (j=0 ; j<n ; j++)
-			sim[j] = gen_prob (X, p, NI);
+			sim[j] = mzran13() / (double) ULONG_MAX;
 		
 		/* Evaluamos su estadístico */
 		Di = kolmogorov_smirnov (sim, n, F);
