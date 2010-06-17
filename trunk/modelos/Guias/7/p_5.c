@@ -47,15 +47,17 @@ static double F (double x)
 int main (void)
 {
 	double pSample = 0.0;
+	double pSim    = 0.0;
 	double p_value = 0.0;
 	unsigned int i = 0, j = 0;
 	
 	/* Intervalos */
-	double I[NI] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+	double I[NI] = {-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5	};
 	/* Valores intermedios */
-	double X[NI] = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5};
+	double X[NI] =  {  0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 	/* Probabilidades teoricas de caer en los intervalos */
-	double prob[NI];
+	double probSample[NI];
+	double probSim[NI];
 	
 	/* Valores muestrales */
 	double sample[N] = {6.0, 7.0, 3.0, 4.0, 7.0, 3.0, 7.0, 2.0, 6.0,
@@ -72,30 +74,44 @@ int main (void)
 	/** Estimación de la distribución hipotética */
 	
 	/* Estimamos el parámetro 'p' con: sum(sample[i]) / (n*N) */
-	p = 0.0;
+	pSample = 0.0;
 	for (i=0 ; i<N ; i++)
-		p += sample[i];
-	p = p / (double) (n*N);
-	pSample = p;
+		pSample += sample[i];
+	pSample = pSample / (double) (n*N);
+	p = pSample;
+	
+	printf ("Para la muestra dada se estimó un  p = %.8f\n", pSample);
 	
 	/* Calculamos las probabilidades P(X=x) con la Bin(n,p) estimada */
-	prob_bin (n, p, prob);
+	prob_bin (n, pSample, probSample);
 	
 	
 	/** Test de Ji-2 */
 	
 	/* Metemos en 't' el estadístico de la muestra verdadera */
-	t = ji_cuadrado (sample, N, I, NI, prob);
+	t = ji_cuadrado (sample, N, I, NI, probSample);
 	
 	/* Simulamos */
 	for (i=0 ; i<NSIM ; i++) {
 		
-		/* Simulamos una muestra según la distr. hip. 'prob' */
-		for (j=0 ; j<n ; j++)
-			sim[j] = gen_prob (X, prob, NI);
+		/* Simulamos una muestra según la distr. estimada
+		 * con los verdaderos valores muestrales */
+		for (j=0 ; j<N ; j++)
+			sim[j] = gen_prob (X, probSample, NI);
+		
+		/* Estimamos el parámetro 'p' con: sum(sim[i]) / (n*N) */
+		pSim = 0.0;
+		for (j=0 ; j<N ; j++)
+			pSim += sim[j];
+		pSim = pSim / (double) (n*N);
+		
+		printf ("#%u pSim = %.4f\n", i, pSim);
+		
+		/* Recalculamos las probabilidades con este 'p' simulado */
+		prob_bin (n, pSim, probSim);
 		
 		/* Evaluamos su estadístico */
-		Ti = ji_cuadrado (sim, n, I, NI, prob);
+		Ti = ji_cuadrado (sim, N, I, NI, probSim);
 		
 		if (Ti > t)
 			p_value += 1.0;
@@ -111,6 +127,9 @@ int main (void)
 	
 	/** Test de K-S */
 	
+	/* El parámetro 'p' de la distribución hip. F en principio es pSample */
+	p = pSample;
+	
 	/* Metemos en 'd' el estadístico de la muestra verdadera */
 	d = kolmogorov_smirnov (sample, N, F);
 	
@@ -122,7 +141,7 @@ int main (void)
 		 * que usa el parámetro 'p' estimado con la muestra */
 		for (j=0 ; j<N ; j++)
 			sim[j] = gen_bin (n, pSample);
-		
+			
 		/* Estimamos el parámetro 'p' con: sum(sim[i]) / (n*N) */
 		p = 0.0;
 		for (j=0 ; j<N ; j++)

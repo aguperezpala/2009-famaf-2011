@@ -211,7 +211,7 @@ static unsigned int find_interval (double Xj, double *I, unsigned int k)
 double ji_cuadrado (double *sample, unsigned int n,
 		    double *I, unsigned int k, double *p)
 {
-	double t = 0.0;
+	double t = 0.0, aux = 0.0;
 	unsigned int i = 0, j = 0;
 	unsigned int *N = NULL;
 	
@@ -226,8 +226,19 @@ double ji_cuadrado (double *sample, unsigned int n,
 		N[i]++;
 	}
 	
-	for (i=0 ; i<k ; i++)
+	for (i=0 ; i<k ; i++) {
+		show ("N[%u] = %u\n", i, N[i]);
+		show ("p[%u] = %.4f\n", i, p[i]);
+	}
+	
+	show ("%s","Calculando estadístico T con Ji-2\n");
+	for (i=0 ; i<k ; i++) {
 		t += pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]);
+		
+		aux = pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]);
+		show ("T#%u = %.4f\n", i, aux);
+	}
+	show ("%s", "\n");
 	
 	return t;
 }
