@@ -13,6 +13,11 @@
 #define SAMPLE_STATISTICAL_VALUES_H
 
 
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~  MEDIA  -  VARIANZA  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
 /* Media muestral para el n-esimo paso. Toma una nueva muestra Xn y
  * devuelve el "proximo" valor de la media muestral = X(n)
  */
@@ -37,6 +42,12 @@ void reset_media_m (void);
 void reset_var_m (void);
 
 
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~  BOOTSTRAP --> ERROR CUADRATICO MEDIO  ~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
 /* Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
  * del estimador "Media muestral" con respecto a la verdadera media µ,
  * dada una muestra de 'n' datos pasada como primer argumento
@@ -47,5 +58,36 @@ void reset_var_m (void);
  */
 double bootstrap_media (double *sample, unsigned int n);
 
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~  SIMULACION  -  ESTADISTICOS  ~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
+/* Estadístico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
+ * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
+ * p[i] == "probabilidad de caer en el intervalo Int(i)"
+ *
+ * Se define al i-esimo intervalo Int(i) como:
+ *	Int(i) = [ I[i] , I[i+1] )
+ * y para el ultimo intervalo vale que:
+ *	Int(k) = [ I[k] , inifinity )
+ *
+ * PRE: sample != NULL	&&  n == #(sample)
+ *	I != NULL	&&  k == #(I)
+ *	p != NULL	&&  k == #(p)
+ */
+double ji_cuadrado (double *sample, unsigned int n,
+		    double *I, unsigned int k, double *p);
+
+
+/* Estadístico del test Kolmogorov-Smirnov de una muestra 'sample' con 'n' datos
+ * 'F' es la función de probabilidad teórica a aplicar sobre los datos
+ *
+ * PRE: sample != NULL  &&  n == #(sample)
+ *	F != NULL
+ */
+ double kolmogorov_smirnov (double *sample, unsigned int n, double (*F) (double));
 
 #endif

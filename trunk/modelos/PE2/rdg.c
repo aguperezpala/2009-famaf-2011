@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
+#include <assert.h>
 #include <sys/time.h>
 #include <limits.h>
 #include "rdg.h"
@@ -165,4 +166,65 @@ double gen_exp (double lambda)
 /*	U = mzran13()/(double)ULONG_MAX;
 */		
 	return (-log(U)/lambda);
+}
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~ ### NORMAL ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+/* Genera un valor según la distribución normal de parámetros (mu,sigma)
+ *
+ * NOTE: en llamadas sucesivas esta funcion debe ser invocada
+ *	 con los mismo valores para mu y sigma.
+ *	 Si se decide cambiar estos parametros, el primer valor
+ *	 generado tras el cambio debe ser descartado
+ *
+ * mu = media poblacional
+ * sigma = desviacion estandard poblacional
+ *
+ * PRE: sigma >= 0
+ */
+double gen_normal (double mu, double sigma)
+{
+	double	U = 0.0,
+		V1 = 0.0, V2 = 0.0,	/* Coordenadas del punto en el circulo */
+		S = 0.0;		/* V1^2 + V2^2 */
+	/* V.A. ~ N(0,1) a generar */
+	static double	X = 0.0,
+			Y = 0.0;
+	static bool lazy = false;
+	
+	assert (sigma >= 0.0);
+	
+	if (lazy) {
+		/* Devolvemos el segundo resultado generado la llamada ant. */
+		lazy = false;
+		return Y;
+	
+	} else {
+		/* Esta vez hay que laburar, generamos dos valores */
+		do {
+			/* Generamos el punto dentro del circulo de radio 1 */
+			U = mzran13() / (double) ULONG_MAX;
+			V1 = (U * 2.0) - 1.0;
+			U = mzran13() / (double) ULONG_MAX;
+			V2 = (U * 2.0) - 1.0;
+			
+			S = V1*V1 + V2*V2;
+			
+		} while (S > 1.0);
+		
+		/* Primer valor generado */
+		X = sqrt (-2.0 * log(S) / S) * V1;
+		X = X * sigma + mu;
+		
+		/* Segundo valor generado */
+		Y = sqrt (-2.0 * log(S) / S) * V2;
+		Y = Y * sigma + mu;
+		
+		lazy = true;
+		return X;
+	}
 }

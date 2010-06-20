@@ -15,7 +15,6 @@ int read_double_file(double *arr, int size, const char *fname)
 {
 	int result = 0;
 	FILE *file = NULL;
-	char line[50];
 	int i = 0;
 	
 	assert(fname != NULL);
