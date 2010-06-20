@@ -5,6 +5,11 @@
 typedef unsigned long int unlong;
 
 
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~ GENERADORES DE VALORES ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
 /* Long period (> 2 × 10^18) random number generator of L’Ecuyer with Bays-Durham
  * shuffle and added safeguards. Returns a uniform random deviate between 0.0
  * and 1.0 (exclusive of the endpoint values).
@@ -28,6 +33,21 @@ void ran13set(unlong xx, unlong yy, unlong zz, long nn);
 
 /* generadora de una v.a. exponencial con parametro lambda */
 double gen_exp(double lambda);
+
+
+/* Genera un valor según la distribución normal de parámetros (mu,sigma)
+ *
+ * NOTE: en llamadas sucesivas esta funcion debe ser invocada
+ *	 con los mismo valores para mu y sigma.
+ *	 Si se decide cambiar estos parametros, el primer valor
+ *	 generado tras el cambio debe ser descartado
+ *
+ * mu = media poblacional
+ * sigma = desviacion estandard poblacional
+ *
+ * PRE: sigma >= 0
+ */
+double gen_normal (double mu, double sigma);
 
 
 #endif
