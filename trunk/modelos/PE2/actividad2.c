@@ -102,7 +102,6 @@ double act2_get_mediana(double *arr, int size)
 */
 double act2_get_q1(double *arr, int size)
 {
-	int i = 0;
 	double auxArr[size];
 	
 	assert(arr != NULL);
@@ -127,7 +126,6 @@ double act2_get_q1(double *arr, int size)
 */
 double act2_get_q3(double *arr, int size)
 {
-	int i = 0;
 	double auxArr[size];
 	double *arrPtr = NULL;
 	
