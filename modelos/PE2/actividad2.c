@@ -73,22 +73,80 @@ double act2_get_min(double *arr, int size)
 double act2_get_mediana(double *arr, int size)
 {
 	int i = 0;
+	double auxArr[size];
 	
 	assert(arr != NULL);
 	
 	/* lo ordenamos */
-	sort_doubles(arr,size);
+	memcpy(auxArr, arr, size * sizeof(*arr));
+	sort_doubles(auxArr,size);
 	
 	if((size % 2) == 0) {
 		/* es par != devolvemos el promedio de los 2 valores del medio */
 		i = ((int) size/2);
-		return ((arr[i - 1] + arr[i])/(double) 2.0);
+		return ((auxArr[i - 1] + auxArr[i])/(double) 2.0);
 	} else {
 		/* es impar => devolvemos simplemente el valor del medio */
 		i = (int) size/2;
-		return arr[i];
+		return auxArr[i];
 	}
 	return -1;
+}
+
+/* Funcion que calcula el primer cuartil (q1) dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	q1(arr)
+*/
+double act2_get_q1(double *arr, int size)
+{
+	int i = 0;
+	double auxArr[size];
+	
+	assert(arr != NULL);
+	
+	/* lo ordenamos */
+	memcpy(auxArr, arr, size * sizeof(*arr));
+	sort_doubles(auxArr,size);
+	if (size % 2 == 0)
+		size = size/2;
+	else
+		size = (size/2) + 1;
+	
+	return act2_get_mediana(auxArr, size);
+}
+
+/* Funcion que calcula el segundo cuartil (q3) dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	q3(arr)
+*/
+double act2_get_q3(double *arr, int size)
+{
+	int i = 0;
+	double auxArr[size];
+	double *arrPtr = NULL;
+	
+	
+	assert(arr != NULL);
+	
+	/* lo ordenamos */
+	memcpy(auxArr, arr, size * sizeof(*arr));
+	sort_doubles(auxArr,size);
+	
+	if (size % 2 == 0){
+		size = size/2;
+		arrPtr = &auxArr[size];
+	} else {
+		size = (size/2) + 1;
+		arrPtr = &auxArr[size - 1];
+	}
+	
+	return act2_get_mediana(arrPtr, size);
 }
 
 
@@ -147,8 +205,7 @@ double act2_get_skewness(double *arr, int size)
 {
 	double 	media = 0,
 		varianza = 0,
-		sum1 = 0,
-		sum2 = 0;
+		sum1 = 0;
 	int i = 0;
 	double result = 0;
 	
@@ -161,10 +218,7 @@ double act2_get_skewness(double *arr, int size)
 	for(i = 0; i < size; i++)
 		sum1 += pow(arr[i] - media, 3)/(double)size;
 	
-	for(i = 0; i < size; i++)
-		sum2 += pow(arr[i] - media, 2)/(double)size;
-	
-	result = sum1/(pow(sum2, 1.5));
+	result = sum1/(pow(varianza, 1.5));
 	
 	return result;
 }
