@@ -2,6 +2,8 @@
 #define ACTIVIDAD2_H
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <math.h>
 #include <assert.h>
 
@@ -31,6 +33,24 @@ double act2_get_min(double *arr, int size);
 * 	mediana(arr)
 */
 double act2_get_mediana(double *arr, int size);
+
+/* Funcion que calcula el primer cuartil (q1) dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	q1(arr)
+*/
+double act2_get_q1(double *arr, int size);
+
+/* Funcion que calcula el segundo cuartil (q3) dado un arreglo:
+* REQUIRES:
+* 	arr 	!= NULL
+* 	n 	= size(arr)
+* RETURNS:
+* 	q3(arr)
+*/
+double act2_get_q3(double *arr, int size);
 
 /* Funcion que calcula la media dado un arreglo:
 * REQUIRES:
