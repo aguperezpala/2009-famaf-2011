@@ -135,17 +135,21 @@ static void results_processing (double *sample, unsigned int n)
 		fprintf (fout, "%.8f\t%.8f\n", sample[i-1], sample[i]);
 	fclose (fout);
 	
-	printf ("\nMedia:  \t%.8f"
-		"\nVarianza:\t%.8f\n"
-		"\nMinimo: \t%.8f"
-		"\nMaximo: \t%.8f"
-		"\nMediana:\t%.8f\n"
-		"\nSkewness:\t%.8f\n\n",
+	printf ("\nMedia:     %.8f"
+		"\nVarianza:  %.8f\n"
+		"\nMinimo:    %.8f"
+		"\nMaximo:    %.8f"
+		"\nMediana:   %.8f"
+		"\nQ1:        %.8f"
+		"\nQ3:        %.8f\n"
+		"\nSkewness:  %.8f\n\n",
 		act2_get_media (sample, n),
 		act2_get_varianza (sample, n),
 		act2_get_min (sample, n),
 		act2_get_max (sample, n),
 		act2_get_mediana (sample, n),
+		act2_get_q1 (sample, n),
+		act2_get_q3 (sample, n),
 		act2_get_skewness (sample, n));
 	
 	return;
