@@ -8,7 +8,7 @@
 /* Funcion que genera el valor de la integral en un intervalo entre a y b
  * y la funcion fun.
  */
-static double act4_monte_carlo(double a, double b, double (*fun)(double))
+double act4_monte_carlo(double a, double b, double (*fun)(double))
 {
 	double U = 0;
 	double acum = 0;
