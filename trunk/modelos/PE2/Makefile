@@ -19,6 +19,9 @@ $(TARGET): $(OBJECTS) $(BSTRING_OBJECTS)
 estim_param: file_reader.o actividad2.o actividad3.o results/estim_param.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
+4: calc_pval
+calc_pval: file_reader.o rdg.o ssv.o distrib.o actividad4.o results/calc_pvalues.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 clean:
 	rm -f $(TARGET) .depend *.o p? *~ results/*.o results/*~ alias
