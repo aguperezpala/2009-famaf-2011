@@ -1,7 +1,7 @@
 # Grace project file
 #
 @version 50122
-@page size 480, 384
+@page size 432, 360
 @page scroll 5%
 @page inout 5%
 @link page off
@@ -67,7 +67,7 @@
 @timestamp rot 0
 @timestamp font 0
 @timestamp char size 1.000000
-@timestamp def "Sun Jun 20 20:14:50 2010"
+@timestamp def "Mon Jun 21 01:50:40 2010"
 @r0 off
 @link r0 to g0
 @r0 type above
@@ -114,7 +114,7 @@
 @g0 fixedpoint format general general
 @g0 fixedpoint prec 6, 6
 @with g0
-@    world 0, 0, 1.5, 70
+@    world 0, 0, 1.5, 80
 @    stack world 0, 0, 0, 0
 @    znorm 1
 @    view 0.150000, 0.150000, 1.150000, 0.850000
@@ -196,7 +196,7 @@
 @    yaxis  label color 1
 @    yaxis  label place normal
 @    yaxis  tick on
-@    yaxis  tick major 10
+@    yaxis  tick major 20
 @    yaxis  tick minor ticks 1
 @    yaxis  tick default 6
 @    yaxis  tick place rounded true
@@ -310,9 +310,9 @@
 @    s1 type xy
 @    s1 symbol 0
 @    s1 symbol size 1.000000
-@    s1 symbol color 15
+@    s1 symbol color 3
 @    s1 symbol pattern 1
-@    s1 symbol fill color 15
+@    s1 symbol fill color 3
 @    s1 symbol fill pattern 0
 @    s1 symbol linewidth 1.0
 @    s1 symbol linestyle 1
@@ -322,14 +322,14 @@
 @    s1 line type 2
 @    s1 line linestyle 1
 @    s1 line linewidth 2.0
-@    s1 line color 15
+@    s1 line color 3
 @    s1 line pattern 1
 @    s1 baseline type 0
 @    s1 baseline off
 @    s1 dropline on
 @    s1 fill type 1
 @    s1 fill rule 0
-@    s1 fill color 3
+@    s1 fill color 15
 @    s1 fill pattern 1
 @    s1 avalue off
 @    s1 avalue type 2
@@ -344,7 +344,7 @@
 @    s1 avalue offset 0.000000 , 0.000000
 @    s1 errorbar on
 @    s1 errorbar place both
-@    s1 errorbar color 15
+@    s1 errorbar color 3
 @    s1 errorbar pattern 1
 @    s1 errorbar size 1.000000
 @    s1 errorbar linewidth 1.0
@@ -861,29 +861,29 @@
 @target G0.S1
 @type xy
 0 0
-0.048 0
-0.096 0
-0.144 0
-0.192 3
-0.24 16
-0.288 16
-0.336 36
-0.384 49
-0.432 51
-0.48 68
-0.528 55
-0.576 52
-0.624 41
-0.672 29
-0.72 28
-0.768 19
-0.816 14
-0.864 4
-0.912 7
-0.96 4
-1.008 2
-1.056 2
-1.104 2
-1.152 2
+0.06 0
+0.12 0
+0.18 2
+0.24 17
+0.3 22
+0.36 51
+0.42 69
+0.48 78
+0.54 73
+0.6 54
+0.66 46
+0.72 32
+0.78 24
+0.84 11
+0.9 8
+0.96 5
+1.02 2
+1.08 2
+1.14 4
 1.2 0
+1.26 0
+1.32 0
+1.38 0
+1.44 0
+1.5 0
 &
