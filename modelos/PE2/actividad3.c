@@ -59,8 +59,7 @@ int act3_lnNormal_params(const char *fname, int size)
 	
 	for(i = 0; i < size; i++)
 		mu += log(data[i]);
-	
-	mu = mu/(double)size;
+	mu = mu / (double) size;
 	
 	for(i = 0; i < size; i++)
 		var += pow(log(data[i]) - mu, 2)/(double)size;
@@ -69,8 +68,13 @@ int act3_lnNormal_params(const char *fname, int size)
 	
 	printf("LogNormal params:\nµ:\t%.8f\t\tσ:\t%.8f\n", mu, var);
 	
+/*	Funcion de densidad de la LogNormal para los parametros estimados:
+	(1.16718 * exp (-4.27982 * sqr ( ln(x) + 0.7312))) / x
+*/	
 	return 0;
 }
+
+
 
 /* Funcion que imprime los parametros de la gamma.
 * REQUIRES:

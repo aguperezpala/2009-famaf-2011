@@ -14,8 +14,14 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS) $(BSTRING_OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
+
+3: estim_param
+estim_param: file_reader.o actividad2.o actividad3.o results/estim_param.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+
 clean:
-	rm -f $(TARGET) .depend *.o p? *~ alias
+	rm -f $(TARGET) .depend *.o p? *~ results/*.o results/*~ alias
 
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend
