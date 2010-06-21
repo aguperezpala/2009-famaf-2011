@@ -24,7 +24,8 @@ calc_pval: file_reader.o rdg.o ssv.o distrib.o actividad4.o results/calc_pvalues
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 clean:
-	rm -f $(TARGET) .depend *.o p? *~ results/*.o results/*~ alias
+	rm -f $(TARGET) .depend *.o calc_pval estim_param *~ \
+		results/*.o results/*~ alias
 
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend

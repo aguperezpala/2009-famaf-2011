@@ -106,8 +106,8 @@ int main (void)
 	double I[NI];	/* Intervalos */
 	double p[NI];	/* Probabilidades teoricas de caer en los intervalos */
 	
-	double sample[SAMPLE_SIZE];/* Valores muestrales */
-	double sim[NI];		/* Valores generados en una simulación */
+	double sample[SAMPLE_SIZE];	/* Valores muestrales */
+	double sim[SAMPLE_SIZE];	/* Valores generados en una simulación */
 	
 	/* Estadisticos de Ji-2 */
 	double	Tg  = 0.0,	/* Gamma */
@@ -164,7 +164,7 @@ int main (void)
 	
 	/** Calculamos los estadisticos de las distribuciones segun K-S */
 	
-	printf ("Estadisticos segun Kolmogorov-Smirnov:\n");
+	printf ("\n\nEstadisticos segun Kolmogorov-Smirnov:\n");
 	
 	Dg = kolmogorov_smirnov (sample, SAMPLE_SIZE, F_Gamma);
 	printf ("\tGamma D = %.8f\n", Dg);
