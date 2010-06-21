@@ -22,7 +22,7 @@ double act4_monte_carlo(double a, double b, double (*fun)(double))
 		acum += fun(U);
 	}
 	
-	return (acum/(double)MONTECARLO_BOUND);
+	return (acum/(double)MONTECARLO_BOUND)*(b-a);
 }
 
 /* Funcion que genera intervalos.
@@ -72,7 +72,7 @@ void act4_gen_pi(double *p, double *I, int n, double (*fun)(double))
 	
 	delta = I[1] - I[0];
 	for (i = 0; i < n; i++) {
-		p[i] = act4_monte_carlo(I[i], I[i] + delta, fun) * delta;
+		p[i] = act4_monte_carlo(I[i], I[i] + delta, fun);
 	}
 	
 	
