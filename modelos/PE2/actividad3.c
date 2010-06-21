@@ -27,6 +27,11 @@ int act3_normal_params(const char *fname, int size)
 	var = act2_get_varianza(data, size);
 	var = ((double)(size-1)/(double)size) * var;
 	var = sqrt(var);
+	
+	/*	Funcion de densidad de la Normal para los parametros estimados:
+	2.3372 * exp(-17.1609 * sqr(x-0.509346))
+	
+	*/	
 	printf("Normal params:\nµ:\t%.8f\t\tσ:\t%.8f\n",act2_get_media(data,size),
 		var);
 	
@@ -107,6 +112,8 @@ int act3_gamma_params(const char *fname, int size)
 	
 	T = log(mu) - T;
 	T = pow(T, -1);
+	/* 
+	(x^((alpha = 8.913)-1) e^(-x/(beta = 0.0571457)) (0.0571457)^(-8.913))/(33483.67682051149)
 	
 	printf("Gamma params:\nT:\t%.8f\t\tX(n):\t%.8f\n", T, mu);
 	
