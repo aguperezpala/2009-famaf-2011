@@ -112,9 +112,10 @@ int act3_gamma_params(const char *fname, int size)
 	
 	T = log(mu) - T;
 	T = pow(T, -1);
-	/* 
-	(x^((alpha = 8.913)-1) e^(-x/(beta = 0.0571457)) (0.0571457)^(-8.913))/(33483.67682051149)
-	
+	/* funcion de densidad para la funcion gamma con parametros
+	* alfa = 8.913		beta = 0.057145742
+	x^(( 8.913)-1) * exp(-x/(0.0571457)) * 119951465170,848193661/33483.67682051149
+	*/
 	printf("Gamma params:\nT:\t%.8f\t\tX(n):\t%.8f\n", T, mu);
 	
 	return 0;
