@@ -12,6 +12,11 @@
 #define MONTECARLO_BOUND	1000
 
 
+/* Funcion que genera el valor de la integral en un intervalo entre a y b
+* y la funcion de densidad fun por medio del metodo de montecarlo.
+*/
+double act4_monte_carlo(double a, double b, double (*fun)(double));
+
 /* Funcion que genera intervalos.
  * REQUIRES:
  * 	begin 		comienzo del intervalo
