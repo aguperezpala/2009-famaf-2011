@@ -1,6 +1,10 @@
+#ifndef _GNU_SOURCE
+  #define _GNU_SOURCE
+#endif
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <limits.h>
 #include "../file_reader.h"
 #include "../rdg.h"
 #include "../ssv.h"
@@ -23,6 +27,9 @@
 /* Extremo derecho del mayor intervalo */
 #define  UI	1.5
 
+/* # de simulaciones a realizar para ajustar el p-valor */
+#define  NUM_SIM  10000
+
 /* Freedom Degree's for the Gamma function Ji-2 aprox distribution */
 #define  FRDG	NI-2
 
@@ -31,6 +38,12 @@
 
 /* Freedom Degree's for the LogNormal function Ji-2 aprox distribution */
 #define  FRDLN	NI-2
+
+
+
+/** ### UNIFORME [0..1] */
+static double Uniform (double x) { return x; }
+
 
 
 /** ### GAMMA */
@@ -106,6 +119,9 @@ int main (void)
 		Dn  = 0.0,	/* Normal */
 		Dln = 0.0;	/* LogNormal */
 	
+	/* Estadistico de K-S para una simulacion */
+	double Di = 0.0;
+	unsigned int i = 0, j = 0;
 	
 	/* Introducimos los valores muestrales en el arreglo "sample" */
 	read_double_file (sample, SAMPLE_SIZE, SAMPLE_FILE);
@@ -147,10 +163,64 @@ int main (void)
 	
 	
 	/** Calculamos los estadisticos de las distribuciones segun K-S */
-	for (i=0)
-	act4_monte_carlo ();
-	double kolmogorov_smirnov (double *sample, unsigned int n, double (*F) (double));
 	
+	printf ("Estadisticos segun Kolmogorov-Smirnov:\n");
+	
+	Dg = kolmogorov_smirnov (sample, SAMPLE_SIZE, F_Gamma);
+	printf ("\tGamma D = %.8f\n", Dg);
+	
+	Dn = kolmogorov_smirnov (sample, SAMPLE_SIZE, F_Normal);
+	printf ("\tNorm D = %.8f\n", Dn);
+	
+	Dln = kolmogorov_smirnov (sample, SAMPLE_SIZE, F_LogNormal);
+	printf ("\tLogNorm D = %.8f\n", Dln);
+	
+	printf ("\nValores-p segun K-S:\n");
+	
+	/* Gamma */
+	p_value = 0.0;
+	for (i=0 ; i<NUM_SIM ; i++) {
+		
+		for (j=0 ; j < SAMPLE_SIZE ; j++)
+			sim[j] = mzran13() / (double) ULONG_MAX;
+		
+		Di = kolmogorov_smirnov (sim, SAMPLE_SIZE, Uniform);
+		
+		if (Di > Dg)
+			p_value += 1.0;
+	}
+	p_value = p_value / (double) NUM_SIM;
+	printf ("\tGamma p-val = %.8f\n", p_value);
+	
+	/* Normal */
+	p_value = 0.0;
+	for (i=0 ; i<NUM_SIM ; i++) {
+		
+		for (j=0 ; j < SAMPLE_SIZE ; j++)
+			sim[j] = mzran13() / (double) ULONG_MAX;
+		
+		Di = kolmogorov_smirnov (sim, SAMPLE_SIZE, Uniform);
+		
+		if (Di > Dn)
+			p_value += 1.0;
+	}
+	p_value = p_value / (double) NUM_SIM;
+	printf ("\tNorm p-val = %.8f\n", p_value);
+	
+	/* LogNormal */
+	p_value = 0.0;
+	for (i=0 ; i<NUM_SIM ; i++) {
+		
+		for (j=0 ; j < SAMPLE_SIZE ; j++)
+			sim[j] = mzran13() / (double) ULONG_MAX;
+		
+		Di = kolmogorov_smirnov (sim, SAMPLE_SIZE, Uniform);
+		
+		if (Di > Dln)
+			p_value += 1.0;
+	}
+	p_value = p_value / (double) NUM_SIM;
+	printf ("\tLogNorm p-val = %.8f\n", p_value);
 	
 	return 0;
 }
