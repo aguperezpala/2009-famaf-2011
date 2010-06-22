@@ -246,7 +246,8 @@ double ji_cuadrado (double *sample, unsigned int n,
 
 
 
-/* Compara dos 'doubles' pasados por referencia y devuelve:
+/* Para poder usar qsort en K-S
+ * Compara dos 'doubles' pasados por referencia y devuelve:
  * a > b  =>  1
  * a = b  =>  0
  * a < b  => -1
@@ -278,6 +279,7 @@ static int cmp_dbl (const void *a, const void *b)
 	qsort (sample, (size_t) n, sizeof (double), cmp_dbl);
 	
 	/* Buscamos el estadístico */
+	d = -DBL_MAX;
 	for (j = 0.0 ; j < m ; j += 1.0) {
 		
 		Fj = F (sample[(int)j]);

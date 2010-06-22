@@ -108,10 +108,10 @@ int act3_gamma_params(const char *fname, int size)
 	mu = act2_get_media(data,size);
 	
 	for(i = 0; i < size; i++)
-		T += log(data[i])/(double)size;
+		T += log(data[i]) / (double)size;
 	
 	T = log(mu) - T;
-	T = pow(T, -1);
+	T = 1.0 / T;
 	/* funcion de densidad para la funcion gamma con parametros
 	* alfa = 8.913		beta = 0.057145742
 	x^(( 8.913)-1) * exp(-x/(0.0571457)) * 119951465170,848193661/33483.67682051149

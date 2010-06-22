@@ -31,6 +31,20 @@ unlong mzran13 (void);
 void ran13set(unlong xx, unlong yy, unlong zz, long nn);
 
 
+
+/* Genera un valor de entre los listados en 'X',
+ * segun la distribucion arbitraria especificada en 'p'
+ *
+ * Emplea el método de la transformada inversa
+ *
+ * PRE: X != NULL
+ *	p != NULL
+ *	n == #(X) == #(p)
+ */
+double gen_prob (double *X, double *p, unsigned int n);
+
+
+
 /* generadora de una v.a. exponencial con parametro lambda */
 double gen_exp(double lambda);
 

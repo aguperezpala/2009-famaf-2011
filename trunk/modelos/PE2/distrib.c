@@ -1,16 +1,23 @@
+#include <assert.h>
 #include "distrib.h"
 
-/* 	Returns the value n! as a floating-point number. */
+
+
+
+
+
+
+/* Returns the value n! as a floating-point number. */
 float factrl(int n)
 {
 	float gammln(float xx);
 	static int ntop=4;
-//	Fill in table only as required.
+	/*	Fill in table only as required.*/
 	static float a[33]={1.0,1.0,2.0,6.0,24.0};
 	int j;
 	if (n < 0) printf("Negative factorial in routine factrl");
 	if (n > 32) return exp(gammln(n+1.0));
-/*	Larger value than size of table is required. Actually, this big a value is going to overflow
+	/*	Larger value than size of table is required. Actually, this big a value is going to overflow
 	on many computers, but no harm in trying.
 	Fill in table up to desired value.*/
 	while (ntop<n) {
@@ -26,7 +33,8 @@ float bico(int n, int k)
 {
 	float factln(int n);
 	return floor(0.5+exp(factln(n)-factln(k)-factln(n-k)));
-//	The floor function cleans up roundoff error for smaller values of n and k.
+	/* The floor function cleans up roundoff error
+	* for smaller values of n and k. */
 }
 
 
@@ -34,13 +42,18 @@ float bico(int n, int k)
 float factln(int n)
 {
 	float gammln(float xx);
-	//	A static array is automatically initialized to zero.
+	/* A static array is automatically initialized to zero.*/
 	static float a[101];
+	
 	if (n < 0) printf("Negative factorial in routine factln");
 	if (n <= 1) return 0.0;
-	if (n <= 100) return a[n] ? a[n] : (a[n]=gammln(n+1.0)); /*In range of table.
-		Out of range of table.*/
-		else return gammln(n+1.0);
+	
+	if (n <= 100)
+		/* In range of table */
+		return a[n] ? a[n] : (a[n]=gammln(n+1.0));
+	else
+		/* Out of range */
+		return gammln(n+1.0);
 }
 
 
@@ -49,18 +62,18 @@ float factln(int n)
 float gammln(float xx)
 {
 	/* Internal arithmetic will be done in double precision, a nicety that 
-	 * you can omit if five-figure accuracy is good enough. */
+	* you can omit if five-figure accuracy is good enough. */
 	double x,y,tmp,ser;
 	static double cof[6]={76.18009172947146,-86.50532032941677,
-	24.01409824083091,-1.231739572450155,
-	0.1208650973866179e-2,-0.5395239384953e-5};
-	int j;
-	y=x=xx;
-	tmp=x+5.5;
-	tmp -= (x+0.5)*log(tmp);
-	ser=1.000000000190015;
-	for (j=0;j<=5;j++) ser += cof[j]/++y;
-	return -tmp+log(2.5066282746310005*ser/x);
+		24.01409824083091,-1.231739572450155,
+  0.1208650973866179e-2,-0.5395239384953e-5};
+  int j;
+  y=x=xx;
+  tmp=x+5.5;
+  tmp -= (x+0.5)*log(tmp);
+  ser=1.000000000190015;
+  for (j=0;j<=5;j++) ser += cof[j]/++y;
+  return -tmp+log(2.5066282746310005*ser/x);
 }
 
 
@@ -106,14 +119,14 @@ void gcf(float *gammcf, float a, float x, float *gln)
 	int i;
 	float an,b,c,d,del,h;
 	*gln=gammln(a);
-	//Set up for evaluating continued fraction
+	/* Set up for evaluating continued fraction */
 	b=x+1.0-a;
-	//by modified Lentz’s method (§5.2)
+	/* by modified Lentz’s method (§5.2) */
 	c=1.0/FPMIN;
-	//with b0 = 0.
+	/* with b0 = 0. */
 	d=1.0/b;
 	h=d;
-	//Iterate to convergence.
+	/* Iterate to convergence. */
 	for (i=1;i<=ITMAX;i++) {
 		an = -i*(i-a);
 		b += 2.0;
@@ -127,30 +140,14 @@ void gcf(float *gammcf, float a, float x, float *gln)
 		if (fabs(del-1.0) < EPS) break;
 	}
 	if (i > ITMAX) printf("a too large, ITMAX too small in gcf");
-	//Put factors in front.
+	/* Put factors in front. */
 	*gammcf=exp(-x+a*log(x)-(*gln))*h;
 }
 
 
 
-/* Returns the incomplete gamma function P (a, x). */
-float gammp(float a, float x)
-{
-	float gamser,gammcf,gln;
-	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammp");
-//	Use the series representation.
-	if (x < (a+1.0)) {
-		gser(&gamser,a,x,&gln);
-		return gamser;
-//		Use the continued fraction representation
-	} else {
-		gcf(&gammcf,a,x,&gln);
-//		and take its complement.
-		return 1.0-gammcf;
-	}
-}
 
-
+/** ### BETA */
 /* Returns the value of the beta function B(z, w). */
 float beta(float z, float w)
 {
@@ -159,25 +156,59 @@ float beta(float z, float w)
 }
 
 
+/** ### GAMMA */
+/* Returns the incomplete gamma function P (a, x). */
+float gammp(float a, float x)
+{
+	float gamser,gammcf,gln;
+	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammp");
+	
+	if (x < (a+1.0)) {
+		/* Use the series representation. */
+		gser(&gamser,a,x,&gln);
+		return gamser;
+	} else {
+		/* Use the continued fraction representation... */
+		gcf(&gammcf,a,x,&gln);
+		/* ... and take its complement. */
+		return 1.0-gammcf;
+	}
+}
+
+
+
 /* Returns the incomplete gamma function Q(a, x) ≡ 1 − P (a, x). */
 float gammq(float a, float x)
 {
 	float gamser,gammcf,gln;
+	
 	if (x < 0.0 || a <= 0.0) printf("Invalid arguments in routine gammq");
-//	Use the series representation
+	
 	if (x < (a+1.0)) {
+		/* Use the series representation... */
 		gser(&gamser,a,x,&gln);
-//		and take its complement.
+		/* ... and take its complement. */
 		return 1.0-gamser;
-//		Use the continued fraction representation.
 	} else {
+		/* Use the continued fraction representation. */
 		gcf(&gammcf,a,x,&gln);
 		return gammcf;
 	}
 }
 
+
+/** ### Ji-2 */
 double chi_cuadrada(int gradosLibertad, double value)
 {
 	return gammq((double)gradosLibertad/(double)2.0,value/(double)2.0);
+}
+
+
+/** ### Error function */
+float erff(float x)
+{
+	/* Returns the error function erf(x) */
+	float gammp(float a, float x);
+	return x < 0.0 ? -gammp(0.5,x*x) : gammp(0.5,x*x);
 }
 

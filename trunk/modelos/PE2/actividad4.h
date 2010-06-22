@@ -40,5 +40,16 @@ int act4_gen_intervals(double begin, double end, int n, double *I);
 void act4_gen_pi(double *p, double *I, int n, double (*fun)(double));
 
 
+/* Genera valores en Xvals que están en el medio de los intervalos
+ * representados en el arreglo I.
+ * De tal forma: I[j] < Xvals[j] < I[j+1]
+ *
+ * PRE:	I != NULL
+ *	Xvals != NULL
+ *	NI == size(I) == size(Xvals)
+ */
+void act4_gen_values (double *I, unsigned int NI, double *Xvals);
+
+
 
 #endif
