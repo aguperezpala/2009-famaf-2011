@@ -13,7 +13,6 @@ double act4_monte_carlo(double a, double b, double (*fun)(double))
 	double U = 0;
 	double acum = 0;
 	int i = 0;
-	//MONTECARLO_BOUND
 	
 	for(i = 0; i < MONTECARLO_BOUND; i++) {
 		U = mzran13()/(double)ULONG_MAX;
@@ -79,3 +78,25 @@ void act4_gen_pi(double *p, double *I, int n, double (*fun)(double))
 }
 
 
+/* Genera valores en Xvals que están en el medio de los intervalos
+ * representados en el arreglo I.
+ * De tal forma: I[j] < Xvals[j] < I[j+1]
+ *
+ * PRE:	I != NULL
+ *	Xvals != NULL
+ *	NI == size(I) == size(Xvals)
+ */
+void act4_gen_values (double *I, unsigned int NI, double *Xvals)
+{
+	unsigned int i = 0;
+	
+	assert (I != NULL);
+	assert (Xvals != NULL);
+	
+	for (i=0 ; i<NI-1 ; i++) {
+		Xvals[i] = (I[i] + I[i+1]) / 2.0;
+	}
+	Xvals[NI-1] = I[NI-1] + (I[NI-1] - I[NI-2]) / 2.0;
+	
+	return;
+}

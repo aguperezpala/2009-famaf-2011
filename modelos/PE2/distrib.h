@@ -13,7 +13,9 @@
 /* Number near the smallest representable */
 #define FPMIN 1.0e-30
 
-/** ### Funciones auxiliares ### */
+
+
+/** ### Funciones auxiliares (ignorar) ### */
 
 /* Returns the value n! as a floating-point number. */
 float factrl(int n);
@@ -52,6 +54,9 @@ float gammq(float a, float x);
 
 /* generadora de chi-cuadrada */
 double chi_cuadrada(int gradosLibertad, double value);
+
+/* Error function */
+float erff (float x);
 
 
 

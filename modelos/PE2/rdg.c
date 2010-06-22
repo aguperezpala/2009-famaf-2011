@@ -140,6 +140,48 @@ float ran2(long *idum)
 }
 
 
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~ ### PROBABILIDAD ARBITRARIA ### ~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+/* Genera un valor de entre los listados en 'X',
+ * segun la distribucion arbitraria especificada en 'p'
+ *
+ * Emplea el método de la transformada inversa
+ *
+ * PRE: X != NULL
+ *	p != NULL
+ *	n == #(X) == #(p)
+ */
+double gen_prob (double *X, double *p, unsigned int n)
+{
+	double F = 0.0, U = 0.0;
+	unsigned int i = 0;
+	
+	assert (X != NULL);
+	assert (p != NULL);
+	
+	U = mzran13()/(double)ULONG_MAX;
+	F = p[i];
+	
+	while (U > F && i<n) {
+		i++;
+		F += p[i];
+	}
+/*	1 == sum(p[i]) => No deberíamos habernos pasado de n 
+	assert (i<n);
+*/
+	/* Es aserción puede ser rota a raíz de que se usan aproximaciones 
+	 * para generar los arreglos p[] */
+	if (i == n) i = n-1;
+	
+	return X[i];
+}
+
+
 /** ------------------------------------------------------------------------- */
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ### EXP ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /** ------------------------------------------------------------------------- */
