@@ -29,7 +29,7 @@ int act3_normal_params(const char *fname, int size)
 	var = sqrt(var);
 	
 	/*	Funcion de densidad de la Normal para los parametros estimados:
-	2.3372 * exp(-17.1609 * sqr(x-0.509346))
+	2.3372 * exp(-17.1609 * sqr(x-0.509346)) σ
 	
 	*/	
 	printf("Normal params:\nµ:\t%.8f\t\tσ:\t%.8f\n",act2_get_media(data,size),
