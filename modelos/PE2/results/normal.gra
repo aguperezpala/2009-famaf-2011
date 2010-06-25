@@ -59,7 +59,7 @@
 @default char size 1.000000
 @default symbol size 1.000000
 @default sformat "%.8g"
-@background color 0
+@background color 7
 @page background fill on
 @timestamp off
 @timestamp 0.03, 0.03
@@ -67,7 +67,7 @@
 @timestamp rot 0
 @timestamp font 0
 @timestamp char size 1.000000
-@timestamp def "Mon Jun 21 00:47:59 2010"
+@timestamp def "Fri Jun 25 19:08:34 2010"
 @r0 off
 @link r0 to g0
 @r0 type above
@@ -114,7 +114,7 @@
 @g0 fixedpoint format general general
 @g0 fixedpoint prec 6, 6
 @with g0
-@    world 0, 0, 1.5, 90
+@    world 0, 0, 1.25, 80
 @    stack world 0, 0, 0, 0
 @    znorm 1
 @    view 0.150000, 0.150000, 1.150000, 0.850000
@@ -137,15 +137,16 @@
 @    xaxis  bar color 1
 @    xaxis  bar linestyle 1
 @    xaxis  bar linewidth 1.0
-@    xaxis  label ""
+@    xaxis  label "Tiempo medio de espera en el sistema (horas)"
 @    xaxis  label layout para
-@    xaxis  label place auto
+@    xaxis  label place spec
+@    xaxis  label place 0.000000, 0.080000
 @    xaxis  label char size 1.000000
-@    xaxis  label font 0
+@    xaxis  label font 4
 @    xaxis  label color 1
 @    xaxis  label place normal
 @    xaxis  tick on
-@    xaxis  tick major 0.5
+@    xaxis  tick major 0.12
 @    xaxis  tick minor ticks 1
 @    xaxis  tick default 6
 @    xaxis  tick place rounded true
@@ -162,7 +163,7 @@
 @    xaxis  tick minor size 0.500000
 @    xaxis  ticklabel on
 @    xaxis  ticklabel format general
-@    xaxis  ticklabel prec 5
+@    xaxis  ticklabel prec 2
 @    xaxis  ticklabel formula ""
 @    xaxis  ticklabel append ""
 @    xaxis  ticklabel prepend ""
@@ -188,32 +189,33 @@
 @    yaxis  bar color 1
 @    yaxis  bar linestyle 1
 @    yaxis  bar linewidth 1.0
-@    yaxis  label ""
+@    yaxis  label "Cantidad de clientes"
 @    yaxis  label layout para
-@    yaxis  label place auto
+@    yaxis  label place spec
+@    yaxis  label place 0.000000, 0.100000
 @    yaxis  label char size 1.000000
-@    yaxis  label font 0
+@    yaxis  label font 4
 @    yaxis  label color 1
 @    yaxis  label place normal
 @    yaxis  tick on
-@    yaxis  tick major 20
+@    yaxis  tick major 10
 @    yaxis  tick minor ticks 1
 @    yaxis  tick default 6
 @    yaxis  tick place rounded true
-@    yaxis  tick in
-@    yaxis  tick major size 1.000000
+@    yaxis  tick out
+@    yaxis  tick major size 0.520000
 @    yaxis  tick major color 1
 @    yaxis  tick major linewidth 1.0
-@    yaxis  tick major linestyle 1
-@    yaxis  tick major grid off
+@    yaxis  tick major linestyle 3
+@    yaxis  tick major grid on
 @    yaxis  tick minor color 1
 @    yaxis  tick minor linewidth 1.0
 @    yaxis  tick minor linestyle 1
 @    yaxis  tick minor grid off
-@    yaxis  tick minor size 0.500000
+@    yaxis  tick minor size 0.260000
 @    yaxis  ticklabel on
-@    yaxis  ticklabel format general
-@    yaxis  ticklabel prec 5
+@    yaxis  ticklabel format decimal
+@    yaxis  ticklabel prec 0
 @    yaxis  ticklabel formula ""
 @    yaxis  ticklabel append ""
 @    yaxis  ticklabel prepend ""
@@ -257,30 +259,30 @@
 @    frame pattern 1
 @    frame background color 0
 @    frame background pattern 0
-@    s0 hidden false
+@    s0 hidden true
 @    s0 type xy
 @    s0 symbol 0
 @    s0 symbol size 1.000000
-@    s0 symbol color 3
+@    s0 symbol color 1
 @    s0 symbol pattern 1
-@    s0 symbol fill color 3
+@    s0 symbol fill color 1
 @    s0 symbol fill pattern 0
 @    s0 symbol linewidth 1.0
 @    s0 symbol linestyle 1
 @    s0 symbol char 65
 @    s0 symbol char font 0
 @    s0 symbol skip 0
-@    s0 line type 2
+@    s0 line type 1
 @    s0 line linestyle 1
-@    s0 line linewidth 2.0
-@    s0 line color 3
+@    s0 line linewidth 1.0
+@    s0 line color 1
 @    s0 line pattern 1
 @    s0 baseline type 0
 @    s0 baseline off
-@    s0 dropline on
-@    s0 fill type 1
+@    s0 dropline off
+@    s0 fill type 0
 @    s0 fill rule 0
-@    s0 fill color 15
+@    s0 fill color 1
 @    s0 fill pattern 1
 @    s0 avalue off
 @    s0 avalue type 2
@@ -295,7 +297,7 @@
 @    s0 avalue offset 0.000000 , 0.000000
 @    s0 errorbar on
 @    s0 errorbar place both
-@    s0 errorbar color 3
+@    s0 errorbar color 1
 @    s0 errorbar pattern 1
 @    s0 errorbar size 1.000000
 @    s0 errorbar linewidth 1.0
@@ -304,136 +306,107 @@
 @    s0 errorbar riser linestyle 1
 @    s0 errorbar riser clip off
 @    s0 errorbar riser clip length 0.100000
-@    s0 comment "Histogram from G0.S1"
+@    s0 comment "sample.dat"
 @    s0 legend  ""
-@    s1 hidden true
-@    s1 type xy
-@    s1 symbol 0
-@    s1 symbol size 1.000000
-@    s1 symbol color 1
-@    s1 symbol pattern 1
-@    s1 symbol fill color 1
-@    s1 symbol fill pattern 0
-@    s1 symbol linewidth 1.0
-@    s1 symbol linestyle 1
-@    s1 symbol char 65
-@    s1 symbol char font 0
-@    s1 symbol skip 0
-@    s1 line type 1
-@    s1 line linestyle 1
-@    s1 line linewidth 1.0
-@    s1 line color 1
-@    s1 line pattern 1
-@    s1 baseline type 0
-@    s1 baseline off
-@    s1 dropline off
-@    s1 fill type 0
-@    s1 fill rule 0
-@    s1 fill color 1
-@    s1 fill pattern 1
-@    s1 avalue off
-@    s1 avalue type 2
-@    s1 avalue char size 1.000000
-@    s1 avalue font 0
-@    s1 avalue color 1
-@    s1 avalue rot 0
-@    s1 avalue format general
-@    s1 avalue prec 3
-@    s1 avalue prepend ""
-@    s1 avalue append ""
-@    s1 avalue offset 0.000000 , 0.000000
-@    s1 errorbar on
-@    s1 errorbar place both
-@    s1 errorbar color 1
-@    s1 errorbar pattern 1
-@    s1 errorbar size 1.000000
-@    s1 errorbar linewidth 1.0
-@    s1 errorbar linestyle 1
-@    s1 errorbar riser linewidth 1.0
-@    s1 errorbar riser linestyle 1
-@    s1 errorbar riser clip off
-@    s1 errorbar riser clip length 0.100000
-@    s1 comment "sample.dat"
-@    s1 legend  ""
-@    s2 hidden false
-@    s2 type xy
-@    s2 symbol 0
-@    s2 symbol size 1.000000
-@    s2 symbol color 2
-@    s2 symbol pattern 1
-@    s2 symbol fill color 2
-@    s2 symbol fill pattern 0
-@    s2 symbol linewidth 1.0
-@    s2 symbol linestyle 1
-@    s2 symbol char 65
-@    s2 symbol char font 0
-@    s2 symbol skip 0
-@    s2 line type 2
-@    s2 line linestyle 1
-@    s2 line linewidth 3.0
-@    s2 line color 2
-@    s2 line pattern 1
-@    s2 baseline type 0
-@    s2 baseline off
-@    s2 dropline on
-@    s2 fill type 0
-@    s2 fill rule 0
-@    s2 fill color 1
-@    s2 fill pattern 1
-@    s2 avalue off
-@    s2 avalue type 2
-@    s2 avalue char size 1.000000
-@    s2 avalue font 0
-@    s2 avalue color 1
-@    s2 avalue rot 0
-@    s2 avalue format general
-@    s2 avalue prec 3
-@    s2 avalue prepend ""
-@    s2 avalue append ""
-@    s2 avalue offset 0.000000 , 0.000000
-@    s2 errorbar on
-@    s2 errorbar place both
-@    s2 errorbar color 2
-@    s2 errorbar pattern 1
-@    s2 errorbar size 1.000000
-@    s2 errorbar linewidth 1.0
-@    s2 errorbar linestyle 1
-@    s2 errorbar riser linewidth 1.0
-@    s2 errorbar riser linestyle 1
-@    s2 errorbar riser clip off
-@    s2 errorbar riser clip length 0.100000
-@    s2 comment ""
-@    s2 legend  ""
+@    s3 hidden false
+@    s3 type xy
+@    s3 symbol 0
+@    s3 symbol size 1.000000
+@    s3 symbol color 3
+@    s3 symbol pattern 1
+@    s3 symbol fill color 3
+@    s3 symbol fill pattern 0
+@    s3 symbol linewidth 1.0
+@    s3 symbol linestyle 1
+@    s3 symbol char 65
+@    s3 symbol char font 0
+@    s3 symbol skip 0
+@    s3 line type 2
+@    s3 line linestyle 1
+@    s3 line linewidth 2.0
+@    s3 line color 3
+@    s3 line pattern 1
+@    s3 baseline type 0
+@    s3 baseline off
+@    s3 dropline on
+@    s3 fill type 1
+@    s3 fill rule 0
+@    s3 fill color 15
+@    s3 fill pattern 1
+@    s3 avalue off
+@    s3 avalue type 2
+@    s3 avalue char size 1.000000
+@    s3 avalue font 0
+@    s3 avalue color 1
+@    s3 avalue rot 0
+@    s3 avalue format general
+@    s3 avalue prec 3
+@    s3 avalue prepend ""
+@    s3 avalue append ""
+@    s3 avalue offset 0.000000 , 0.000000
+@    s3 errorbar on
+@    s3 errorbar place both
+@    s3 errorbar color 3
+@    s3 errorbar pattern 1
+@    s3 errorbar size 1.000000
+@    s3 errorbar linewidth 1.0
+@    s3 errorbar linestyle 1
+@    s3 errorbar riser linewidth 1.0
+@    s3 errorbar riser linestyle 1
+@    s3 errorbar riser clip off
+@    s3 errorbar riser clip length 0.100000
+@    s3 comment "Histogram from G0.S1"
+@    s3 legend  ""
+@    s4 hidden false
+@    s4 type xy
+@    s4 symbol 0
+@    s4 symbol size 1.000000
+@    s4 symbol color 2
+@    s4 symbol pattern 1
+@    s4 symbol fill color 2
+@    s4 symbol fill pattern 0
+@    s4 symbol linewidth 1.0
+@    s4 symbol linestyle 1
+@    s4 symbol char 65
+@    s4 symbol char font 0
+@    s4 symbol skip 0
+@    s4 line type 2
+@    s4 line linestyle 1
+@    s4 line linewidth 3.0
+@    s4 line color 2
+@    s4 line pattern 1
+@    s4 baseline type 0
+@    s4 baseline off
+@    s4 dropline on
+@    s4 fill type 0
+@    s4 fill rule 1
+@    s4 fill color 11
+@    s4 fill pattern 1
+@    s4 avalue off
+@    s4 avalue type 2
+@    s4 avalue char size 1.000000
+@    s4 avalue font 0
+@    s4 avalue color 1
+@    s4 avalue rot 0
+@    s4 avalue format general
+@    s4 avalue prec 3
+@    s4 avalue prepend ""
+@    s4 avalue append ""
+@    s4 avalue offset 0.000000 , 0.000000
+@    s4 errorbar on
+@    s4 errorbar place both
+@    s4 errorbar color 2
+@    s4 errorbar pattern 1
+@    s4 errorbar size 1.000000
+@    s4 errorbar linewidth 1.0
+@    s4 errorbar linestyle 1
+@    s4 errorbar riser linewidth 1.0
+@    s4 errorbar riser linestyle 1
+@    s4 errorbar riser clip off
+@    s4 errorbar riser clip length 0.100000
+@    s4 comment "normal.gra"
+@    s4 legend  ""
 @target G0.S0
-@type xy
-0 0
-0.06 0
-0.12 0
-0.18 2
-0.24 17
-0.3 22
-0.36 51
-0.42 69
-0.48 78
-0.54 73
-0.6 54
-0.66 46
-0.72 32
-0.78 24
-0.84 11
-0.9 8
-0.96 5
-1.02 2
-1.08 2
-1.14 4
-1.2 0
-1.26 0
-1.32 0
-1.38 0
-1.44 0
-1.5 0
-&
-@target G0.S1
 @type xy
 0 0.69691283
 1 0.46591294
@@ -936,32 +909,61 @@
 498 0.91114277
 499 0.43753273
 &
-@target G0.S2
+@target G0.S3
 @type xy
--1e-06 0.54474291
-0.05999904 1.4618203
-0.11999908 3.4668538
-0.17999912 7.2663488
-0.23999916 13.459723
-0.2999992 22.034092
-0.35999924 31.878168
-0.41999928 40.759676
-0.47999932 46.05823
-0.53999936 45.996304
-0.5999994 40.595489
-0.65999944 31.664439
-0.71999948 21.827549
-0.77999952 13.297724
-0.83999956 7.1596007
-0.8999996 3.4067437
-0.95999964 1.4326143
-1.0199997 0.5324248
-1.0799997 0.17487448
-1.1399998 0.050761417
-1.1999998 0.013022076
-1.2599998 0.0029523364
-1.3199999 0.00059154889
-1.3799999 0.00010475014
-1.44 1.6392973e-05
-1.5 2.2672532e-06
+0 0
+0.06 0
+0.12 0
+0.18 2
+0.24 17
+0.3 22
+0.36 51
+0.42 69
+0.48 78
+0.54 73
+0.6 54
+0.66 46
+0.72 32
+0.78 24
+0.84 11
+0.9 8
+0.96 5
+1.02 2
+1.08 2
+1.14 4
+1.2 0
+1.26 0
+1.32 0
+1.38 0
+1.44 0
+1.5 0
+&
+@target G0.S4
+@type xy
+0 0.81712866
+0.06 2.1927629
+0.12 5.2003446
+0.18 10.899632
+0.24 20.189741
+0.3 33.051328
+0.36 47.817438
+0.42 61.139648
+0.48 69.087392
+0.54 68.994409
+0.6 60.89312
+0.66 47.49652
+0.72 32.7412
+0.78 19.946497
+0.84 10.739347
+0.9 5.1100882
+0.96 2.1489095
+1.02 0.79863272
+1.08 0.26231028
+1.14 0.07614173
+1.2 0.019533021
+1.26 0.0044284864
+1.32 0.00088732038
+1.38 0.00015712483
+1.44 2.4589429e-05
+1.5 3.4008798e-06
 &
