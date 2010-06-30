@@ -53,28 +53,26 @@ int act4_gen_intervals(double begin, double end, int n, double *I)
 }
 
 /* Funcion que genera las pi para un arreglo de intervalos determinados
-* y una funcion especifica.
-* REQUIRES:
-* 	p		arreglo donde se van almacenar las pi
-* 	I		arreglo de intervalos
-* 	n		cantidad de intervalos
-* 	fun		funcion de densidad
-*/
+ * y una funcion especifica.
+ * REQUIRES:
+ * 	p		arreglo donde se van almacenar las pi
+ * 	I		arreglo de intervalos
+ * 	n		cantidad de intervalos
+ * 	fun		funcion acumulada
+ */
 void act4_gen_pi(double *p, double *I, int n, double (*fun)(double))
 {
-	double	delta = 0;
 	int 	i = 0;
 	
 	assert(I != NULL);
 	assert(p != NULL);
 	assert(fun != NULL);
 	
-	delta = I[1] - I[0];
-	for (i = 0; i < n; i++) {
-		p[i] = act4_monte_carlo(I[i], I[i] + delta, fun);
-	}
+	for (i = 0; i < n-1; i++)
+		p[i] = fun (I[i+1]) - fun (I[i]);
+	p[n-1] = 1.0 - fun(I[n-1]);
 	
-	
+	return;
 }
 
 

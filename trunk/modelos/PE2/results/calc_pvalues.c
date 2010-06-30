@@ -31,13 +31,13 @@
 #define  NUM_SIM  10000
 
 /* Freedom Degree's for the Gamma function Ji-2 aprox distribution */
-#define  FRDG	NI-1-2
+#define  FRDG	NI-1
 
 /* Freedom Degree's for the Normal function Ji-2 aprox distribution */
-#define  FRDN	NI-1-2
+#define  FRDN	NI-1
 
 /* Freedom Degree's for the LogNormal function Ji-2 aprox distribution */
-#define  FRDLN	NI-1-2
+#define  FRDLN	NI-1
 
 
 
@@ -47,60 +47,71 @@ static double Uniform (double x) { return x; }
 
 
 /** ### GAMMA */
-/* Funcion de densidad de una Gamma(α,β) con α ~ 8.95 y β ~ 0.0569102 */
+/* Funcion de densidad de una Gamma(α,β) con α ~ 8.95 y β ~ 0.0569102
 static double Gamma (double x)
 {
 	assert (x > 0.0);
 	
 	return 3819000.0 * pow (M_E, -17.5716 * x) * pow (x, 7.95);
 	
-}
+}*/
 
 /* Funcion acumulada de una Gamma(α,β) con α ~ 8.95 y β ~ 0.0569102 */
 static double F_Gamma (double x)
 {
 	static double a = 8.95, b = 0.0569102;
 	return gammp (a, x/b);
-	
-	/* Alternativa: estimación con Montecarlo */
-	return act4_monte_carlo ((double) LI, x, Gamma);
 }
 
 
 
 /** ### NORMAL */
-/* Funcion de densidad de una Normal(μ,σ) con μ ~ 0.50934599 y σ ~ 0.17069248 */
+/* Funcion de densidad de una Normal(μ,σ) con μ ~ 0.50934599 y σ ~ 0.17069248
 static double Normal (double x)
 {
 	return 2.3372 * exp(-17.1609 * pow (x-0.509346, 2.0));
-}
+}*/
 
 /* Funcion acumulada de una Normal(μ,σ) con μ ~ 0.50934599 y σ ~ 0.17069248 */
 static double F_Normal (double x)
 {
-	return 0.5 * (erff (4.14258*(x-0.509346)) + 1.0);
-	
-	/* Alternativa: estimación con Montecarlo */
-	return act4_monte_carlo ((double) LI, x, Normal);
+	return 0.5 * (erf (4.14258*(x-0.509346)) + 1.0);
 }
 
 
 
 /** ### LOG-NORMAL */
-/* Funcion densidad de una LogNormal(μ,σ) con μ ~ -0.7312493 y σ ~ 0.3418444 */
+/* Funcion densidad de una LogNormal(μ,σ) con μ ~ -0.7312493 y σ ~ 0.3418444
 static double LogNormal (double x)
 {
 	return 1.16718 * exp (-4.27982 * pow (log(x) + 0.7312, 2.0)) / x;
-}
+}*/
 
 /* Funcion acumulada de una LogNormal(μ,σ) con μ ~ -0.7312493 y σ ~ 0.3418444 */
 static double F_LogNormal (double x)
 {
-	return 0.5 * (erff (2.0685 * (log (x) + 0.731249)) + 1.0);
-	
-	/* Alternativa: estimación con Montecarlo */
-	return act4_monte_carlo ((double) LI, x, LogNormal);
+	return 0.5 * (erf (2.0685 * (log (x) + 0.731249)) + 1.0);
 }
+
+
+
+
+/* Guarda las probabilidades listadas en 'prob', que son 'n' en total,
+ * dentro de un archivo de nombre 'fname'
+ *
+ * PRE: fname != NULL
+ *	prob  != NULL && #(prob) == n
+ */
+static void save_interval_probabilities (const char* fname, double *prob, n)
+{
+	FILE *f = NULL;
+	
+	assert (fname != NULL);
+	assert (prob  != NULL);
+	
+	return;
+}
+
 
 
 
@@ -108,11 +119,15 @@ static double F_LogNormal (double x)
 /** ### MAIN */
 int main (void)
 {
+	FILE *fprob = NULL;
 	double p_value = 0.0;
 	
-	double I[NI];	/* Intervalos */
-	double p[NI];	/* Probabilidades teoricas de caer en los intervalos */
+	double I[NI];		/* Intervalos */
 	double Xvals[NI];	/* Valores internos a los intervalos */
+	/* Probabilidades teoricas de caer en los intervalos */
+	double pGamma[NI];
+	double pNormal[NI];
+	double pLogNormal[NI];
 	
 	double sample[SAMPLE_SIZE];	/* Valores muestrales */
 	double sim[SAMPLE_SIZE];	/* Valores generados en una simulación */
@@ -146,18 +161,19 @@ int main (void)
 	printf ("Estadísticos según Ji-2:\n");
 	
 	/* Prob. de caer en cada intervalo según Gamma(α,β) */
-	act4_gen_pi (p, I, NI, Gamma);
-	Tg = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, p);
+	act4_gen_pi (pGamma, I, NI, F_Gamma);
+	Tg = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, pGamma);
 	printf ("\tGamma T = %.8f\n", Tg),
-			
+	save_interval_probabilities (pGamma, NI);
+	
 	/* Prob. de caer en cada intervalo según Normal(μ,σ) */
-	act4_gen_pi (p, I, NI, Normal);
-	Tn = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, p);
+	act4_gen_pi (pNormal, I, NI, F_Normal);
+	Tn = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, pNormal);
 	printf ("\tNorm T = %.8f\n", Tn);
 			
 	/* Prob. de caer en cada intervalo según LogNormal(μ,σ) */
-	act4_gen_pi (p, I, NI, LogNormal);
-	Tln = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, p);
+	act4_gen_pi (pLogNormal, I, NI, F_LogNormal);
+	Tln = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, pLogNormal);
 	printf ("\tLogNorm T = %.8f\n", Tln);
 	
 	
@@ -179,14 +195,13 @@ int main (void)
 	printf ("\nValores-p según Ji-2 (con simulación)\n");
 	
 	/* Gamma */
-	act4_gen_pi (p, I, NI, Gamma);	/* p <-- distr. gamma */
 	p_value = 0.0;
 	for (i=0 ; i<NUM_SIM ; i++) {
 		
 		for (j=0 ; j < SAMPLE_SIZE ; j++)
-			sim[j] = gen_prob (Xvals, p, NI);
+			sim[j] = gen_prob (Xvals, pGamma, NI);
 		
-		Ti = ji_cuadrado (sim, SAMPLE_SIZE, I, NI, p);
+		Ti = ji_cuadrado (sim, SAMPLE_SIZE, I, NI, pGamma);
 		
 		if (Ti > Tg)
 			p_value += 1.0;
@@ -195,14 +210,13 @@ int main (void)
 	printf ("\tGamma p-val = %.8f\n", p_value);
 	
 	/* Normal */
-	act4_gen_pi (p, I, NI, Normal); /* p <-- distr. normal */
 	p_value = 0.0;
 	for (i=0 ; i<NUM_SIM ; i++) {
 		
 		for (j=0 ; j < SAMPLE_SIZE ; j++)
-			sim[j] = gen_prob (Xvals, p, NI);
+			sim[j] = gen_prob (Xvals, pNormal, NI);
 		
-		Ti = ji_cuadrado (sim, SAMPLE_SIZE, I, NI, p);
+		Ti = ji_cuadrado (sim, SAMPLE_SIZE, I, NI, pNormal);
 		
 		if (Ti > Tn)
 			p_value += 1.0;
@@ -211,21 +225,19 @@ int main (void)
 	printf ("\tNormal p-val = %.8f\n", p_value);
 	
 	/* LogNormal */
-	act4_gen_pi (p, I, NI, LogNormal); /* p <-- distr. lognormal */
 	p_value = 0.0;
 	for (i=0 ; i<NUM_SIM ; i++) {
 		
 		for (j=0 ; j < SAMPLE_SIZE ; j++)
-			sim[j] = gen_prob (Xvals, p, NI);
+			sim[j] = gen_prob (Xvals, pLogNormal, NI);
 		
-		Ti = ji_cuadrado (sim, SAMPLE_SIZE, I, NI, p);
+		Ti = ji_cuadrado (sim, SAMPLE_SIZE, I, NI, pLogNormal);
 		
 		if (Ti > Tln)
 			p_value += 1.0;
 	}
 	p_value = p_value / (double) NUM_SIM;
 	printf ("\tLogNormal p-val = %.8f\n", p_value);
-	
 	
 	
 	
