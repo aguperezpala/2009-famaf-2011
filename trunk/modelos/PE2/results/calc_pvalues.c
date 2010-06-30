@@ -96,18 +96,32 @@ static double F_LogNormal (double x)
 
 
 
-/* Guarda las probabilidades listadas en 'prob', que son 'n' en total,
+/* Guarda los valores probabiliisticos listados en 'prob', que son 'n' en total,
  * dentro de un archivo de nombre 'fname'
+ * Aniade el mensaje 'msg' al comienzo del archivo (sii 'msg' != NULL)
  *
  * PRE: fname != NULL
  *	prob  != NULL && #(prob) == n
  */
-static void save_interval_probabilities (const char* fname, double *prob, n)
+static void save_probabilities (const char* fname, double *prob,
+				unsigned int n, const char *msg)
 {
 	FILE *f = NULL;
+	unsigned int i = 0;
 	
 	assert (fname != NULL);
 	assert (prob  != NULL);
+	
+	f = fopen (fname,"w");
+	assert (f != NULL);
+	
+	if (msg != NULL)
+		fprintf (f, "%s\n", msg);
+	
+	for (i=0 ; i<n ; i++)
+		fprintf (f, "%u) %.8f\n", i, (double) SAMPLE_SIZE * prob[i]);
+	
+	fclose (f);
 	
 	return;
 }
@@ -119,7 +133,6 @@ static void save_interval_probabilities (const char* fname, double *prob, n)
 /** ### MAIN */
 int main (void)
 {
-	FILE *fprob = NULL;
 	double p_value = 0.0;
 	
 	double I[NI];		/* Intervalos */
@@ -164,17 +177,25 @@ int main (void)
 	act4_gen_pi (pGamma, I, NI, F_Gamma);
 	Tg = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, pGamma);
 	printf ("\tGamma T = %.8f\n", Tg),
-	save_interval_probabilities (pGamma, NI);
+	save_probabilities ("Gamma_interval_probs.dat", pGamma, NI,
+			    "Probabilities for defined intervals according to "
+			    "the Gamma distribution\n");
 	
 	/* Prob. de caer en cada intervalo según Normal(μ,σ) */
 	act4_gen_pi (pNormal, I, NI, F_Normal);
 	Tn = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, pNormal);
 	printf ("\tNorm T = %.8f\n", Tn);
-			
+	save_probabilities ("Normal_interval_probs.dat", pNormal, NI,
+			    "Probabilities for defined intervals according to "
+			    "the Normal distribution\n");
+	
 	/* Prob. de caer en cada intervalo según LogNormal(μ,σ) */
 	act4_gen_pi (pLogNormal, I, NI, F_LogNormal);
 	Tln = ji_cuadrado (sample, SAMPLE_SIZE, I, NI, pLogNormal);
 	printf ("\tLogNorm T = %.8f\n", Tln);
+	save_probabilities ("LogNormal_interval_probs.dat", pLogNormal, NI,
+			    "Probabilities for defined intervals according to "
+			    "the LogNormal distribution\n");
 	
 	
 	printf ("\nValores-p según Ji-2 (con aproximación)\n");
