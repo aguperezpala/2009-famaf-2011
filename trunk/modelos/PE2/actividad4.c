@@ -25,15 +25,15 @@ double act4_monte_carlo(double a, double b, double (*fun)(double))
 }
 
 /* Funcion que genera intervalos.
-* REQUIRES:
-* 	begin 		comienzo del intervalo
-*	end		fin del intervalo
-*	n		cantidad de intervalos
-*	I		arreglo donde se va a llenar
-* RETURNS:
-* 	< 0		on error
-* 	0		if success
-*/
+ * REQUIRES:
+ * 	begin 		comienzo del intervalo
+ *	end		fin del intervalo
+ *	n		cantidad de intervalos
+ *	I		arreglo donde se va a llenar
+ * RETURNS:
+ * 	< 0		on error
+ * 	0		if success
+ */
 int act4_gen_intervals(double begin, double end, int n, double *I)
 {
 	double delta = 0;
@@ -53,7 +53,8 @@ int act4_gen_intervals(double begin, double end, int n, double *I)
 }
 
 /* Funcion que genera las pi para un arreglo de intervalos determinados
- * y una funcion especifica.
+ * y una funcion de distribucion acumulada pasada como argumento.
+ *
  * REQUIRES:
  * 	p		arreglo donde se van almacenar las pi
  * 	I		arreglo de intervalos

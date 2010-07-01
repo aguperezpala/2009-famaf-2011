@@ -1,25 +1,25 @@
 Estadísticos según Ji-2:
-	Gamma T = 18.17995059
-	Norm T = 127.93357767
-	LogNorm T = 21.07446884
+	Gamma T = 18.43580782
+	Norm T = 128.45116639
+	LogNorm T = 21.17637825
 
 Valores-p según Ji-2 (con aproximación)
-	Gamma p-val = 0.69526750
+	Gamma p-val = 0.78137040
 	Norm p-val = 0.00000000
-	LogNorm p-val = 0.51614022
+	LogNorm p-val = 0.62829947
 
 Valores-p según Ji-2 (con simulación)
-	Gamma p-val = 0.47710000
-	Normal p-val = 0.16420000
-	LogNormal p-val = 0.46610000
+	Gamma p-val = 0.57780000
+	Normal p-val = 0.50530000
+	LogNormal p-val = 0.47590000
 
 
 Estadísticos según Kolmogorov-Smirnov:
 	Gamma D = 0.02135111
-	Norm D = 0.06239674
+	Norm D = 0.06239673
 	LogNorm D = 0.03443693
 
 Valores-p según K-S:
-	Gamma p-val = 0.97420000
-	Norm p-val = 0.03580000
-	LogNorm p-val = 0.58140000
+	Gamma p-val = 0.97410000
+	Norm p-val = 0.03690000
+	LogNorm p-val = 0.58210000
