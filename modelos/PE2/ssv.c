@@ -184,12 +184,18 @@ double bootstrap_media (double *sample, unsigned int n)
  */
 static unsigned int find_interval (double Xj, double *I, unsigned int k)
 {
-	unsigned int i = 0;
+	unsigned int i = 0, step = 0;
 	
 	assert (I != NULL);
 	
-	while (i<k-1 && Xj > I[i+1]-DBL_EPSILON)
-		i++;
+	i = step = k/2;
+	while (i < k-1 && ! (I[i] <= Xj && Xj < I[i+1]) ) {
+		step = MAX (1, step/2);
+		if (I[i] <= Xj)
+			i += step;
+		else
+			i -= step;
+	}
 	
 	return i;
 }
@@ -211,7 +217,7 @@ static unsigned int find_interval (double Xj, double *I, unsigned int k)
 double ji_cuadrado (double *sample, unsigned int n,
 		    double *I, unsigned int k, double *p)
 {
-	double t = 0.0, aux = 0.0;
+	double t = 0.0, aux = aux = 0.0;
 	unsigned int i = 0, j = 0;
 	unsigned int *N = NULL;
 	
@@ -226,18 +232,20 @@ double ji_cuadrado (double *sample, unsigned int n,
 		N[i]++;
 	}
 	
+#ifdef _VERBOSE
 	for (i=0 ; i<k ; i++) {
 		show ("N[%u] = %u\n", i, N[i]);
 		show ("p[%u] = %.4f\n", i, p[i]);
 	}
-	
 	show ("%s","Calculando estadístico T con Ji-2\n");
+#endif
+	
 	for (i=0 ; i<k ; i++) {
 		t += pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]);
-		
-		aux = pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]);
-		show ("T#%u = %.4f\n", i, aux);
+		show ("T#%u = %.4f\n", i,
+		      pow (N[i] - (double) n * p[i], 2.0) / ((double) n * p[i]););
 	}
+	
 	show ("%s", "\n");
 	
 	return t;
