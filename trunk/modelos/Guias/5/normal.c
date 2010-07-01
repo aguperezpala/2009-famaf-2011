@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <limits.h>
 #include "rdg.h"
 
 
@@ -49,15 +50,15 @@ static double gen_absZ (void)
  * Mejorada:                                                                  */
 		if (!lazy) {
 			/* Hay que generar ambas Y1 y Y2 */
-			U1 = ran2 (&idum);
-			U2 = ran2 (&idum);
+			U1 = mzran13() / (double) ULONG_MAX;
+			U2 = mzran13() / (double) ULONG_MAX;
 			t  = - log (U1 * U2);	 /* t = Y1 + Y2 */
-			U1 = ran2 (&idum);
+			U1 = mzran13() / (double) ULONG_MAX;
 			Y1 = t * U1;		 /* Pues Y1 ~ U(0,t) | Y1 + Y2 == t */
 			Y2 = t - Y1;
 		} else {
 			/* Solo hay que generar Y2 */
-			U2 = ran2 (&idum);
+			U2 = mzran13() / (double) ULONG_MAX;
 			Y2 = - log (U2);
 			lazy = false;
 		}
@@ -116,7 +117,7 @@ int main (int argc, char **argv)
 	for (i=0 ; i<ITER ; i++) {
 		
 		absZ = gen_absZ();
-		U = ran2(&idum);
+		U = mzran13() / (double) ULONG_MAX;
 		if (U < 0.5)
 			N =  absZ;
 		else
