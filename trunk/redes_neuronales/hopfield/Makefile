@@ -3,10 +3,10 @@ STOC=stochastic_Hopfield
 SMPL=example_Hopfield
 
 CC=gcc
-CFLAGS = -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 \
-	 -Wall -ansi -pedantic -Wmissing-declarations \
-	 -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement \
-	 -Wmissing-prototypes -Wno-unused-parameter -Werror
+CFLAGS = -Wall -ansi -pedantic \
+	 -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes \
+	 -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes \
+	 -Wdeclaration-after-statement -Wno-unused-parameter -Werror
 #SOURCES=$(shell echo *.c)
 #OBJECTS=$(SOURCES:.c=.o)
 
@@ -33,6 +33,10 @@ test1:
 test2:test
 test:
 	make -C tests test2
+
+test3:
+	make -C tests test3
+	
 
 clean:
 	rm -f .depend $(TARGET) $(DET) $(STOC) $(SMPL) *.o *~
