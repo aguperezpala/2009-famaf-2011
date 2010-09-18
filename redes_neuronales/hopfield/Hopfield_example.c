@@ -40,6 +40,12 @@ static void init_mems (void)
 	long i = 0;
 	uint64_t aux = 0;
 	
+	/* NOTE El no determinismo del scheduler se escurre por aqui en la
+	 * paralelizacion del ciclo, haciendo que las memorias NO se generen
+	 * de manera identica entre llamadas sucesivas al programa.
+	 *	Es decir: invocaciones consecutivas del programa resultaran
+	 * en resultados de XI[] diferentes cada vez.
+	 */
 	#pragma omp parallel for shared(XI)
 	for (i=0 ; i<N*p ; i++) {
 		aux = mzran13() % 2;
@@ -150,8 +156,8 @@ static void neurona_est (unsigned int i)
 	for (j=0 ; j<N ; j++)
 		h += nn * ((double) W[i][j]) * ((double) S[j]);
 	
-	prob = (1.0+tanh(beta*h))/2.0;
-	z = (double)mzran13()/(double)ULONG_MAX;
+	prob = ( 1.0 + tanh (beta*h) ) / 2.0;
+	z = (double) mzran13() / (double) ULONG_MAX;
 	
 	S[i] = z < prob ? 1 : -1;
 	

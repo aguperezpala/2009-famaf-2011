@@ -27,6 +27,10 @@ stoc:$(STOC)
 $(STOC): Hopfield_estocastico.o mzran13.o
 	$(CC) $(CFLAGS) $^ -o $@
 
+test1:
+	make -C tests test1
+
+test2:test
 test:
 	make -C tests test2
 
