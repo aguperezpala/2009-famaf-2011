@@ -12,6 +12,7 @@
 #define  N  (1<<13)
 #define  P  (N/2)
 #define  NU  1
+#define  MAX_ITER  (1<<10)
 
 
 /* Normalización a (-1,+1) */
@@ -22,8 +23,59 @@
 
 
 
+/* Inicializa aleatoriamente las p memorias en XIbit
+ * Considera que cada componente ξ[supra-μ][sub-i] ocupa 1 bit de espacio
+ * PRE: XI != NULL
+ *	XI es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
+ */
+static void init_XIbit (long *XIbit, unsigned int p, unsigned int n)
+{
+	int i = 0;
+	
+	assert (XIbit != NULL);
+	
+	/* NOTE El no determinismo del scheduler se escurre por aqui en la
+	 * paralelizacion del ciclo, haciendo que las memorias NO se generen
+	 * de manera identica entre llamadas sucesivas al programa.
+	 *	Es decir: invocaciones consecutivas del programa resultaran
+	 * en resultados de XI[] diferentes cada vez.
+	 */
+	#pragma omp parallel for shared(XI)
+	for (i=0 ; i<p*n ; i++) {
+		XI[i] = (long) mzran13();
+	}
+	
+	return;
+}
+
+
+/* Inicializa el estado 'Sbit' en una posicion aleatoriamente cercana a XI[nu]
+ * PRE: S != NULL
+ */
+static void init_Sbit (long *Sbit, unsigned int n, unsigned int nu)
+{
+	int i = 0;
+	uint64_t aux = 0;
+	
+	assert (Sbit != NULL);
+	
+	#pragma omp parallel for shared(XI)
+	for (i=0 ; i<n ; i++) {
+		aux = mzran13() % 2;
+
+		S[i] = aux > 0 ? XI[AT(NU,i)] : XI[AT(NU,1)];
+	}
+	
+	return;
+}
+
+
+
+
+
 /* Inicializa aleatoriamente las p memorias en XI
  * PRE: XI != NULL
+ *	sizeof(XI) == 
  */
 static void init_mems (int *XI)
 {
@@ -33,11 +85,11 @@ static void init_mems (int *XI)
 	assert (XI != NULL);
 	
 	/* NOTE El no determinismo del scheduler se escurre por aqui en la
-	* paralelizacion del ciclo, haciendo que las memorias NO se generen
-	* de manera identica entre llamadas sucesivas al programa.
-	*	Es decir: invocaciones consecutivas del programa resultaran
-	* en resultados de XI[] diferentes cada vez.
-	*/
+	 * paralelizacion del ciclo, haciendo que las memorias NO se generen
+	 * de manera identica entre llamadas sucesivas al programa.
+	 *	Es decir: invocaciones consecutivas del programa resultaran
+	 * en resultados de XI[] diferentes cada vez.
+	 */
 	#pragma omp parallel for shared(XI)
 	for (i=0 ; i<N*p ; i++) {
 		aux = mzran13() % 2;
@@ -73,8 +125,8 @@ static void init_state (int *S)
 int main (void)
 {
 	long *Sbit = NULL;	/* Estado con 1 neurona x bit */
-	long *Spos = NULL;	/* Estado con 1 neurona x posicion */
 	long *XIbit = NULL;	/* Memorias con 1 lugar x bit */
+	long *Spos = NULL;	/* Estado con 1 neurona x posicion */
 	long *XIpos = NULL;	/* Memorias con 1 lugar x posicion */
 	int *m = NULL;		/* Superposicion memoria/estado */
 	clock_t start=0, end=0;
@@ -84,17 +136,19 @@ int main (void)
 	Sbit = (long *) calloc (N/MOD, sizeof(long));
 	assert (Sbit != NULL);
 	
-	Spos = (long *) calloc (N, sizeof(long));
-	assert (Spos != NULL);
-	
 	XIbit = (long *) calloc (P*(N/MOD), sizeof(long));
 	assert (XIbit != NULL);
+	
+	Spos = (long *) calloc (N, sizeof(long));
+	assert (Spos != NULL);
 	
 	XIpos = (long *) calloc (P*N, sizeof(long));
 	assert (XIpos != NULL);
 	
+	m = (int *) calloc (P, sizeof(int));
+	assert (m != NULL);
 	
-	/* Inicializamos el estado y las memorias */
+	
 	/** TODO
 	 **	1) Generar rutinas de inicializacion para los arreglos *bit
 	 **	2) Reutilizar init_mems e init_state para los arreglos *pos
@@ -102,6 +156,26 @@ int main (void)
 	 **	4) Realizar MAX_ITER ciclos de actualizacion en cada caso
 	 **	5) Imprimir el (tiempo medido / MAX_ITER) en ambos casos
 	 **/
+	
+	/* ### Bitwise version ### */
+	start = clock ();
+	
+	init_XIbit (XIbit, P, N/MOD);
+	init_Sbit (Sbit, N/MOD, NU);
+	
+	
+	
+	
+	
+	
+	
+	end = clock ();
+	printf ("\nBitwise logic: %.4f seg\n",
+		((double)end-start)/(double)CLOCKS_PER_SEC);
+	
+	
+	
+	
 	init_mems (XI);
 	init_state (S);	
 		
@@ -125,11 +199,15 @@ int main (void)
 	end = clock ();
 	printf ("\nUsando m[mu] de tipo DOUBLE se tardo: %.4f seg\n",
 		(double)end-start/(double)CLOCKS_PER_SEC);
-		
-	free (mem_i);	mem_i = NULL;
-	free (mem_d);	mem_d = NULL;
-	free (XI);	XI    = NULL;
-	free (S);	S     = NULL;
+	
+	
+	
+	
+	free (Sbit);	Sbit     = NULL;
+	free (XIbit);	XIbit    = NULL;
+	free (Spos);	Spos     = NULL;
+	free (XIpos);	XIpos    = NULL;
+	free (m);	m = NULL;
 	
 	return 0;
 }

@@ -13,15 +13,20 @@ test1: ../mzran13.o test1.o
 	$(CC) $(CFLAGS) $^ -o $@
 	echo "Prueba de velocidades de aleatorizacion" ; \
 	./test1 ; rm test1 test1.o ; echo "\nFin de la prueba"
-
+	
 test2: ../mzran13.o test2.o
 	$(CC) $(CFLAGS) $^ -o $@
 	echo "Prueba de velocidades: int vs (64)bit network-state 'S'" \
 	./test2 ; rm test2 test2.o ; echo "\nFin de la prueba"
-
+	
+test2: ../mzran13.o test3.o
+	$(CC) $(CFLAGS) $^ -o $@
+	echo "Prueba de operacion bitxbit" \
+	./test3 ; rm test3 test3.o ; echo "\nFin de la prueba"
+	
 
 clean:
-	rm -f .depend test1 test2 *.o *~
+	rm -f .depend test? *.o *~
 
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend
