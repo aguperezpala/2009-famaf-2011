@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <inttypes.h> /* To have access to uuint64_t */
-#include "../mzran13"
+#include "../mzran13.h"
 
 
 #define  _byte_size  (1<<3)
@@ -10,7 +10,9 @@
 
 uint64_t mask[MOD];
 
-inline static void set_mask ()
+
+static inline void
+set_mask (void)
 {
 	mask[0] = 1;
 	for (int i=1; i<MOD ; i++)
@@ -18,8 +20,10 @@ inline static void set_mask ()
 }
 
 /* Print n as a binary number */
-void printbits (uint64_t n) {
-	uint64_t l = 0;
+static void
+printbits (uint64_t n)
+{
+	uint64_t l = ((uint64_t)1) << 63;
 	short k = 1;
 	
 	while (l > 0) {
@@ -59,9 +63,9 @@ int main (void)
 		tmp &= XI;
 		S |= tmp;
 	}
-	printf ("XI: ");
-	printbits (XI);
-	printf ("S:  ");
+	printf ("XI = %lu:\n", XI);
+	printbits ((uint64_t) XI);
+	printf ("S  = %lu:\n", S);
 	printbits (S);
 	
 	return 0;

@@ -1,9 +1,9 @@
 TEST=test
 CC=gcc
-CFLAGS = -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 \
-	 -Wall -ansi -pedantic -Wmissing-declarations \
-	 -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement \
-	 -Wmissing-prototypes -Wno-unused-parameter -Werror
+CFLAGS = -Wall -ansi -pedantic \
+	 -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes \
+	 -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes \
+	 -Wdeclaration-after-statement -Wno-unused-parameter -Werror
 
 INCLUDES=.depend
 
@@ -11,20 +11,19 @@ all: test2
 
 test1: ../mzran13.o test1.o
 	$(CC) $(CFLAGS) $^ -o $@
-	echo "Prueba de velocidades de aleatorizacion" ; \
-	./test1 ; rm test1 test1.o ; echo "\nFin de la prueba"
+	echo "\nPrueba de velocidades de aleatorizacion" ; \
+	./test1 ; echo "\nFin de la prueba"
 	
 test2: ../mzran13.o test2.o
 	$(CC) $(CFLAGS) $^ -o $@
-	echo "Prueba de velocidades: int vs (64)bit network-state 'S'" \
-	./test2 ; rm test2 test2.o ; echo "\nFin de la prueba"
+	echo "\nPrueba de velocidades: int vs (64)bit network-state 'S'\n" \
+	./test2 ; echo "\nFin de la prueba"
 	
-test2: ../mzran13.o test3.o
+test3: ../mzran13.o test3.o
 	$(CC) $(CFLAGS) $^ -o $@
-	echo "Prueba de operacion bitxbit" \
-	./test3 ; rm test3 test3.o ; echo "\nFin de la prueba"
+	echo "\nPrueba de operacion bitxbit\n" ; \
+	./test3 ; echo "\nFin de la prueba"
 	
-
 clean:
 	rm -f .depend test? *.o *~
 
