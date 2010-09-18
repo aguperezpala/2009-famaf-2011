@@ -35,7 +35,8 @@ double nn = 1.0 / (double)N;
 
 
 /* Inicializa aleatoriamente las p memorias en XI */
-static void init_mems (void)
+static void
+init_mems (void)
 {
 	long i = 0;
 	uint64_t aux = 0;
@@ -55,7 +56,8 @@ static void init_mems (void)
 	return;
 }
 
-static void print_mems (void)
+static void
+print_mems (void)
 {
 	unsigned int mu=0, j=0;
 	
@@ -70,7 +72,8 @@ static void print_mems (void)
 }
 
 
-static void init_sinaptic_mesh (void)
+static void
+init_sinaptic_mesh (void)
 {
 	long i=0, j=0, mu=0, tmp=0;
 	
@@ -94,7 +97,8 @@ static void init_sinaptic_mesh (void)
 	return;
 }
 
-static void print_sinaptic_mesh (void)
+static void
+print_sinaptic_mesh (void)
 {
 	unsigned int i=0, j=0;
 	double n = N;
@@ -119,7 +123,8 @@ static void print_sinaptic_mesh (void)
  * PRE: i < N
  * POS: S[i] fue actualizada según la matriz sináptica W[i][*]
  */
-static void neurona_det (unsigned int i)
+static void
+neurona_det (unsigned int i)
 {
 	long j = 0;
 	double h = 0.0;
@@ -142,7 +147,8 @@ static void neurona_det (unsigned int i)
  * PRE: i < N
  * POS: S[i] fue actualizada según la matriz sináptica W[i][*]
  */
-static void neurona_est (unsigned int i)
+static void
+neurona_est (unsigned int i)
 {
 	long j = 0;
 	double	h = 0.0,
