@@ -16,7 +16,7 @@ test1: ../mzran13.o test1.o
 	
 test2: ../mzran13.o test2.o
 	$(CC) $(CFLAGS) $^ -o $@
-	echo "\nPrueba de velocidades: int vs (64)bit network-state 'S'\n" \
+	echo "\nPrueba de velocidades: long vs (64)bit network-state 'S'\n" ; \
 	./test2 ; echo "\nFin de la prueba"
 	
 test3: ../mzran13.o test3.o

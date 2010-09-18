@@ -6,12 +6,12 @@
 #include "../mzran13.h"
 
 #define  _byte_size  (1<<3)
-#define  MOD  (_byte_size*sizeof(long))
+#define  MOD  (_byte_size*sizeof(unsigned long))
 
 /* N y P deben ser multiplos de MOD */
 #define  N  (1<<13)
 #define  P  (N/2)
-#define  NU  1
+#define  NU  0
 #define  MAX_ITER  (1<<10)
 
 
@@ -25,10 +25,11 @@
 
 /* Inicializa aleatoriamente las p memorias en XIbit
  * Considera que cada componente ξ[supra-μ][sub-i] ocupa 1 bit de espacio
- * PRE: XI != NULL
- *	XI es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
+ * PRE: XIbit != NULL
+ *	XIbit es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
-static void init_XIbit (long *XIbit, unsigned int p, unsigned int n)
+static void
+init_XIbit (unsigned long *XIbit, unsigned int p, unsigned int n)
 {
 	int i = 0;
 	
@@ -40,9 +41,9 @@ static void init_XIbit (long *XIbit, unsigned int p, unsigned int n)
 	 *	Es decir: invocaciones consecutivas del programa resultaran
 	 * en resultados de XI[] diferentes cada vez.
 	 */
-	#pragma omp parallel for shared(XI)
+	#pragma omp parallel for shared(XIbit)
 	for (i=0 ; i<p*n ; i++) {
-		XI[i] = (long) mzran13();
+		XIbit[i] = (unsigned long) mzran13();
 	}
 	
 	return;
@@ -50,20 +51,35 @@ static void init_XIbit (long *XIbit, unsigned int p, unsigned int n)
 
 
 /* Inicializa el estado 'Sbit' en una posicion aleatoriamente cercana a XI[nu]
- * PRE: S != NULL
+ * Considera que cada componente Sbit[sub-i] ocupa 1 bit de espacio
+ * PRE: Sbit != NULL
+ *	Sbit es una vector de dimension [n]
+ *	Sbit[i] == 0 para todo 0 <= i < n
+ *	XIbit != NULL
+ *	XIbit es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
-static void init_Sbit (long *Sbit, unsigned int n, unsigned int nu)
+static void
+init_Sbit (unsigned long *Sbit , unsigned int n,
+	   unsigned long *XIbit, unsigned int p, unsigned int nu)
 {
-	int i = 0;
-	uint64_t aux = 0;
+	int i = 0, j = 0;
+	unsigned long tmp = 0;
 	
-	assert (Sbit != NULL);
+	assert  (Sbit != NULL);
+	assert (XIbit != NULL);
 	
-	#pragma omp parallel for shared(XI)
+	#pragma omp parallel for default(shared) private(i,j,tmp)
 	for (i=0 ; i<n ; i++) {
-		aux = mzran13() % 2;
-
-		S[i] = aux > 0 ? XI[AT(NU,i)] : XI[AT(NU,1)];
+		for (j=0 ; j<MOD ; j++) {
+			if (mzran13() % 2)
+				/* tmp = ξ[nu][j] */
+				tmp = ((unsigned long)1) << (MOD-1-j);
+			else
+				/* tmp = ξ[nu][1] */
+				tmp = ((unsigned long)1) << (MOD-1);
+			tmp &= XIbit[(nu*p)+i];
+			Sbit[i] |= tmp;
+		}
 	}
 	
 	return;
@@ -71,18 +87,18 @@ static void init_Sbit (long *Sbit, unsigned int n, unsigned int nu)
 
 
 
-
-
-/* Inicializa aleatoriamente las p memorias en XI
- * PRE: XI != NULL
- *	sizeof(XI) == 
+/* Inicializa aleatoriamente las p memorias en XIpos
+ * Considera que cada componente ξ[supra-μ][sub-i] ocupa 1 espacio del arreglo
+ * PRE: XIpos != NULL
+ *	XIbit es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
-static void init_mems (int *XI)
+static void
+init_XIpos (unsigned long *XIpos, unsigned int p, unsigned int n)
 {
-	long i = 0;
+	unsigned long i = 0;
 	uint64_t aux = 0;
 	
-	assert (XI != NULL);
+	assert (XIpos != NULL);
 	
 	/* NOTE El no determinismo del scheduler se escurre por aqui en la
 	 * paralelizacion del ciclo, haciendo que las memorias NO se generen
@@ -90,30 +106,40 @@ static void init_mems (int *XI)
 	 *	Es decir: invocaciones consecutivas del programa resultaran
 	 * en resultados de XI[] diferentes cada vez.
 	 */
-	#pragma omp parallel for shared(XI)
-	for (i=0 ; i<N*p ; i++) {
+	#pragma omp parallel for shared(XIpos) private(aux)
+	for (i=0 ; i<n*p ; i++) {
 		aux = mzran13() % 2;
-		XI[AT(i/N,i%N)] = norm(aux);
+		XIpos[AT(i/n,i%n)] = norm(aux);
 	}
 	
 	return;
 }
 
 
-/* Inicializa el estado 'S' en una posicion aleatoriamente cercana a XI[NU]
- * PRE: S != NULL
+
+
+/* Inicializa el estado 'Spos' en una posicion aleatoriamente cercana a XI[nu]
+ * Considera que cada componente Spos[sub-i] ocupa 1 espacio del arreglo
+ * PRE: Spos != NULL
+ *	Spos es una vector de dimension [n]
+ *	Spos[i] == 0 para todo 0 <= i < n
+ *	XIpos != NULL
+ *	XIpos es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
-static void init_state (int *S)
+static void
+init_Spos (unsigned long *Spos , unsigned int n,
+	   unsigned long *XIpos, unsigned int p, unsigned int nu)
 {
 	int i = 0;
 	uint64_t aux = 0;
 	
-	assert (S != NULL);
+	assert  (Spos != NULL);
+	assert (XIpos != NULL);
 	
-	#pragma omp parallel for shared(XI)
-	for (i=0 ; i<N ; i++) {
+	#pragma omp parallel for shared(Spos,XIpos) private(aux)
+	for (i=0 ; i<n ; i++) {
 		aux = mzran13() % 2;
-		S[i] = aux > 0 ? XI[AT(NU,i)] : XI[AT(NU,1)];
+		Spos[i] = aux > 0 ? XIpos[(p*nu)+i] : XIpos[(p*nu)+0];
 	}
 	
 	return;
@@ -124,83 +150,60 @@ static void init_state (int *S)
 
 int main (void)
 {
-	long *Sbit = NULL;	/* Estado con 1 neurona x bit */
-	long *XIbit = NULL;	/* Memorias con 1 lugar x bit */
-	long *Spos = NULL;	/* Estado con 1 neurona x posicion */
-	long *XIpos = NULL;	/* Memorias con 1 lugar x posicion */
+	unsigned long *Sbit = NULL;	/* Estado con 1 neurona x bit */
+	unsigned long *XIbit = NULL;	/* Memorias con 1 lugar x bit */
+	unsigned long *Spos = NULL;	/* Estado con 1 neurona x posicion */
+	unsigned long *XIpos = NULL;	/* Memorias con 1 lugar x posicion */
 	int *m = NULL;		/* Superposicion memoria/estado */
 	clock_t start=0, end=0;
 	
 	
 	/* Generamos los arreglos */
-	Sbit = (long *) calloc (N/MOD, sizeof(long));
+	Sbit = (unsigned long *) calloc (N/MOD, sizeof(unsigned long));
 	assert (Sbit != NULL);
 	
-	XIbit = (long *) calloc (P*(N/MOD), sizeof(long));
+	XIbit = (unsigned long *) calloc (P*(N/MOD), sizeof(unsigned long));
 	assert (XIbit != NULL);
 	
-	Spos = (long *) calloc (N, sizeof(long));
+	Spos = (unsigned long *) calloc (N, sizeof(unsigned long));
 	assert (Spos != NULL);
 	
-	XIpos = (long *) calloc (P*N, sizeof(long));
+	XIpos = (unsigned long *) calloc (P*N, sizeof(unsigned long));
 	assert (XIpos != NULL);
 	
 	m = (int *) calloc (P, sizeof(int));
 	assert (m != NULL);
 	
 	
-	/** TODO
-	 **	1) Generar rutinas de inicializacion para los arreglos *bit
-	 **	2) Reutilizar init_mems e init_state para los arreglos *pos
-	 **	3) Inicializar los arreglos *bit y *pos
-	 **	4) Realizar MAX_ITER ciclos de actualizacion en cada caso
-	 **	5) Imprimir el (tiempo medido / MAX_ITER) en ambos casos
-	 **/
-	
 	/* ### Bitwise version ### */
 	start = clock ();
 	
 	init_XIbit (XIbit, P, N/MOD);
-	init_Sbit (Sbit, N/MOD, NU);
+	init_Sbit (Sbit, N/MOD, XIbit, P, NU);
 	
 	
-	
-	
-	
+	/** TODO: Realizar MAX_ITER ciclos de actualizacion */
 	
 	
 	end = clock ();
 	printf ("\nBitwise logic: %.4f seg\n",
 		((double)end-start)/(double)CLOCKS_PER_SEC);
-	
-	
-	
-	
-	init_mems (XI);
-	init_state (S);	
 		
 		
-	/* Prueba con enteros */
+	
+	/* ### Long version ### */
 	start = clock ();
-	for (mu=0 ; mu<P ; mu++) {
-		for (i=0 ; i<N ; i++)
-			mem_i[mu] += XI[mu] * S[i];
-	}
+	
+	init_XIpos (XIpos, P, N);
+	init_Spos (Spos, N, XIpos, P, NU);
+	
+	
+	/** TODO: Realizar MAX_ITER ciclos de actualizacion */
+	
+	
 	end = clock ();
-	printf ("\nUsando m[mu] de tipo INT se tardo: %.4f seg\n",
-		(double)end-start/(double)CLOCKS_PER_SEC);
-	
-	
-	/* Prueba con doubles */
-	start = clock ();
-	for (mu=0 ; mu<P ; mu++) {
-		mem_d[mu] += XI[mu] * S[i];
-	}
-	end = clock ();
-	printf ("\nUsando m[mu] de tipo DOUBLE se tardo: %.4f seg\n",
-		(double)end-start/(double)CLOCKS_PER_SEC);
-	
-	
+	printf ("\nLong logic: %.4f seg\n",
+		((double)end-start)/(double)CLOCKS_PER_SEC);
 	
 	
 	free (Sbit);	Sbit     = NULL;
