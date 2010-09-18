@@ -62,26 +62,22 @@ static void init_sinaptic_mesh (void)
 {
 	long i=0, j=0, mu=0, tmp=0;
 	
+	/* La siguiente linea es necesaria para que la compilacion
+	 * con la opcion -O3 no haga cagadas */
+	i = i;
+	#pragma omp parallel for shared(W,XI) private(i,j,mu,tmp)
 	for (i=0 ; i<N ; i++) {
-		/** FIXME: La paralelización se queja del scoping de 'i'
-		 **	   diciendo que no fue inicializada y que fue declarada
-		 **	   en la línea de abajo, lo cual no es cierto
-		 **/
-/*		#pragma omp parallel for shared(W,XI) private(i,j,mu,tmp)
-*/		for (j=0 ; j<i ; j++) {
+		for (j=0 ; j<i ; j++) {
 			W[i][j] = W[j][i] = 0.0;
 			for (mu=0 ; mu<p ; mu++) {
-				tmp = XI[i][mu] * XI[j][mu];
+				tmp = XI[mu][i] * XI[mu][j];
 				W[i][j] += tmp;
 				W[j][i] += tmp;
 			}
-			printf ("W[%ld][%ld] = %ld\n", i, j, W[i][j]);
 		}
+		/* assert (j == i); */
+		W[i][j] = 0;
 	}
-	
-	#pragma omp parallel for shared(W)
-	for (i=0 ; i<N ; i++)
-		W[i][i] = 0;
 	
 	return;
 }
