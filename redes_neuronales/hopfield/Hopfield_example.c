@@ -20,12 +20,18 @@
 #define  printsep();  printf ("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"\
 			      "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
+
 /* Neuronas de Hopfield */
 short S[N];
-/* Matriz sinaptica */
-long int W[N][N];
 /* Memorias asociativas (aka "atractores") */
 int XI[p][N];
+/* Matriz sinaptica */
+long int W[N][N];
+/* NOTE La matriz sinaptica se mantendra como suma de enteros sin el factor 1/N
+ * A la hora de utilizar un valor W[i][j] primero se lo debe multiplicar por nn
+ */
+double nn = 1.0 / (double)N;
+
 
 
 /* Inicializa aleatoriamente las p memorias en XI */
@@ -116,7 +122,7 @@ static void neurona_det (unsigned int i)
 	
 	#pragma omp parallel for shared(W,S,i) reduction(+:h)
 	for (j=0 ; j<N ; j++)
-		h += (double) 1.0/N * W[i][j] * S[j];
+		h += nn * ((double) W[i][j]) * ((double) S[j]);
 	S[i] = h >= 0.0 ? 1 : -1;
 	
 	return;
@@ -136,13 +142,13 @@ static void neurona_est (unsigned int i)
 	double	h = 0.0,
 		prob = 0.0,
 		z = 0.0;
-	static double beta = (double)N / (2.0*M_SQRT2*(double)p);
+	static double	beta = (double)N / (2.0*M_SQRT2*(double)p);
 	
 	assert (i < N);
 	
 	#pragma omp parallel for shared(W,S,i) reduction(+:h)
 	for (j=0 ; j<N ; j++)
-		h += W[i][j] * S[j];
+		h += nn * ((double) W[i][j]) * ((double) S[j]);
 	
 	prob = (1.0+tanh(beta*h))/2.0;
 	z = (double)mzran13()/(double)ULONG_MAX;
@@ -155,7 +161,7 @@ static void neurona_est (unsigned int i)
 
 int main (void)
 {
-	unsigned int mu=0, i=0, j=0, k=0;
+	unsigned int i=0, k=0;
 	
 	/* Inicializamos las memorias */
 	init_mems  ();
@@ -166,8 +172,6 @@ int main (void)
 	init_sinaptic_mesh  ();
 	print_sinaptic_mesh ();
 	printsep ();
-	
-	j=j;mu=mu;
 	
 	/* Hacemos algunas actualizaciones determinísticas */
 	for (k=0 ; k<MAX_ITER/2 ; k++) {
