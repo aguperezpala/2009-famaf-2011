@@ -1,3 +1,17 @@
+/*
+ * Simulacion de una red de Hopfield deterministica
+ *
+ * Se comparan dos formas de almacenamiento de los datos de la red:
+ * a) Un elemento por posicion del arreglo:
+ *	En las neuronas S[i] y las memorias XI[i] esto significa que cada
+ *	posicion S[i],XI[i] ∈ {+1,-1}
+ *	Se refiere a estos arreglos con la notacion _pos
+ * b) Un elemento por cada bit de cada posicion del arreglo:
+ *	En las neuronas S[i] y las memorias XI[i] esto significa que cada
+ *	bit de cada posicion S[i],XI[i] ∈ {+1,-1}
+ *	Se refiere a estos arreglos con la notacion _bit
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -148,7 +162,7 @@ init_XIpos (long *XIpos, unsigned int p, unsigned int n)
  *	XIpos es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
 static void
-init_Spos (unsigned long *Spos, unsigned int n,
+init_Spos (long *Spos , unsigned int n,
 	   long *XIpos, unsigned int p, unsigned int nu)
 {
 	int i = 0, base = (int) nu*n;
@@ -168,12 +182,58 @@ init_Spos (unsigned long *Spos, unsigned int n,
 
 
 
+/* Avanza el estado de la red en 1 intervalo temporal, considerando que
+ * cada elemento ocupa UNA POSICION de cada arreglo
+ * Para ello actualiza una vez cada una de las neuronas en Spos,
+ * y deja las nuevas superposiciones registradas en m
+ *
+ * PRE: Spos != NULL
+ *	Spos es un vector de dimension [n]
+ *	Spos[i] == 0 para todo 0 <= i < n
+ *	XIpos != NULL
+ *	XIpos es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
+ *	m != NULL
+ *	m es un vector de dimendion [p]
+ */
+static void
+update_pos_net (long *Spos, long *XIpos, int *m,
+		unsigned int n, unsigned int p)
+{
+	int i = 0, mu = 0;
+	long oldSi = -1, tmp = 0;
+	double h = 0.0;
+	
+	for (i=0 ; i<n ; i++) {
+		h = 0.0;
+		oldSi = S[i];
+		
+		/* Actualizamos la i-esima neurona */
+		#pragma omp parallel for shared(XI,m) reduction(+:h)
+		for (mu=0 ; mu<p ; mu++)
+			h += (double) (XI[(mu*n)+i] * m[mu]);
+		S[i] = norm (h);
+		
+		/* Actualizamos las superposiciones en m */
+		tmp = S[i] - oldSi;
+		if (S[i] != oldSi) {
+			#pragma omp parallel for default(shared) private(mu)
+			for (mu=0 ; mu<p ; mu++)
+				m[mu] += XI[(mu*n)+i] * tmp;
+		}
+	}
+	
+	return;
+}
+
+
+
+
 
 int main (void)
 {
 	unsigned long *Sbit = NULL;	/* Estado con 1 neurona x bit */
 	unsigned long *XIbit = NULL;	/* Memorias con 1 elemento x bit */
-	unsigned long *Spos = NULL;	/* Estado con 1 neurona x posicion */
+	long *Spos = NULL;		/* Estado con 1 neurona x posicion */
 	long *XIpos = NULL;		/* Memorias con 1 elemento x posicion */
 	int *m = NULL;			/* Superposicion memoria/estado */
 	double start = 0.0, end = 0.0;	/* Para medir el tiempo de ejecucion */
@@ -188,10 +248,10 @@ int main (void)
 	XIbit = (unsigned long *) calloc (P*(N/MOD), sizeof(unsigned long));
 	assert (XIbit != NULL);
 	
-	Spos = (unsigned long *) calloc (N, sizeof(unsigned long));
+	Spos = (long *) calloc (N, sizeof(long));
 	assert (Spos != NULL);
 	
-	XIpos = (long *) calloc (P*N, sizeof(unsigned long));
+	XIpos = (long *) calloc (P*N, sizeof(long));
 	assert (XIpos != NULL);
 	
 	m = (int *) calloc (P, sizeof(int));
@@ -259,9 +319,8 @@ int main (void)
 			m[mu] += XIpos[(mu*N)+i] * Spos[i];
 	}
 	/* ... y arrancamos con el ciclo de actualizacion de la red */
-	for (k=0 ; k < MAX_ITER ; k++) {
-		actualizar_red_pos ();
-	}
+	for (k=0 ; k < MAX_ITER ; k++)
+		update_pos_net (Spos, XIpos, m, N, P);
 	
 	end = omp_get_wtime ();
 	printf ("\nLong logic: %f seg\n", end-start);
