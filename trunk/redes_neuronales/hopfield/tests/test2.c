@@ -3,6 +3,7 @@
 #include <time.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <omp.h>
 #include "../mzran13.h"
 
 #define  _byte_size  (1<<3)
@@ -20,6 +21,24 @@
 
 /* Acceso a una matriz de dimensiones [P][N] */
 #define  AT(i,j)  ((i)*P + (j)%N)
+
+
+
+/* Print n as a binary number */
+static void
+printbits (uint64_t n)
+{
+	uint64_t l = ((uint64_t)1) << 63;
+	short k = 1;
+	
+	while (l > 0) {
+		printf("%c", n&l ? '1' : '0');
+		l >>= 1;
+		!(k++ % _byte_size) ? printf(" ") : 0;
+	}
+	printf ("\n");
+}
+
 
 
 
@@ -62,11 +81,12 @@ static void
 init_Sbit (unsigned long *Sbit , unsigned int n,
 	   unsigned long *XIbit, unsigned int p, unsigned int nu)
 {
-	int i = 0, j = 0;
+	int i = 0, j = 0, base = (int) nu*n;
 	unsigned long tmp = 0;
 	
 	assert  (Sbit != NULL);
 	assert (XIbit != NULL);
+	assert (nu < p);
 	
 	#pragma omp parallel for default(shared) private(i,j,tmp)
 	for (i=0 ; i<n ; i++) {
@@ -77,7 +97,7 @@ init_Sbit (unsigned long *Sbit , unsigned int n,
 			else
 				/* tmp = ξ[nu][1] */
 				tmp = ((unsigned long)1) << (MOD-1);
-			tmp &= XIbit[(nu*p)+i];
+			tmp &= XIbit[base+i];
 			Sbit[i] |= tmp;
 		}
 	}
@@ -93,10 +113,10 @@ init_Sbit (unsigned long *Sbit , unsigned int n,
  *	XIbit es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
 static void
-init_XIpos (unsigned long *XIpos, unsigned int p, unsigned int n)
+init_XIpos (long *XIpos, unsigned int p, unsigned int n)
 {
-	unsigned long i = 0;
-	uint64_t aux = 0;
+	long i = 0;
+	int aux = 0;
 	
 	assert (XIpos != NULL);
 	
@@ -107,9 +127,10 @@ init_XIpos (unsigned long *XIpos, unsigned int p, unsigned int n)
 	 * en resultados de XI[] diferentes cada vez.
 	 */
 	#pragma omp parallel for shared(XIpos) private(aux)
-	for (i=0 ; i<n*p ; i++) {
-		aux = mzran13() % 2;
-		XIpos[AT(i/n,i%n)] = norm(aux);
+	for (i=0 ; (unsigned long) i < n*p ; i++) {
+		/* Doble modulo porque sino obtenemos ...01010101... */
+		aux = (mzran13() % 5) % 2;
+		XIpos[i] = norm(aux);
 	}
 	
 	return;
@@ -127,10 +148,10 @@ init_XIpos (unsigned long *XIpos, unsigned int p, unsigned int n)
  *	XIpos es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
  */
 static void
-init_Spos (unsigned long *Spos , unsigned int n,
-	   unsigned long *XIpos, unsigned int p, unsigned int nu)
+init_Spos (unsigned long *Spos, unsigned int n,
+	   long *XIpos, unsigned int p, unsigned int nu)
 {
-	int i = 0;
+	int i = 0, base = (int) nu*n;
 	uint64_t aux = 0;
 	
 	assert  (Spos != NULL);
@@ -139,7 +160,7 @@ init_Spos (unsigned long *Spos , unsigned int n,
 	#pragma omp parallel for shared(Spos,XIpos) private(aux)
 	for (i=0 ; i<n ; i++) {
 		aux = mzran13() % 2;
-		Spos[i] = aux > 0 ? XIpos[(p*nu)+i] : XIpos[(p*nu)+0];
+		Spos[i] = aux > 0 ? XIpos[base+i] : XIpos[base];
 	}
 	
 	return;
@@ -151,11 +172,13 @@ init_Spos (unsigned long *Spos , unsigned int n,
 int main (void)
 {
 	unsigned long *Sbit = NULL;	/* Estado con 1 neurona x bit */
-	unsigned long *XIbit = NULL;	/* Memorias con 1 lugar x bit */
+	unsigned long *XIbit = NULL;	/* Memorias con 1 elemento x bit */
 	unsigned long *Spos = NULL;	/* Estado con 1 neurona x posicion */
-	unsigned long *XIpos = NULL;	/* Memorias con 1 lugar x posicion */
-	int *m = NULL;		/* Superposicion memoria/estado */
-	clock_t start=0, end=0;
+	long *XIpos = NULL;		/* Memorias con 1 elemento x posicion */
+	int *m = NULL;			/* Superposicion memoria/estado */
+	double start = 0.0, end = 0.0;	/* Para medir el tiempo de ejecucion */
+	int i = 0, mu = 0, k = 0;
+	double h = 0.0;
 	
 	
 	/* Generamos los arreglos */
@@ -168,7 +191,7 @@ int main (void)
 	Spos = (unsigned long *) calloc (N, sizeof(unsigned long));
 	assert (Spos != NULL);
 	
-	XIpos = (unsigned long *) calloc (P*N, sizeof(unsigned long));
+	XIpos = (long *) calloc (P*N, sizeof(unsigned long));
 	assert (XIpos != NULL);
 	
 	m = (int *) calloc (P, sizeof(int));
@@ -176,34 +199,72 @@ int main (void)
 	
 	
 	/* ### Bitwise version ### */
-	start = clock ();
+	start = omp_get_wtime ();
 	
 	init_XIbit (XIbit, P, N/MOD);
 	init_Sbit (Sbit, N/MOD, XIbit, P, NU);
 	
-	
+/**	Para debugging
+*//*	printf ("XIbit[0][0]:\n");
+	printbits ((uint64_t) XIbit[0]);
+	printf ("XIbit[%d][0]:\n", P);
+	printbits ((uint64_t) XIbit[(P-1)*(N/MOD)]);
+	printf ("Sbit[0]:\n");
+	printbits ((uint64_t) Sbit[0]);
+*/	
 	/** TODO: Realizar MAX_ITER ciclos de actualizacion */
+	#pragma omp parallel for default(shared) private(mu,i)
+	for (mu=0 ; mu<P ; mu++) {
+		m[mu] = 0;
+		for (i=0 ; i<(N/MOD))
+	}
 	
-	
-	end = clock ();
-	printf ("\nBitwise logic: %.4f seg\n",
-		((double)end-start)/(double)CLOCKS_PER_SEC);
+	end = omp_get_wtime ();
+	printf ("\nBitwise logic: %f seg\n", end-start);
 		
 		
 	
 	/* ### Long version ### */
-	start = clock ();
+	start = omp_get_wtime ();
 	
 	init_XIpos (XIpos, P, N);
 	init_Spos (Spos, N, XIpos, P, NU);
 	
-	
+/**	Para debugging
+*//*	k = 1;
+	printf("\nXIpos[0][0]:\n");
+	for (i=0 ; i<MOD ; i++) {
+		printf ("%+ld", XIpos[i]);
+		!(k++ % _byte_size) ? printf(" ") : 0;
+	}
+	k = 1;
+	printf("\nXIpos[%d][0]:\n", P);
+	for (i=0 ; i<MOD ; i++) {
+		printf ("%+ld", XIpos[(P-1)*N+i]);
+		!(k++ % _byte_size) ? printf(" ") : 0;
+	}
+	k = 1;
+	printf("\nSpos[0]:\n");
+	for (i=0 ; i<MOD ; i++) {
+		printf ("%+ld", Spos[i]);
+		!(k++ % _byte_size) ? printf(" ") : 0;
+	}
+*/	
 	/** TODO: Realizar MAX_ITER ciclos de actualizacion */
+	/* Inicializamos las superposiciones en cada m[mu] ... */
+	#pragma omp parallel for default(shared) private(mu,i)
+	for (mu=0 ; mu<P ; mu++) {
+		m[mu] = 0;
+		for (i=0 ; i<N ; i++)
+			m[mu] += XIpos[(mu*N)+i] * Spos[i];
+	}
+	/* ... y arrancamos con el ciclo de actualizacion de la red */
+	for (k=0 ; k < MAX_ITER ; k++) {
+		actualizar_red_pos ();
+	}
 	
-	
-	end = clock ();
-	printf ("\nLong logic: %.4f seg\n",
-		((double)end-start)/(double)CLOCKS_PER_SEC);
+	end = omp_get_wtime ();
+	printf ("\nLong logic: %f seg\n", end-start);
 	
 	
 	free (Sbit);	Sbit     = NULL;
