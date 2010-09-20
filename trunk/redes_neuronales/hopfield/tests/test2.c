@@ -27,7 +27,7 @@
 #define  N  (1<<13)
 #define  P  (N/2)
 #define  NU  0
-#define  MAX_ITER  (1<<10)
+#define  MAX_ITER  (1<<4)
 
 
 /* Normalización a (-1,+1) */
