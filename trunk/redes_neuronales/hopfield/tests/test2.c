@@ -38,7 +38,18 @@
 
 
 
-/* Print n as a binary number */
+/* Counts set bits in x */
+static inline int
+bitcount (unsigned long x)
+{
+	int b = 0;
+	for (b = 0; x != 0; x &= (x-1))
+		b++;
+	return b;
+}
+
+
+/* Print n as a binary number ~~~ For debugging purposes
 static void
 printbits (uint64_t n)
 {
@@ -52,9 +63,12 @@ printbits (uint64_t n)
 	}
 	printf ("\n");
 }
+*/
 
 
-
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~ ### Funciones privadas con manejo de un elemento por bit ### ~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Inicializa aleatoriamente las p memorias en XIbit
  * Considera que cada componente ξ[supra-μ][sub-i] ocupa 1 bit de espacio
@@ -120,6 +134,80 @@ init_Sbit (unsigned long *Sbit , unsigned int n,
 }
 
 
+
+/* Avanza el estado de la red en 1 intervalo temporal, considerando que
+ * cada elemento ocupa UN BIT (de una posicion) de cada arreglo
+ * Para ello actualiza una vez cada una de las neuronas en Sbit,
+ * y deja las nuevas superposiciones registradas en m
+ *
+ * PRE: Sbit != NULL
+ *	Sbit es un vector de dimension [n]
+ *	Sbit[i] == 0 para todo 0 <= i < n
+ *	XIbit != NULL
+ *	XIbit es una matriz [p][n] (ie: con 'p' memorias de 'n' componentes c/u)
+ *	m != NULL
+ *	m es un vector de dimension [p]
+ */
+static void
+update_bit_net (unsigned long *Sbit, unsigned long *XIbit, int *m,
+		unsigned int n, unsigned int p)
+{
+	int i = 0, j = 0, mu = 0;
+	unsigned long oldSi = -1, XImui = 0, mask = 0;
+	long b = 0;
+	double h = 0.0;
+	
+	/* Actualizamos las neuronas. Con 'i' nos paramos en una posición del
+	 * vector Sbit, y con 'j' vamos accediendo (bit a bit) a cada una de las
+	 * 'MOD' neuronas allí almacenadas. Usualmente MOD == 64.
+	 */
+	for (i=0 ; i<n ; i++) {
+		
+		for (j=0 ; j<MOD ; j++) {
+			
+			mask = ((unsigned long) 1) << j;
+			h = 0.0;
+			
+			oldSi = Sbit[i] & mask;
+			#pragma omp parallel for shared(XIbit,m) private(XImui) \
+								reduction(+:h)
+			for (mu=0 ; mu<p ; mu++) {
+				XImui = XIbit[(mu*n)+i] & mask;
+				h += (double) (norm(XImui) * m[mu]);
+			}
+			/* Si h >= 0 el bit que debemos setear está en 'mask'.
+			 * Sino la negación bit a bit de 'mask' tiene justo
+			 * el bit que debemos apagar
+			 */
+			if (h >= 0)
+				Sbit[i] |= mask;
+			else
+				Sbit[i] &= ~mask;
+		}
+	}
+	/* Actualizamos las superposiciones en m */
+	#pragma omp parallel for default(shared) private(mu,b,i)
+	for (mu=0 ; mu<p ; mu++) {
+		long nn = n & ( ~(((unsigned long) 1) << (MOD-1)));
+		b = 0;
+		/* Recordar que para acceder al elemento de la matriz	*
+		 * XIbit[p][n] se usa lógica negativa			*
+		 * Ej: si  XIbit == 0...00101000  entonces usamos	*
+		 *	  ~XIbit == 1...11010111			*/
+		for (i=0 ; i<n ; i++)
+			b += bitcount((unsigned long) (~XIbit[(mu*n)+i]) ^ Sbit[i]);
+		m[mu] = 2*b - nn;
+	}
+	
+	return;
+}
+
+
+
+
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~ ### Funciones privadas con manejo de un elemento por posicion ### ~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 /* Inicializa aleatoriamente las p memorias en XIpos
  * Considera que cada componente ξ[supra-μ][sub-i] ocupa 1 espacio del arreglo
@@ -200,25 +288,25 @@ update_pos_net (long *Spos, long *XIpos, int *m,
 		unsigned int n, unsigned int p)
 {
 	int i = 0, mu = 0;
-	long oldSi = -1, tmp = 0;
+	long oldSi = 0, tmp = 0;
 	double h = 0.0;
 	
 	for (i=0 ; i<n ; i++) {
 		h = 0.0;
-		oldSi = S[i];
+		oldSi = Spos[i];
 		
 		/* Actualizamos la i-esima neurona */
-		#pragma omp parallel for shared(XI,m) reduction(+:h)
+		#pragma omp parallel for shared(XIpos,m) reduction(+:h)
 		for (mu=0 ; mu<p ; mu++)
-			h += (double) (XI[(mu*n)+i] * m[mu]);
-		S[i] = norm (h);
+			h += (double) (XIpos[(mu*n)+i] * m[mu]);
+		Spos[i] = norm (h);
 		
 		/* Actualizamos las superposiciones en m */
-		tmp = S[i] - oldSi;
-		if (S[i] != oldSi) {
+		tmp = Spos[i] - oldSi;
+		if (Spos[i] != oldSi) {
 			#pragma omp parallel for default(shared) private(mu)
 			for (mu=0 ; mu<p ; mu++)
-				m[mu] += XI[(mu*n)+i] * tmp;
+				m[mu] += XIpos[(mu*n)+i] * tmp;
 		}
 	}
 	
@@ -227,7 +315,9 @@ update_pos_net (long *Spos, long *XIpos, int *m,
 
 
 
-
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~~ ### MAIN PROGRAM ### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 int main (void)
 {
@@ -238,7 +328,7 @@ int main (void)
 	int *m = NULL;			/* Superposicion memoria/estado */
 	double start = 0.0, end = 0.0;	/* Para medir el tiempo de ejecucion */
 	int i = 0, mu = 0, k = 0;
-	double h = 0.0;
+	long b = 0;
 	
 	
 	/* Generamos los arreglos */
@@ -270,19 +360,31 @@ int main (void)
 	printf ("XIbit[%d][0]:\n", P);
 	printbits ((uint64_t) XIbit[(P-1)*(N/MOD)]);
 	printf ("Sbit[0]:\n");
-	printbits ((uint64_t) Sbit[0]);
-*/	
-	/** TODO: Realizar MAX_ITER ciclos de actualizacion */
-	#pragma omp parallel for default(shared) private(mu,i)
+	printbits ((uint64_t) Sbit[0]); */
+	
+	
+	/* Inicializamos las superposiciones en cada m[mu] ... */
+	#pragma omp parallel for default(shared) private(mu,b,i)
 	for (mu=0 ; mu<P ; mu++) {
-		m[mu] = 0;
-		for (i=0 ; i<(N/MOD))
+		unsigned long n = (unsigned long) (N/MOD);
+		long nn = n & ( ~(((unsigned long) 1) << (MOD-1)));
+		b = 0;
+		/* Recordar que para acceder al elemento de la matriz	*
+		 * XIbit[p][n] se usa lógica negativa			*
+		 * Ej: si  XIbit == 0...00101000  entonces usamos	*
+		 *	  ~XIbit == 1...11010111			*/
+		for (i=0 ; i<n ; i++)
+			b += bitcount((unsigned long) (~XIbit[(mu*n)+i]) ^ Sbit[i]);
+		m[mu] = 2*b - nn;
 	}
+	/* ... y arrancamos con el ciclo de actualizacion de la red */
+	for (k=0 ; k < MAX_ITER ; k++)
+		update_bit_net (Sbit, XIbit, m, (N/MOD), P);
 	
 	end = omp_get_wtime ();
 	printf ("\nBitwise logic: %f seg\n", end-start);
-		
-		
+	
+	
 	
 	/* ### Long version ### */
 	start = omp_get_wtime ();
@@ -308,9 +410,9 @@ int main (void)
 	for (i=0 ; i<MOD ; i++) {
 		printf ("%+ld", Spos[i]);
 		!(k++ % _byte_size) ? printf(" ") : 0;
-	}
-*/	
-	/** TODO: Realizar MAX_ITER ciclos de actualizacion */
+	} */
+	
+	
 	/* Inicializamos las superposiciones en cada m[mu] ... */
 	#pragma omp parallel for default(shared) private(mu,i)
 	for (mu=0 ; mu<P ; mu++) {
