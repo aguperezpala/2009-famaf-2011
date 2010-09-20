@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 #include <assert.h>
 #include <omp.h>
 #include "mzran13.h"
+#include "ssv.h"
 
 
 #define  _byte_size  (1<<3)
@@ -28,10 +30,13 @@ unsigned long	N = 0,		/* # of neurons in the net */
 		hop = 0;	/* magnitude of P hopping till Pmax reached */
 
 
-/* Gives position (i,j) of a matrix[P][N]
- * Var names P,N should be within scope where called */
-#define  AT(i,j)  ((i)*P+((j)%N))
+/* Normalización a (-1,+1) */
+#define  norm(x)  ((x) > 0 ? 1 : -1)
 
+/* Copies the contents of the vector 'src' into the vector 'dest'
+ * Both vectors must be 'n' dimensional, and store unsigned longs */
+#define  copyvector(dest,src,n) \
+	 memcpy((dest), (const void *)(src), (size_t)(n)*sizeof(unsigned long))
 
 
 /* Counts set bits in x (ie: bits in x equal to '1') */
@@ -106,6 +111,7 @@ parse_input (int argc, char **argv,
 
 /* Initilizes randomly all p memories in XI[p][n] matrix
  * Each bit of each position in XI is considered a ξ[supra-μ][sub-i] component
+ *
  * PRE: XI != NULL
  *	XI is a [p][n] matrix (ie: holding 'p' memories of 'n' components each)
  */
@@ -122,7 +128,7 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n)
 	 *	To regain determinism in the creation of the XI matrix simply
 	 * comment the #pragma statement
 	 */
-	#pragma omp parallel for shared(XIbit)
+	#pragma omp parallel for shared(XI)
 	for (i=0 ; i<p*n ; i++) {
 		XI[i] = (unsigned long) mzran13();
 	}
@@ -135,6 +141,7 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n)
 /* Initializes the state 'S' of the neural network in a position randomly
  * close to the stored memory XI[nu]
  * Memory is handled bitxbit. ie: there are 64 components in each XI[mu][i]
+ *
  * PRE: S != NULL
  *	S is an [n] dimensional vector
  *	S[i] == 0  ∀ i ∈ {0,1,...,n-1}
@@ -158,13 +165,48 @@ init_S (unsigned long *S , unsigned int n,
 		for (j=0 ; j<MSB ; j++) {
 			if (mzran13() % 2)
 				/* tmp = ξ[nu][j] */
-				tmp = ((unsigned long)1) << (MOD-1-j);
+				tmp = ((unsigned long)1) << (MSB-1-j);
 			else
 				/* tmp = ξ[nu][1] */
-				tmp = ((unsigned long)1) << (MOD-1);
+				tmp = ((unsigned long)1) << (MSB-1);
 			tmp &= XI[base+i];
 			S[i] |= tmp;
 		}
+	}
+	
+	return;
+}
+
+
+
+/* Updates the overlaping between the state 'S' and the memories in 'XI'
+ * These overlaps are left registered in 'm'
+ *
+ * PRE: S != NULL
+ *	S is an [n] dimensional vector
+ *	XI != NULL
+ *	XI is a [p][n] matrix (ie: holding 'p' memories of 'n' components each)
+ *	m != NULL
+ *	m is a [p] dimensional vector
+ */
+static void
+update_overlaps (unsigned long *S, unsigned long *XI, int *m,
+		 unsigned int n, unsigned int p)
+{
+	int mu = 0, i = 0;
+	long b = 0, nn = n & (~(((unsigned long) 1) << (MSB-1)));
+	
+	assert (S  != NULL);
+	assert (XI != NULL);
+	assert (m  != NULL);
+	
+	#pragma omp parallel for default(shared) private(mu,b,i)
+	for (mu=0 ; mu<p ; mu++) {
+		b = 0;
+		/* Negative logic is used on XI before XOR'ing it with S */
+		for (i=0 ; i<n ; i++)
+			b += bitcount((unsigned long) (~XI[(mu*n)+i]) ^ S[i]);
+		m[mu] = 2*b - nn;
 	}
 	
 	return;
@@ -191,32 +233,31 @@ update_network_one_step (unsigned long *S, unsigned long *XI, int *m,
 			 unsigned int n, unsigned int p)
 {
 	int i = 0, j = 0, mu = 0;
-	unsigned long oldSi = -1, XImui = 0, mask = 0;
-	long b = 0;
+	unsigned long oldSi = 0, XImui = 0, mask = 0;
 	double h = 0.0;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
 	assert (m  != NULL);
 	
-	/* Updating each neuron. With 'i' we step on a position within S,
-	 * and with 'j' we access (one bit at a time) all 'MSB' neurons stored
-	 * there. Usually MSB == 64
+	/* Updating each neuron.
+	 * With 'i' we step on a position within S, and with 'j' we access
+	 * (one bit at a time) all 'MSB' neurons stored there.
+	 * Usually MSB == 64
 	 */
 	for (i=0 ; i<n ; i++) {
-		
 		for (j=LSB ; j<MSB ; j++) {
 			
 			mask = ((unsigned long) 1) << j;
 			h = 0.0;
 			
-			oldSi = S[i] & mask;
-			#pragma omp parallel for shared(XIbit,m) private(XImui) \
-								 reduction(+:h)
+			#pragma omp parallel for shared(XI,m) private(XImui) \
+								reduction(+:h)
 			for (mu=0 ; mu<p ; mu++) {
 				XImui = XI[(mu*n)+i] & mask;
 				h += (double) (norm(XImui) * m[mu]);
 			}
+			oldSi = S[i];
 			/* If h >= 0 then mask holds the position of the bit
 			 * we have to set (to 1) in S[i]
 			 * Otherwise mask's bitwise negation has a single '0'
@@ -226,17 +267,10 @@ update_network_one_step (unsigned long *S, unsigned long *XI, int *m,
 				S[i] |= mask;
 			else
 				S[i] &= ~mask;
+			/* Recalculating overlaps in m (if needed) */
+			if (S[i] != oldSi)
+				update_overlaps(S, XI, m, n, p);
 		}
-	}
-	/* Updating overlaps in m */
-	#pragma omp parallel for default(shared) private(mu,b,i)
-	for (mu=0 ; mu<p ; mu++) {
-		long nn = n & ( ~(((unsigned long) 1) << (MOD-1)));
-		b = 0;
-		/* Negative logic is used on XI before XOR'ing it with S */
-		for (i=0 ; i<n ; i++)
-			b += bitcount((unsigned long) (~XI[(mu*n)+i]) ^ S[i]);
-		m[mu] = 2*b - nn;
 	}
 	
 	return;
@@ -245,7 +279,7 @@ update_network_one_step (unsigned long *S, unsigned long *XI, int *m,
 
 
 /* Updates the neural network until a fixed point is reached for 'S'
- * The final overlap between 'S' and XI[nu] is the returned value 
+ * The final overlap between 'S' and XI[nu] is the returned value
  *
  * PRE: S != NULL
  *	S is an [n] dimensional vector
@@ -259,9 +293,9 @@ static long
 run_network (unsigned long *S, unsigned long *XI, int *m,
 	     unsigned int n, unsigned int p, unsigned int nu)
 {
-	long overlap = 0, mu = 0, i = 0, Sold = 0;
+	long overlap = 0, i = 0, nn = n & (~(((unsigned long) 1) << (MSB-1)));
 	unsigned long *Sold = NULL;
-	bool fixed = false, differ = false;
+	bool S_changed = true;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
@@ -272,25 +306,27 @@ run_network (unsigned long *S, unsigned long *XI, int *m,
 	assert (Sold != NULL);
 	
 	/* Sold = S */
-	Sold = memcpy (Sold, (const void *) S, (size_t) n*sizeof(unsigned long));
+	Sold = copyvector(Sold,S,n);
 	
-	while (!fixed) {
+	while (S_changed) {
 		update_network_one_step (S, XI, m, n, p);
 		i = 0;
-		while (!differ && i < n) {
-			differ = Sold[i]-S[i];
-			i++
-		}
-		if (differ)
-			Sold = memcpy (Sold, (const void *) S,
-				       (size_t) n*sizeof(unsigned long));
-		else
-			fixed = true;
+		S_changed = false;
+		while (!S_changed && i++ < n)
+			S_changed = Sold[i]-S[i];
+		if (S_changed)
+			Sold = copyvector(Sold,S,n);
 	}
+	
+	overlap = 0;
+	/* Negative logic is used on XI before XOR'ing it with S */
+	#pragma omp parallel for shared(XI,S) reduction(+:overlap)
+	for (i=0 ; i<n ; i++)
+		overlap += bitcount((unsigned long) (~XI[(nu*n)+i]) ^ S[i]);
 	
 	free (Sold);	Sold = NULL;
 	
-	return overlap;
+	return 2*overlap - nn;
 }
 
 
@@ -310,17 +346,18 @@ int main (int argc, char **argv)
 			Pmax = 0,	max # of memories in the net
 			hop = 0;	magnitude of P hopping till Pmax reached
 	*/
-	unsigned int NN = 0;
+	unsigned long NN = 0;
 	unsigned long	*S = NULL,	/* Network state (N vector) */
 			*XI=NULL;	/* Stored memories (PxN matrix) */
 	int *m = NULL;			/* S-XI overlaps (P vector) */
-	long i = 0, j = 0, k = 0
+	long k = 0, overlap = 0;
 	unsigned int nu = 0;
-	double start = 0.0, end = 0.0;
+	double norm = 0.0;
 	
 	
 	parse_input (argc, argv, &NN, &Pmax, &hop);
-	printf ("Argumentos recibidos:\n"
+	printf ("\nVersion DETERMINISTICA del modelo de HOPFIELD para "
+		"redes neuronales\n\nArgumentos recibidos:\n"
 		"\ta) # de neuronas de la red:\t\t\t%lu\n"
 		"\tb) Máximo # de memorias de la red:\t\t%lu\n"
 		"\tc) Magnitud del salto en el # de memorias:\t%lu\n",
@@ -328,6 +365,7 @@ int main (int argc, char **argv)
 	
 	/* Remember work will be bitwise */
 	N = NN / MSB;
+	norm = 1.0 / (double) N;
 	
 	/* Generating arrays */
 	S = (unsigned long *) calloc (N, sizeof(unsigned long));
@@ -339,20 +377,42 @@ int main (int argc, char **argv)
 	m = (int *) calloc (Pmax, sizeof(int));
 	assert (m != NULL);
 	
-	/* :p */
+	/* We start our network with a # of memories P = hop, and add 'hop'
+	 * memories at each step until Pmax is reached.
+	 *
+	 * For each P the network is set to work until the state 'S' reaches a
+	 * fixed point. Then the distance from 'S' to a chosen memory XI[nu]
+	 * is calculated and stored in 'overlap'
+	 *
+	 * This is done MAX_ITER times for each P, and the resulting mean value
+	 * of 'overlap' toghether with its variance is printed through stdout.
+	 */
+	printf ("\n\tα\t\tμ\t\tσ²\n");
 	for (P=hop, nu=0 ; P <= (long) Pmax/hop ; P += hop) {
-		if (nu==0) {
-			init_XI (XI, P, N);
-			nu = P-1;
-		} else
-			nu--;
 		
-		/* We start somewhere close to XI[nu] */
-		init_S (S, N, XI, P, nu);
+		for (k=1 ; k <= MAX_ITER ; k++) {
 			
-		for ()
+			/* We recalculate our stored memories if needed */
+			if (nu-- <= 0) {
+				init_XI (XI, P, N);
+				nu = P-1;
+			}
+			
+			/* We start somewhere close to XI[nu] */
+			init_S (S, N, XI, P, nu);
+			update_overlaps (S, XI, m, N, P);
+			
+			/* And make the network update itself until a fixed
+			 * point is reached */
+			overlap = run_network (S, XI, m, N, P, nu);
+			
+			media_m ((double) overlap * norm, (double) k);
+			var_m ((double) overlap * norm, (double) k);
+		}
+		printf ("%.8f\t\t%.8f\t\t%.8f\n",
+			(double)P * norm, get_media_m(), get_var_m());
 	}
-	
+	printf ("\nFin del programa\n\n");
 	
 	free (S);	S = NULL;
 	free (XI);	XI = NULL;

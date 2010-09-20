@@ -16,12 +16,13 @@ INCLUDES=.depend
 all:$(STOC)
 
 example:$(SMPL)
-$(SMPL): Hopfield_example.o mzran13.o
+$(SMPL): Hopfield_example.o mzran13.o ssv.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@
 
 det:$(DET)
-$(DET): Hopfield_deterministico.o mzran13.o
-	$(CC) $(CFLAGS) $^ -o $@
+$(DET): Hopfield_deterministico.o mzran13.o ssv.o
+	$(CC) $(CFLAGS) $^ -o $@ ; \
+	echo "\n\nTo execute program type command \"./$(DET)\" and press ENTER\n"
 
 stoc:$(STOC)
 $(STOC): Hopfield_estocastico.o mzran13.o
