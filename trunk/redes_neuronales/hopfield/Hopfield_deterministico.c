@@ -377,6 +377,10 @@ int main (int argc, char **argv)
 	m = (int *) calloc (Pmax, sizeof(int));
 	assert (m != NULL);
 	
+	printf ("\n____________________________________________________________"
+		"_____\n|       α\t|\t     μ\t\t|\t     σ²\t\t|\n|~~~~~~~~"
+		"~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
+	
 	/* We start our network with a # of memories P = hop, and add 'hop'
 	 * memories at each step until Pmax is reached.
 	 *
@@ -387,9 +391,10 @@ int main (int argc, char **argv)
 	 * This is done MAX_ITER times for each P, and the resulting mean value
 	 * of 'overlap' toghether with its variance is printed through stdout.
 	 */
-	printf ("\n\tα\t\tμ\t\tσ²\n");
 	for (P=hop, nu=0 ; P <= (long) Pmax/hop ; P += hop) {
 		
+		reset_media_m ();
+		reset_var_m ();
 		for (k=1 ; k <= MAX_ITER ; k++) {
 			
 			/* We recalculate our stored memories if needed */
@@ -409,10 +414,11 @@ int main (int argc, char **argv)
 			media_m ((double) overlap * norm, (double) k);
 			var_m ((double) overlap * norm, (double) k);
 		}
-		printf ("%.8f\t\t%.8f\t\t%.8f\n",
+		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",
 			(double)P * norm, get_media_m(), get_var_m());
 	}
-	printf ("\nFin del programa\n\n");
+	printf ("============================================================"
+		"=====\nFin del programa\n\n");
 	
 	free (S);	S = NULL;
 	free (XI);	XI = NULL;

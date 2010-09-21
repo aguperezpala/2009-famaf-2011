@@ -106,7 +106,7 @@ print_sinaptic_mesh (void)
 	printf ("\nSinaptic mesh W[i][j]\n");
 	for (i=0 ; i<N ; i++) {
 		for (j=0 ; j<N ; j++)
-			printf ("%.2f\t", (double) W[i][j] / n);
+			printf ("%+.2f\t", (double) W[i][j] / n);
 		printf ("\n");
 	}
 	printf ("\n");

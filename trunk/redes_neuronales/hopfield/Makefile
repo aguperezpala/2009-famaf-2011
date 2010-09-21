@@ -13,11 +13,16 @@ CFLAGS = -Wall -ansi -pedantic \
 LIBRARIES = -lm
 INCLUDES=.depend
 
-all:$(STOC)
+all:help
+help:
+	echo "\n\nChoose a compiling option 'OP' and then type \"make OP\"\n"\
+		"\rCompiling options:\n\t\t   example\n\t\t   det\n\t\t   stoc"\
+		"\n\t\t   test1\n\t\t   test2\n\t\t   test3\n"
 
 example:$(SMPL)
 $(SMPL): Hopfield_example.o mzran13.o ssv.o
-	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@
+	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
+	echo "\n\nTo execute program type command \"./$(SMPL)\" and press ENTER\n"
 
 det:$(DET)
 $(DET): Hopfield_deterministico.o mzran13.o ssv.o
@@ -26,7 +31,8 @@ $(DET): Hopfield_deterministico.o mzran13.o ssv.o
 
 stoc:$(STOC)
 $(STOC): Hopfield_estocastico.o mzran13.o
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@; \
+	echo "\n\nTo execute program type command \"./$(STOC)\" and press ENTER\n"
 
 test1:
 	make -C tests test1
