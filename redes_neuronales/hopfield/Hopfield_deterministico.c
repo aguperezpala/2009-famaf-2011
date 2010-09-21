@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <inttypes.h> /* To have access to uuint64_t */
 #include "mzran13.h"
 #include "ssv.h"
 
@@ -12,6 +11,8 @@
 #define  LSB  0
 #define  MSB  (_byte_size*sizeof(unsigned long))
 #define  MAX_ITER  30
+/** NOTE Uncomment the following definition for pretty output printing */
+/*#define  PP*/
 
 
 /* # of arguments the main function should receive as input */
@@ -206,7 +207,7 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 		/* Negative logic is used on XI before XOR'ing it with S */
 		for (i=0 ; i<n ; i++)
 			b += bitcount((unsigned long) (~XI[(mu*n)+i]) ^ S[i]);
-		m[mu] = 2*b - (nn*MSB);
+		m[mu] = (2*b) - (nn*MSB);
 	}
 	
 	return;
@@ -332,7 +333,7 @@ run_network (unsigned long *S, unsigned long *XI, long *m,
 	
 	free (Sold);	Sold = NULL;
 	
-	return 2*overlap - (nn*MSB);
+	return (2*overlap) - (nn*MSB);
 }
 
 
@@ -360,14 +361,15 @@ int main (int argc, char **argv)
 	unsigned int nu = 0;
 	double norm = 0.0;
 	
-	
 	parse_input (argc, argv, &NN, &Pmax, &hop);
+#ifdef PP
 	printf ("\nVersion DETERMINISTICA del modelo de HOPFIELD para "
 		"redes neuronales\n\nArgumentos recibidos:\n"
 		"\ta) # de neuronas de la red:\t\t\t%lu\n"
 		"\tb) Máximo # de memorias de la red:\t\t%lu\n"
 		"\tc) Magnitud del salto en el # de memorias:\t%lu\n",
 		NN, Pmax, hop);
+#endif
 	
 	/* Remember work will be bitwise */
 	N = NN / MSB;
@@ -383,10 +385,11 @@ int main (int argc, char **argv)
 	m = (long *) calloc (Pmax, sizeof(long));
 	assert (m != NULL);
 	
+#ifdef PP
 	printf ("\n____________________________________________________________"
 		"_____\n|       α\t|\t     μ\t\t|\t    σ²\t\t|\n|~~~~~~~~~"
 		"~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
-	
+#endif		
 	/* We start our network with a # of memories P = hop, and add 'hop'
 	 * memories at each step until Pmax is reached.
 	 *
@@ -432,13 +435,19 @@ int main (int argc, char **argv)
 			media_m ((double) overlap * norm, (double) k);
 			var_m ((double) overlap * norm, (double) k);
 		}
-		
+#ifdef PP
 		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",
 			(double)P * norm, get_media_m(), get_var_m());
+#else
+		printf ("%.8f\t%.8f\t%.8f\t\n",
+			(double)P * norm, get_media_m(), get_var_m());
+#endif
 	}
+#ifdef PP
 	printf ("============================================================"
 		"=====\nFin del programa\n\n");
-		
+#endif
+	
 	free (S);	S = NULL;
 	free (XI);	XI = NULL;
 	free (m);	m = NULL;
