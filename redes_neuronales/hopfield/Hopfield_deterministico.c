@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
-#include <omp.h>
+#include <inttypes.h> /* To have access to uuint64_t */
 #include "mzran13.h"
 #include "ssv.h"
 
@@ -16,7 +16,7 @@
 
 /* # of arguments the main function should receive as input */
 #define  ARGC  3
-/* These are:	1) N ...... # of neurons in the net
+/* These are:	1) N ...... # of neurons in the net (% MSB)
  *		2) Pmax ... max # of stored memories
  *		3) hop .... by how much the # of memories in the net has to
  *			    increase at each step till Pmax is reached
@@ -24,7 +24,7 @@
 
 
 /* Global vars. See predefined constant ARGC */
-unsigned long	N = 0,		/* # of neurons in the net */
+unsigned long	N = 0,		/* # of neurons in the net (% MSB) */
 		P = 0,		/* # of memories in the net */
 		Pmax = 0,	/* max # of memories in the net */
 		hop = 0;	/* magnitude of P hopping till Pmax reached */
@@ -190,7 +190,7 @@ init_S (unsigned long *S , unsigned int n,
  *	m is a [p] dimensional vector
  */
 static void
-update_overlaps (unsigned long *S, unsigned long *XI, int *m,
+update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 		 unsigned int n, unsigned int p)
 {
 	int mu = 0, i = 0;
@@ -206,7 +206,7 @@ update_overlaps (unsigned long *S, unsigned long *XI, int *m,
 		/* Negative logic is used on XI before XOR'ing it with S */
 		for (i=0 ; i<n ; i++)
 			b += bitcount((unsigned long) (~XI[(mu*n)+i]) ^ S[i]);
-		m[mu] = 2*b - nn;
+		m[mu] = 2*b - (nn*MSB);
 	}
 	
 	return;
@@ -229,7 +229,7 @@ update_overlaps (unsigned long *S, unsigned long *XI, int *m,
  *	m is a [p] dimensional vector
  */
 static void
-update_network_one_step (unsigned long *S, unsigned long *XI, int *m,
+update_network_one_step (unsigned long *S, unsigned long *XI, long *m,
 			 unsigned int n, unsigned int p)
 {
 	int i = 0, j = 0, mu = 0;
@@ -290,11 +290,11 @@ update_network_one_step (unsigned long *S, unsigned long *XI, int *m,
  *	nu < p
  */
 static long
-run_network (unsigned long *S, unsigned long *XI, int *m,
+run_network (unsigned long *S, unsigned long *XI, long *m,
 	     unsigned int n, unsigned int p, unsigned int nu)
 {
 	long overlap = 0, i = 0, nn = n & (~(((unsigned long) 1) << (MSB-1)));
-	unsigned long *Sold = NULL;
+	unsigned long *Sold = NULL, niter = 0;
 	bool S_changed = true;
 	
 	assert (S  != NULL);
@@ -309,13 +309,19 @@ run_network (unsigned long *S, unsigned long *XI, int *m,
 	Sold = copyvector(Sold,S,n);
 	
 	while (S_changed) {
+		
 		update_network_one_step (S, XI, m, n, p);
+		
 		i = 0;
 		S_changed = false;
-		while (!S_changed && i++ < n)
-			S_changed = Sold[i]-S[i];
+		while (!S_changed && i < n) {
+			S_changed = Sold[i]-S[i] != 0;
+			i++;
+		}
 		if (S_changed)
 			Sold = copyvector(Sold,S,n);
+		
+		niter++;
 	}
 	
 	overlap = 0;
@@ -326,7 +332,7 @@ run_network (unsigned long *S, unsigned long *XI, int *m,
 	
 	free (Sold);	Sold = NULL;
 	
-	return 2*overlap - nn;
+	return 2*overlap - (nn*MSB);
 }
 
 
@@ -349,7 +355,7 @@ int main (int argc, char **argv)
 	unsigned long NN = 0;
 	unsigned long	*S = NULL,	/* Network state (N vector) */
 			*XI=NULL;	/* Stored memories (PxN matrix) */
-	int *m = NULL;			/* S-XI overlaps (P vector) */
+	long *m = NULL;			/* S-XI overlaps (P vector) */
 	long k = 0, overlap = 0;
 	unsigned int nu = 0;
 	double norm = 0.0;
@@ -365,7 +371,7 @@ int main (int argc, char **argv)
 	
 	/* Remember work will be bitwise */
 	N = NN / MSB;
-	norm = 1.0 / (double) N;
+	norm = 1.0 / (double) NN;
 	
 	/* Generating arrays */
 	S = (unsigned long *) calloc (N, sizeof(unsigned long));
@@ -374,12 +380,12 @@ int main (int argc, char **argv)
 	XI = (unsigned long *) calloc (N*Pmax, sizeof(unsigned long));
 	assert (XI != NULL);
 	
-	m = (int *) calloc (Pmax, sizeof(int));
+	m = (long *) calloc (Pmax, sizeof(long));
 	assert (m != NULL);
 	
 	printf ("\n____________________________________________________________"
-		"_____\n|       α\t|\t     μ\t\t|\t     σ²\t\t|\n|~~~~~~~~"
-		"~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
+		"_____\n|       α\t|\t     μ\t\t|\t    σ²\t\t|\n|~~~~~~~~~"
+		"~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
 	
 	/* We start our network with a # of memories P = hop, and add 'hop'
 	 * memories at each step until Pmax is reached.
@@ -391,11 +397,12 @@ int main (int argc, char **argv)
 	 * This is done MAX_ITER times for each P, and the resulting mean value
 	 * of 'overlap' toghether with its variance is printed through stdout.
 	 */
-	for (P=hop, nu=0 ; P <= (long) Pmax/hop ; P += hop) {
+	for (P=hop ; P <= (long) Pmax ; P += hop) {
 		
 		reset_media_m ();
 		reset_var_m ();
-		for (k=1 ; k <= MAX_ITER ; k++) {
+		
+		for (k=1, nu=0 ; k <= MAX_ITER ; k++) {
 			
 			/* We recalculate our stored memories if needed */
 			if (nu-- <= 0) {
@@ -403,23 +410,35 @@ int main (int argc, char **argv)
 				nu = P-1;
 			}
 			
-			/* We start somewhere close to XI[nu] */
+			/* We start somewhere close to XI[nu] ... */
 			init_S (S, N, XI, P, nu);
 			update_overlaps (S, XI, m, N, P);
 			
-			/* And make the network update itself until a fixed
+/*			overlap = 0;
+			#pragma omp parallel for shared(XI,S) reduction(+:overlap)
+			for (int i=0 ; i<N ; i++)
+				overlap += bitcount((unsigned long) (~XI[(nu*N)+i]) ^ S[i]);
+			printf ("Initial overlap: %.4f\n",
+				(2.0*(double)overlap - NN)*norm);
+*/			
+			/* ... and make the network update itself until a fixed
 			 * point is reached */
 			overlap = run_network (S, XI, m, N, P, nu);
 			
+			
+/*			printf ("Final overlap: %.4f\n",
+				(2.0*(double)overlap - NN)*norm);
+*/				
 			media_m ((double) overlap * norm, (double) k);
 			var_m ((double) overlap * norm, (double) k);
 		}
+		
 		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",
 			(double)P * norm, get_media_m(), get_var_m());
 	}
 	printf ("============================================================"
 		"=====\nFin del programa\n\n");
-	
+		
 	free (S);	S = NULL;
 	free (XI);	XI = NULL;
 	free (m);	m = NULL;
