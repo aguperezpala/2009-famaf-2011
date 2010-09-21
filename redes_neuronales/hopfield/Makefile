@@ -20,18 +20,18 @@ help:
 		"\n\t\t   test1\n\t\t   test2\n\t\t   test3\n"
 
 example:$(SMPL)
-$(SMPL): Hopfield_example.o mzran13.o ssv.o
+$(SMPL): Hopfield_example.o mzran13.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nTo execute program type command \"./$(SMPL)\" and press ENTER\n"
 
 det:$(DET)
-$(DET): Hopfield_deterministico.o mzran13.o ssv.o
-	$(CC) $(CFLAGS) $^ -o $@ ; \
+$(DET): Hopfield_deterministico.o mzran13.o ssv.o ndf.o
+	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@ ; \
 	echo "\n\nTo execute program type command \"./$(DET)\" and press ENTER\n"
 
 stoc:$(STOC)
-$(STOC): Hopfield_estocastico.o mzran13.o
-	$(CC) $(CFLAGS) $^ -o $@; \
+$(STOC): Hopfield_estocastico.o mzran13.o ssv.o ndf.o
+	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nTo execute program type command \"./$(STOC)\" and press ENTER\n"
 
 test1:

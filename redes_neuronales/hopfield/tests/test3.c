@@ -45,12 +45,12 @@ int main (void)
 	 *	   ... 1000 1001 1010 1011 1100 1101 1110 1111 (LSB) */
 	
 /**	Example of how printbits works */
-/*	set_mask();
+	set_mask();
 	for (i=0 ; i<MOD ; i++) {
 		printf ("mask[%ld]:\n", i);
 		printbits(mask[i]);
 	}
-*/
+
 	
 	for (i=0 ; i<MOD ; i++) {
 		aux = mzran13();
