@@ -57,8 +57,8 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n)
 	 *	To regain determinism in the creation of the XI matrix simply
 	 * comment the #pragma statement
 	 */
-	#pragma omp parallel for shared(XI)
-	for (i=0 ; i<p*n ; i++) {
+/*	#pragma omp parallel for shared(XI)
+*/	for (i=0 ; i<p*n ; i++) {
 		XI[i] = (unsigned long) mzran13();
 	}
 	
@@ -88,8 +88,8 @@ init_S (unsigned long *S , unsigned int n,
 	assert (XI != NULL);
 	assert (nu < p);
 	
-	#pragma omp parallel for default(shared) private(i,j,tmp)
-	for (i=0 ; i<n ; i++) {
+/*	#pragma omp parallel for default(shared) private(i,j,tmp)
+*/	for (i=0 ; i<n ; i++) {
 		for (j=0 ; j<MSB ; j++) {
 			if ((mzran13() % 5) % 2)
 				/* tmp = ξ[nu][j] */
@@ -128,8 +128,8 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 	assert (XI != NULL);
 	assert (m  != NULL);
 	
-	#pragma omp parallel for default(shared) private(mu,b,i)
-	for (mu=0 ; mu<p ; mu++) {
+/*	#pragma omp parallel for default(shared) private(mu,b,i)
+*/	for (mu=0 ; mu<p ; mu++) {
 		b = 0;
 		/* Negative logic is used on XI before XOR'ing it with S */
 		for (i=0 ; i<n ; i++)
@@ -158,8 +158,12 @@ update_network_one_step (unsigned long *S, unsigned long *XI, long *m,
 			 unsigned int n, unsigned int p)
 {
 	int i = 0, j = 0, mu = 0;
-	unsigned long oldSi = 0, XImui = 0, mask = 0;
-	double h = 0.0;
+	unsigned long	oldSi = 0,
+			XImui = 0,
+			mask = 0;
+	double	h = 0.0,
+		nn = 1.0/((double) (n*MSB)),
+		overlap = 0.0;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
@@ -176,11 +180,12 @@ update_network_one_step (unsigned long *S, unsigned long *XI, long *m,
 			mask = ((unsigned long) 1) << j;
 			h = 0.0;
 			
-			#pragma omp parallel for shared(XI,m) private(XImui) \
-								reduction(+:h)
-			for (mu=0 ; mu<p ; mu++) {
+/*			#pragma omp parallel for shared(XI,m) \
+					private(XImui,overlap) reduction(+:h)
+*/			for (mu=0 ; mu<p ; mu++) {
 				XImui = XI[(mu*n)+i] & mask;
-				h += (double) (norm(XImui) * m[mu]);
+				overlap = (double) m[mu] * nn;
+				h += ((double) norm(XImui)) * overlap;
 			}
 			oldSi = S[i];
 			/* If h >= 0 then mask holds the position of the bit
@@ -222,7 +227,7 @@ long
 run_network (unsigned long *S, unsigned long *XI, long *m,
 	     unsigned int n, unsigned int p, unsigned int nu)
 {
-	long overlap = 0, i = 0, nn = n & (~(((unsigned long) 1) << (MSB-1)));
+	long i = 0;
 	unsigned long *Sold = NULL, niter = 0;
 	bool S_changed = true;
 	
@@ -243,7 +248,7 @@ run_network (unsigned long *S, unsigned long *XI, long *m,
 		
 		i = 0;
 		S_changed = false;
-		while (!S_changed && i < n) {
+		while (!S_changed && (i < n)) {
 			S_changed = Sold[i]-S[i] != 0;
 			i++;
 		}
@@ -253,14 +258,8 @@ run_network (unsigned long *S, unsigned long *XI, long *m,
 		niter++;
 	}
 	
-	overlap = 0;
-	/* Negative logic is used on XI before XOR'ing it with S */
-	#pragma omp parallel for shared(XI,S) reduction(+:overlap)
-	for (i=0 ; i<n ; i++)
-		overlap += bitcount((unsigned long) (~XI[(nu*n)+i]) ^ S[i]);
-	
 	free (Sold);	Sold = NULL;
 	
-	return (2*overlap) - (nn*MSB);
+	return m[nu];
 }
 
