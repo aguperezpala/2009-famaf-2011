@@ -55,25 +55,10 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 
 
 
-/* Jumps one time-step ahead in time, for all the neurons in the neural network
- * This is done updating each neuron stored in 'S', and registering in 'm' all
- * the new overlaps between 'S' and each 'XI[mu]'
- *
- * PRE: S != NULL
- *	S is an [n] dimensional vector
- *	XI != NULL
- *	XI is a [p][n] matrix (ie: holding 'p' memories of 'n' components each)
- *	m != NULL
- *	m is a [p] dimensional vector
- */
-void
-update_network_one_step (unsigned long *S, unsigned long *XI, long *m,
-			 unsigned int n, unsigned int p);
-
-
-
 /* Updates the neural network until a fixed point is reached for 'S'
  * The final overlap between 'S' and XI[nu] is the returned value
+ *
+ * It uses DETERMINISTIC transitions
  *
  * NOTE: this overlap must be divided by N before being used, where N is the
  *	 number of neurons in the network. ie: N = n*sizeof(unsigned long)
@@ -87,8 +72,32 @@ update_network_one_step (unsigned long *S, unsigned long *XI, long *m,
  *	nu < p
  */
 long
-run_network (unsigned long *S, unsigned long *XI, long *m,
-	     unsigned int n, unsigned int p, unsigned int nu);
+run_det_network (unsigned long *S, unsigned long *XI, long *m,
+		 unsigned int n, unsigned int p, unsigned int nu);
+
+
+
+/* Updates the neural network until a fixed point is reached for 'S'
+ * The final overlap between 'S' and XI[nu] is the returned value
+ *
+ * It uses STOCHASTIC transitions
+ *
+ * NOTE: this overlap must be divided by N before being used, where N is the
+ *	 number of neurons in the network. ie: N = n*sizeof(unsigned long)
+ *
+ * PRE: S != NULL
+ *	S is an [n] dimensional vector
+ *	XI != NULL
+ *	XI is a [p][n] matrix (ie: holding 'p' memories of 'n' components each)
+ *	m != NULL
+ *	m is a [p] dimensional vector
+ *	nu < p
+ *	T >= 0.0
+ */
+long
+run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
+		  unsigned int n, unsigned int p, unsigned int nu, double T);
+
 
 
 #endif

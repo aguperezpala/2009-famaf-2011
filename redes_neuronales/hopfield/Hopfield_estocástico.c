@@ -24,11 +24,14 @@
 */
 
 /* # of arguments the main function should receive as input */
-#define  ARGC  3
+#define  ARGC  5
 /* These are:	1) N ...... # of neurons in the net (% MSB)
  *		2) Pmax ... max # of stored memories
- *		3) hop .... by how much the # of memories in the net has to
+ *		3) Phop ... by how much the # of memories in the net has to
  *			    increase at each step till Pmax is reached
+ *		4) Tmax ... maximum noise level
+ *		5) Thop ... by how much the net's noise level must increase
+ *			    at each step till Tmax is reached
  */
 
 
@@ -36,7 +39,7 @@
 unsigned long	N = 0,		/* # of neurons in the net (% MSB) */
 		P = 0,		/* # of memories in the net */
 		Pmax = 0,	/* max # of memories in the net */
-		hop = 0;	/* magnitude of P hopping till Pmax reached */
+		Phop = 0;	/* magnitude of P hopping till Pmax reached */
 
 
 /* Counts set bits in x (ie: bits in x equal to '1') */
@@ -58,7 +61,7 @@ bitcount (unsigned long x)
 /* Not much to specify about this function */
 static void
 parse_input (int argc, char **argv,
-	     unsigned long *N, unsigned long *Pmax, unsigned long *hop)
+	     unsigned long *N, unsigned long *Pmax, unsigned long *Phop)
 {
 	char *err = NULL;
 	
@@ -95,8 +98,8 @@ parse_input (int argc, char **argv,
 		exit (EXIT_FAILURE);
 	}
 	
-	/* Retrieving hop magnitude */
-	*hop = (unsigned long) strtol (argv[3], &err, 10);
+	/* Retrieving Phop magnitude */
+	*Phop = (unsigned long) strtol (argv[3], &err, 10);
 	if (err[0] != '\0') {
 		fprintf (stderr, "Error en la entrada, en la cadena'%s'\n"
 				 "Debe pasar el salto (de incremento de "
@@ -122,7 +125,7 @@ int main (int argc, char **argv)
 	unsigned long	N = 0,		# of neurons in the net
 			P = 0,		# of memories in the net
 			Pmax = 0,	max # of memories in the net
-			hop = 0;	magnitude of P hopping till Pmax reached
+			Phop = 0;	magnitude of P Phopping till Pmax reached
 */	unsigned long NN = 0;
 	unsigned long	*S = NULL,	/* Network state (N vector) */
 			*XI=NULL;	/* Stored memories (PxN matrix) */
@@ -131,14 +134,14 @@ int main (int argc, char **argv)
 	unsigned int nu = 0;
 	double norm = 0.0;
 	
-	parse_input (argc, argv, &NN, &Pmax, &hop);
+	parse_input (argc, argv, &NN, &Pmax, &Phop);
 #ifdef PP
 	printf ("\nVersion DETERMINISTICA del modelo de HOPFIELD para "
 		"redes neuronales\n\nArgumentos recibidos:\n"
 		"\ta) # de neuronas de la red:\t\t\t%lu\n"
 		"\tb) Máximo # de memorias de la red:\t\t%lu\n"
 		"\tc) Magnitud del salto en el # de memorias:\t%lu\n",
-		NN, Pmax, hop);
+		NN, Pmax, Phop);
 #endif
 	
 	/* Remember work will be bitwise */
@@ -160,7 +163,7 @@ int main (int argc, char **argv)
 		"_____\n|       α\t|\t     μ\t\t|\t    σ²\t\t|\n|~~~~~~~~~"
 		"~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
 #endif		
-	/* We start our network with a # of memories P = hop, and add 'hop'
+	/* We start our network with a # of memories P = Phop, and add 'Phop'
 	 * memories at each step until Pmax is reached.
 	 *
 	 * For each P the network is set to work until the state 'S' reaches a
@@ -170,7 +173,7 @@ int main (int argc, char **argv)
 	 * This is done MAX_ITER times for each P, and the resulting mean value
 	 * of 'overlap' toghether with its variance is printed through stdout.
 	 */
-	for (P=hop ; P <= (long) Pmax ; P += hop) {
+	for (P=Phop ; P <= (long) Pmax ; P += Phop) {
 		
 		reset_media_m ();
 		reset_var_m ();
