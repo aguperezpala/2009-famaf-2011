@@ -15,31 +15,33 @@
 /** ~~~~~~~~~~~~~~~~~~~ ### CONSTANTS & GLOBAL VARS ### ~~~~~~~~~~~~~~~~~~~~~ */
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#define  _byte_size  (1<<3)
-#define  LSB  0
-#define  MSB  (_byte_size*sizeof(unsigned long))
-#define  MAX_ITER  70
+#define  _byte_size	(1<<3)
+#define  LSB		0
+#define  MSB		(_byte_size*sizeof(unsigned long))
+
+#define  MAX_ITER	30
+#define  UNTRACED	100
+#define  TRACED		40
+
 /** NOTE Uncomment the following definition for pretty output printing */
 /*#define  PP
 */
 
 /* # of arguments the main function should receive as input */
-#define  ARGC  5
+#define  ARGC  4
 /* These are:	1) N ...... # of neurons in the net (% MSB)
- *		2) Pmax ... max # of stored memories
- *		3) Phop ... by how much the # of memories in the net has to
- *			    increase at each step till Pmax is reached
- *		4) Tmax ... maximum noise level
- *		5) Thop ... by how much the net's noise level must increase
+ *		2) P ...... # of memories in the net
+ *		3) Tmax ... maximum noise level
+ *		4) Thop ... by how much the net's noise level must increase
  *			    at each step till Tmax is reached
  */
 
 
 /* Global vars. See predefined constant ARGC */
-unsigned long	N = 0,		/* # of neurons in the net (% MSB) */
-		P = 0,		/* # of memories in the net */
-		Pmax = 0,	/* max # of memories in the net */
-		Phop = 0;	/* magnitude of P hopping till Pmax reached */
+unsigned long	N = 0,	/* # of neurons in the net (% MSB) */
+		P = 0;	/* # of memories in the net */
+double	Tmax = 0,	/* max noise level */
+	Thop = 0;	/* noise level increment per step until Tmax reached */
 
 
 /* Counts set bits in x (ie: bits in x equal to '1') */
@@ -61,24 +63,25 @@ bitcount (unsigned long x)
 /* Not much to specify about this function */
 static void
 parse_input (int argc, char **argv,
-	     unsigned long *N, unsigned long *Pmax, unsigned long *Phop)
+	     unsigned long *N, unsigned long *P, double *Tmax, double *Thop)
 {
 	char *err = NULL;
 	
 	/* Checking # of arguments is right */
 	if (argc != ARGC+1) {
-		fprintf (stderr, "\nEl programa debe invocarse con 3 entradas:"
+		fprintf (stderr, "\nEl programa debe invocarse con 4 entradas:"
 				 "\n1) # de neuronas de la red"
-				 "\n2) Capacidad maxima de memorias a almacenar"
-				 "\n3) El paso: de a cuanto debe incrementarse "
-				 "el # de memorias del sistema cada vez\n\n");
+				 "\n2) # de memorias de la red"
+				 "\n3) El máximo nivel de ruido"
+				 "\n4) La magnitud de cada incremento en nivel "
+				 "de ruido hasta alcanzar ese máximo\n\n");
 		exit (EXIT_FAILURE);
 	}
 	
 	/* Retrieving # of neurons */
 	*N = (unsigned long) strtol (argv[1], &err, 10);
 	if (err[0] != '\0') {
-		fprintf (stderr, "Error en la entrada, en la cadena'%s'\n"
+		fprintf (stderr, "Error en la entrada, en la cadena '%s'\n"
 				 "Debe pasar el # de neuronas de la red "
 				 "como primer argumento\n", err);
 		exit (EXIT_FAILURE);
@@ -89,21 +92,36 @@ parse_input (int argc, char **argv,
 		exit (EXIT_FAILURE);
 	}
 	
-	/* Retrieving max # of memories */
-	*Pmax = (unsigned long) strtol (argv[2], &err, 10);
+	/* Retrieving # of memories */
+	*P = (unsigned long) strtol (argv[2], &err, 10);
 	if (err[0] != '\0') {
-		fprintf (stderr, "Error en la entrada, en la cadena'%s'\n"
-				 "Debe pasar el maximo # de memorias de la red "
+		fprintf (stderr, "Error en la entrada, en la cadena '%s'\n"
+				 "Debe pasar el # de memorias de la red "
 				 "como segundo argumento\n", err);
 		exit (EXIT_FAILURE);
 	}
 	
-	/* Retrieving Phop magnitude */
-	*Phop = (unsigned long) strtol (argv[3], &err, 10);
+	/* Retrieving Tmax magnitude */
+	*Tmax = (double) strtod (argv[3], &err);
 	if (err[0] != '\0') {
-		fprintf (stderr, "Error en la entrada, en la cadena'%s'\n"
-				 "Debe pasar el salto (de incremento de "
-				 "memorias) como tercer argumento\n", err);
+		fprintf (stderr, "Error en la entrada, en la cadena '%s'\n"
+				 "Debe pasar el máximo nivel de ruido "
+				 "como tercer argumento\n", err);
+		exit (EXIT_FAILURE);
+	} else if (*Tmax <= 0.0) {
+		fprintf (stderr, "%f es inválido como tercer argumento.\n"
+				 "El máximo nivel de ruido debe ser "
+				 "un # real positivo\n", *Tmax);
+		exit (EXIT_FAILURE);
+	}
+	
+	/* Retrieving Thop magnitude */
+	*Thop = (double) strtod (argv[4], &err);
+	if (err[0] != '\0') {
+		fprintf (stderr, "Error en la entrada, en la cadena '%s'\n"
+				 "Debe pasar la magnitud de los incrementos "
+				 "graduales en el nivel de ruido\n"
+				 "como tercer argumento\n", err);
 		exit (EXIT_FAILURE);
 	}
 	
@@ -130,18 +148,21 @@ int main (int argc, char **argv)
 	unsigned long	*S = NULL,	/* Network state (N vector) */
 			*XI=NULL;	/* Stored memories (PxN matrix) */
 	long *m = NULL;			/* S-XI overlaps (P vector) */
-	long k = 0, overlap = 0;
 	unsigned int nu = 0;
-	double norm = 0.0;
+	double	T  = 0.0,		/* Noise level of the network */
+		mt = 0.0,		/* Overlap (S ~ XI[nu]) for a fixed T */
+		norm = 0.0;
+	long k = 0;
 	
-	parse_input (argc, argv, &NN, &Pmax, &Phop);
+	parse_input (argc, argv, &NN, &P, &Tmax, &Thop);
 #ifdef PP
-	printf ("\nVersion DETERMINISTICA del modelo de HOPFIELD para "
+	printf ("\nVersion ESTOCÁSTICA del modelo de HOPFIELD para "
 		"redes neuronales\n\nArgumentos recibidos:\n"
 		"\ta) # de neuronas de la red:\t\t\t%lu\n"
-		"\tb) Máximo # de memorias de la red:\t\t%lu\n"
-		"\tc) Magnitud del salto en el # de memorias:\t%lu\n",
-		NN, Pmax, Phop);
+		"\tb) # de memorias de la red:\t\t%lu\n"
+		"\tc) máximo nivel de ruido:  \t\t%f\n"
+		"\td) Magnitud de los saltos en el nivel de ruido:\t%f\n",
+		NN, P, Tmax, Thop);
 #endif
 	
 	/* Remember work will be bitwise */
@@ -152,10 +173,10 @@ int main (int argc, char **argv)
 	S = (unsigned long *) calloc (N, sizeof(unsigned long));
 	assert (S != NULL);
 	
-	XI = (unsigned long *) calloc (N*Pmax, sizeof(unsigned long));
+	XI = (unsigned long *) calloc (N*P, sizeof(unsigned long));
 	assert (XI != NULL);
 	
-	m = (long *) calloc (Pmax, sizeof(long));
+	m = (long *) calloc (P, sizeof(long));
 	assert (m != NULL);
 	
 #ifdef PP
@@ -163,17 +184,21 @@ int main (int argc, char **argv)
 		"_____\n|       α\t|\t     μ\t\t|\t    σ²\t\t|\n|~~~~~~~~~"
 		"~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
 #endif		
-	/* We start our network with a # of memories P = Phop, and add 'Phop'
-	 * memories at each step until Pmax is reached.
+	/* We start our network with a noise level T = Thop, and keep adding
+	 * Thop to T at each step until Tmax is reached.
 	 *
-	 * For each P the network is set to work until the state 'S' reaches a
-	 * fixed point. Then the distance from 'S' to a chosen memory XI[nu]
-	 * is calculated and stored in 'overlap'
+	 * For each T the network is set to work for 'UNTRACED' time units
+	 * without any kind of measurement on its whereabouts.
 	 *
-	 * This is done MAX_ITER times for each P, and the resulting mean value
-	 * of 'overlap' toghether with its variance is printed through stdout.
+	 * After that it is updated for 'TRACED' time units, asking each time
+	 * the state's (S) distance from a certain memory XI[nu]. The TRACED
+	 * values gathered are then averaged into a single value ('mt')
+	 *
+	 * This algorithm is performed MAX_ITER times for each T, and the
+	 * resulting mean value for 'mt' toghether with its variance is printed
+	 * through stdout.
 	 */
-	for (P=Phop ; P <= (long) Pmax ; P += Phop) {
+	for (T = Thop ; T <= Tmax ; T += Thop) {
 		
 		reset_media_m ();
 		reset_var_m ();
@@ -193,10 +218,11 @@ int main (int argc, char **argv)
 			
 			/* ... and make the network update itself until a fixed
 			 * point is reached */
-			overlap = run_det_network (S, XI, m, N, P, nu);
+			set_stoc_network (UNTRACED, TRACED);
+			mt = run_stoc_network (S, XI, m, N, P, nu, T);
 			
-			media_m ((double) overlap * norm, (double) k);
-			var_m ((double) overlap * norm, (double) k);
+			media_m (mt * norm, (double) k);
+			var_m (mt * norm, (double) k);
 		}
 #ifdef PP
 		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",
