@@ -58,6 +58,24 @@ bitcount (unsigned long x)
 	return b;
 }
 
+#ifdef _DEBUG
+static void
+printbits (uint64_t n)
+{
+	uint64_t l = ((uint64_t)1) << 63;
+	short k = 1;
+	
+	while (l > 0) {
+		printf("%c", n&l ? '1' : '0');
+		l >>= 1;
+		!(k++ % _byte_size) ? printf(" ") : 0;
+	}
+	printf ("\n");
+}
+#else
+static void
+printbits (uint64_t n) {return;}
+#endif
 
 
 /* Initilizes randomly all p memories in XI[p][n] matrix
@@ -88,8 +106,7 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n)
 
 
 
-/* Initializes the state 'S' of the neural network in a position randomly
- * close to the stored memory XI[nu]
+/* Initializes the state 'S' of the neural network in the stored memory XI[nu]
  *
  * PRE: S != NULL
  *	S is an [n] dimensional vector
@@ -102,25 +119,14 @@ void
 init_S (unsigned long *S , unsigned int n,
 	unsigned long *XI, unsigned int p, unsigned int nu)
 {
-	int i = 0, j = 0, base = (int) nu*n;
-	unsigned long tmp = 0;
+	int i = 0, base = (int) nu*n;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
 	assert (nu < p);
 	
-	#pragma omp parallel for default(shared) private(i,j,tmp)
 	for (i=0 ; i<n ; i++) {
-		for (j=0 ; j<MSB ; j++) {
-			if ((mzran13() % 5) % 2)
-				/* tmp = ξ[nu][j] */
-				tmp = ((unsigned long)1) << (MSB-1-j);
-			else
-				/* tmp = ξ[nu][1] */
-				tmp = ((unsigned long)1) << (MSB-1);
-			tmp &= XI[base+i];
-			S[i] |= tmp;
-		}
+		S[i] = XI[base+i];
 	}
 	
 	return;
@@ -143,7 +149,8 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 		 unsigned int n, unsigned int p)
 {
 	int mu = 0, i = 0;
-	long b = 0, nn = n & (~(((unsigned long) 1) << (MSB-1)));
+	long b = 0, N = MSB * (n & (~(((unsigned long) 1) << (MSB-1))));
+	/* N == # of neurons */
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
@@ -151,18 +158,17 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 	
 	debug ("%s","\n\t\t> Updating overlaps\n");
 	
-	#pragma omp parallel for default(shared) private(mu,b,i)
 	for (mu=0 ; mu<p ; mu++) {
 		
-		debug ("\t\t> m[%d]: %.4f", mu, (double) m[mu] / ((double) n*MSB));
+		debug ("\t\t> m[%d]: %.4f", mu, (double) m[mu] / (double) N);
 		
 		b = 0;
 		/* Negative logic is used on XI before XOR'ing it with S */
 		for (i=0 ; i<n ; i++)
 			b += bitcount ((unsigned long) (~XI[(mu*n)+i]) ^ S[i]);
-		m[mu] = (2*b) - (nn*MSB);
+		m[mu] = (2*b) - N;
 		
-		debug ("  --->  %.4f\n", (double) m[mu] / ((double) n*MSB));
+		debug ("  --->  %.4f\n", (double) m[mu] / (double) N);
 	}
 	
 	return;
@@ -196,8 +202,7 @@ update_deterministic_network (unsigned long *S, unsigned long *XI, long *m,
 	unsigned long	oldSi = 0,
 			XImui = 0,
 			mask = 0;
-	long h = 0;
-	double hh = 0.0;
+	long h = 0, exced = 0;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
@@ -214,22 +219,20 @@ update_deterministic_network (unsigned long *S, unsigned long *XI, long *m,
 			mask = ((unsigned long) 1) << j;
 			h = 0;
 			
-			#pragma omp parallel for shared(XI,m) \
-					private(XImui) reduction(+:h)
 			for (mu=0 ; mu<p ; mu++) {
 				XImui = XI[(mu*n)+i] & mask;
 				h += norm(XImui) * m[mu];
 			}
 			oldSi = S[i];
-			/* hh = S[i] * p/N */
-			hh = ((double) p * norm(S[i]&mask)) / ((double)(n*MSB));
+			/* exced = p * S[i] */
+			exced = p * norm(S[i]&mask);
 			
 			/* If h >= 0 then mask holds the position of the bit
 			 * we have to set (to 1) in S[i]
 			 * Otherwise mask's bitwise negation has a single '0'
 			 * in the exact position of the bit we have to reset
 			 */
-			if (((double) h) - hh >= 0.0) {
+			if (h - exced >= 0) {
 				S[i] |= mask;
 			} else {
 				S[i] &= ~mask;
@@ -237,10 +240,13 @@ update_deterministic_network (unsigned long *S, unsigned long *XI, long *m,
 			
 			/* Recalculating overlaps in m (if needed) */
 			if (S[i] != oldSi) {
+				debug ("\n\t> S[%d]: flip bit %lu\n", i, i*MSB+j);
+				for (int k=0 ; k<n ; k++) {
+					debug ("%s","\t");
+					printbits (S[k]);
+				}
 				
-				debug ("\n\t> S[%d] = %lu ---> %lu", i, oldSi, S[i]);
-				
-				update_overlaps(S, XI, m, n, p);
+				update_overlaps (S, XI, m, n, p);
 			}
 		}
 	}
@@ -291,17 +297,21 @@ run_det_network (unsigned long *S, unsigned long *XI, long *m,
 	while (S_changed) {
 		
 #ifdef _DEBUG
-		debug ("%s","\n> Sold:");
-		for (i=0 ; i<n ; i++)
-			debug (" %lu", Sold[i]);
+		debug ("%s","\n> Sold:\n");
+		for (i=0 ; i<n ; i++) {
+			debug ("%s","\t");
+			printbits (Sold[i]);
+		}
 #endif
 		
 		update_deterministic_network (S, XI, m, n, p);
 		
 #ifdef _DEBUG
 		debug ("%s","\n> Snew:");
-		for (i=0 ; i<n ; i++)
-			debug (" %lu", S[i]);
+		for (i=0 ; i<n ; i++) {
+			debug ("%s","\t");
+			printbits (S[i]);
+		}
 #endif
 		
 		i = 0;
@@ -372,6 +382,7 @@ update_stochastic_network (unsigned long *S, unsigned long *XI, long *m,
 			XImui = 0,
 			mask = 0;
 	long h = 0;
+	double N = (double) (n*MSB), exced = 0.0, hh = 0.0;
 	double b = 0.0, prob = 0.0, z = 0.0;
 	
 	assert (S  != NULL);
@@ -403,14 +414,17 @@ update_stochastic_network (unsigned long *S, unsigned long *XI, long *m,
 			mask = ((unsigned long) 1) << j;
 			h = 0;
 			
-			#pragma omp parallel for shared(XI,m) \
-					private(XImui) reduction(+:h)
 			for (mu=0 ; mu<p ; mu++) {
 				XImui = XI[(mu*n)+i] & mask;
 				h += norm(XImui) * m[mu];
 			}
 			oldSi = S[i];
-			prob = (1.0 + tanh (b * (double) h)) * 0.5;
+			/* exced = S[i] * p/N */
+			exced  = (double) norm(S[i]&mask);
+			exced *= (double) p / N;
+			hh = ((double) h / N) - exced;
+			
+			prob = (1.0 + tanh (b * hh)) * 0.5;
 			z = (double) mzran13() / (double) ULONG_MAX;
 			
 			if (z < prob) {
@@ -423,7 +437,7 @@ update_stochastic_network (unsigned long *S, unsigned long *XI, long *m,
 			
 			/* Recalculating overlaps in m (if needed) */
 			if (S[i] != oldSi) {
-				
+
 				debug ("\n\t> S[%d] = %lu ---> %lu", i, oldSi, S[i]);
 				
 				update_overlaps(S, XI, m, n, p);
@@ -473,8 +487,8 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 	Sold = copyvector(Sold,S,n);
 	
 	debug ("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-	"Run network\n> Memories: %u\n> Initial overlap: m[%u] = %.4f\n",
-	p, nu, (double) m[nu] / ((double)n*MSB));
+	       "Run network\n> Memories: %u\n> Initial overlap: m[%u] = %.4f\n",
+		p, nu, (double) m[nu] / ((double)n*MSB));
 	
 	for (i=0 ; i < UNTRACED ; i++) {
 		update_stochastic_network (S, XI, m, n, p, T);
@@ -498,7 +512,7 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 	}
 	
 	debug ("\n\n> Final overlap: m[%u] = %.4f\t\tniter: %lu\n\n",
-	nu, (double) m[nu] / ((double) n*MSB), niter);
+		nu, (double) m[nu] / ((double) n*MSB), niter);
 	free (Sold);	Sold = NULL;
 	
 	return mt / (double) TRACED;
