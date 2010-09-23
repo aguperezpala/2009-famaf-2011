@@ -24,8 +24,8 @@
 #define  TRACED		40
 
 /** NOTE Uncomment the following definition for pretty output printing */
-/*#define  PP
-*/
+#define  PP
+
 
 /* # of arguments the main function should receive as input */
 #define  ARGC  4
@@ -158,10 +158,10 @@ int main (int argc, char **argv)
 #ifdef PP
 	printf ("\nVersion ESTOCÁSTICA del modelo de HOPFIELD para "
 		"redes neuronales\n\nArgumentos recibidos:\n"
-		"\ta) # de neuronas de la red:\t\t\t%lu\n"
-		"\tb) # de memorias de la red:\t\t%lu\n"
-		"\tc) máximo nivel de ruido:  \t\t%f\n"
-		"\td) Magnitud de los saltos en el nivel de ruido:\t%f\n",
+		"\ta) # de neuronas de la red:\t%lu\n"
+		"\tb) # de memorias de la red:\t%lu\n"
+		"\tc) Máximo nivel de ruido:\t%f\n"
+		"\td) Saltos en el nivel de ruido:\t%f\n",
 		NN, P, Tmax, Thop);
 #endif
 	
@@ -181,7 +181,7 @@ int main (int argc, char **argv)
 	
 #ifdef PP
 	printf ("\n____________________________________________________________"
-		"_____\n|       α\t|\t     μ\t\t|\t    σ²\t\t|\n|~~~~~~~~~"
+		"_____\n|       T\t|\t     μ\t\t|\t    σ²\t\t|\n|~~~~~~~~~"
 		"~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|~~~~~~~~~~~~~~~~~~~~~~~|\n");
 #endif		
 	/* We start our network with a noise level T = Thop, and keep adding
@@ -226,10 +226,10 @@ int main (int argc, char **argv)
 		}
 #ifdef PP
 		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",
-			(double)P * norm, get_media_m(), get_var_m());
+			T, get_media_m(), get_var_m());
 #else
 		printf ("%.8f\t%.8f\t%.8f\t\n",
-			(double)P * norm, get_media_m(), get_var_m());
+			T, get_media_m(), get_var_m());
 #endif
 	}
 #ifdef PP

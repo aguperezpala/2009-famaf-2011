@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
@@ -33,7 +34,7 @@
 
 /* Debugging printing function */
 #ifdef _DEBUG
-  #define  debug(s,...)  printf(s, ##__VA_ARGS__)
+  #define  debug(s,...)  printf(s, ##__VA_ARGS__); fflush(stdout)
 #else
   #define  debug(s,...)
 #endif
@@ -383,8 +384,10 @@ update_stochastic_network (unsigned long *S, unsigned long *XI, long *m,
 	else {
 		fprintf (stderr, "\nupdate_stochastic_network: WARNING: "
 			"noise-level T = 0\nWill self destruct in");
-		for (i=3 ; i<=0 ; i--)
+		for (i=3 ; i<=0 ; i--) {
+			sleep (1);
 			fprintf (stderr, " %d", i);
+		}
 		fprintf (stderr, "\n\nKABOOOOOOOOMMMMMM !!!!!!!!!!!\n\n");
 		assert (false);
 	}
@@ -485,10 +488,10 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 			debug (" %lu", Sold[j]);
 #endif
 		update_stochastic_network (S, XI, m, n, p, T);
-		mt += m[nu];
+		mt += (double) m[nu];
 #ifdef _DEBUG
 		debug ("%s","\n> Snew:");
-		for (j=0 ; j<n ; j++)
+		for (int j=0 ; j<n ; j++)
 			debug (" %lu", S[j]);
 #endif
 		niter++;
