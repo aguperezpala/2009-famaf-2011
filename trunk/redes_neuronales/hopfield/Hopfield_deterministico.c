@@ -18,10 +18,10 @@
 #define  _byte_size  (1<<3)
 #define  LSB  0
 #define  MSB  (_byte_size*sizeof(unsigned long))
-#define  MAX_ITER  70
+#define  MAX_ITER  30
 /** NOTE Uncomment the following definition for pretty output printing */
-/*#define  PP
-*/
+#define  PP
+
 
 /* # of arguments the main function should receive as input */
 #define  ARGC  3
@@ -175,16 +175,11 @@ int main (int argc, char **argv)
 		reset_media_m ();
 		reset_var_m ();
 		nu = 0;
+		init_XI (XI, P, N);
 		
 		for (k=1 ; k <= MAX_ITER ; k++) {
 			
-			/* We recalculate our stored memories if needed */
-			if (nu-- <= 0) {
-				init_XI (XI, P, N);
-				nu = P-1;
-			}
-			
-			/* We start somewhere close to XI[nu] ... */
+			/* We start at XI[nu] ... */
 			init_S (S, N, XI, P, nu);
 			update_overlaps (S, XI, m, N, P);
 			
@@ -194,6 +189,14 @@ int main (int argc, char **argv)
 			
 			media_m ((double) overlap * norm, (double) k);
 			var_m ((double) overlap * norm, (double) k);
+			
+			/* We recalculate our stored memories only if needed */
+			if (nu < P-1) {
+				nu++;
+			} else {
+				init_XI (XI, P, N);
+				nu = 0;
+			}
 		}
 #ifdef PP
 		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",

@@ -24,8 +24,8 @@
 #define  TRACED		40
 
 /** NOTE Uncomment the following definition for pretty output printing */
-#define  PP
-
+/*#define  PP
+*/
 
 /* # of arguments the main function should receive as input */
 #define  ARGC  4
@@ -198,31 +198,35 @@ int main (int argc, char **argv)
 	 * resulting mean value for 'mt' toghether with its variance is printed
 	 * through stdout.
 	 */
+	set_stoc_network (UNTRACED, TRACED);
+	
 	for (T = Thop ; T <= Tmax ; T += Thop) {
 		
 		reset_media_m ();
 		reset_var_m ();
 		nu = 0;
+		init_XI (XI, P, N);
 		
 		for (k=1 ; k <= MAX_ITER ; k++) {
 			
-			/* We recalculate our stored memories if needed */
-			if (nu-- <= 0) {
-				init_XI (XI, P, N);
-				nu = P-1;
-			}
-			
-			/* We start somewhere close to XI[nu] ... */
+			/* We start at XI[nu] ... */
 			init_S (S, N, XI, P, nu);
 			update_overlaps (S, XI, m, N, P);
 			
 			/* ... and make the network update itself until a fixed
 			 * point is reached */
-			set_stoc_network (UNTRACED, TRACED);
 			mt = run_stoc_network (S, XI, m, N, P, nu, T);
 			
 			media_m (mt * norm, (double) k);
 			var_m (mt * norm, (double) k);
+			
+			/* We recalculate our stored memories only if needed */
+			if (nu < P-1)
+				nu++;
+			else {
+				init_XI (XI, P, N);
+				nu = 0;
+			}
 		}
 #ifdef PP
 		printf ("|  %.8f\t|\t%.8f\t|\t%.8f\t|\n",

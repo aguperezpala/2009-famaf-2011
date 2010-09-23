@@ -23,8 +23,7 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n);
 
 
 
-/* Initializes the state 'S' of the neural network in a position randomly
- * close to the stored memory XI[nu]
+/* Initializes the state 'S' of the neural network in the stored memory XI[nu]
  *
  * PRE: S != NULL
  *	S is an [n] dimensional vector
