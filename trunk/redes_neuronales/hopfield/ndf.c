@@ -39,6 +39,9 @@
 #endif
 
 
+unsigned int UNTRACED = 0,
+	     TRACED   = 0;
+
 
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
 /** ~~~~~~~~~~~~~~~~~~~~ ### COMMON FUNCTIONS ### ~~~~~~~~~~~~~~~~~~~~~~~~~~ **/
@@ -327,6 +330,24 @@ run_det_network (unsigned long *S, unsigned long *XI, long *m,
 
 
 
+/* Sets new values for the UNTRACED/TRACED # of updates (or time periods)
+ * for the next call to run_stoc_network
+ *
+ * PRE: tr > 0
+ */
+void
+set_stoc_network (unsigned int untr, unsigned int tr)
+{
+	assert (tr > 0);
+	
+	UNTRACED = untr;
+	TRACED   = tr;
+	
+	return;
+}
+
+
+
 /* Jumps one time-step ahead in time, for all the neurons in the neural network
  * This is done updating each neuron stored in 'S', and registering in 'm' all
  * the new overlaps between 'S' and each 'XI[mu]'
@@ -434,7 +455,7 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 {
 	long i = 0;
 	unsigned long *Sold = NULL, niter = 0;
-	bool S_changed = true;
+	double mt = 0.0;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
@@ -452,32 +473,24 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 	"Run network\n> Memories: %u\n> Initial overlap: m[%u] = %.4f\n",
 	p, nu, (double) m[nu] / ((double)n*MSB));
 	
-	while (S_changed) {
+	for (i=0 ; i < UNTRACED ; i++) {
+		update_stochastic_network (S, XI, m, n, p, T);
+	}
+	
+	for (i=0 ; i < TRACED ; i++) {
 		
 #ifdef _DEBUG
 		debug ("%s","\n> Sold:");
-		for (i=0 ; i<n ; i++)
-			debug (" %lu", Sold[i]);
+		for (int j=0 ; j<n ; j++)
+			debug (" %lu", Sold[j]);
 #endif
-		
 		update_stochastic_network (S, XI, m, n, p, T);
-		
+		mt += m[nu];
 #ifdef _DEBUG
 		debug ("%s","\n> Snew:");
-		for (i=0 ; i<n ; i++)
-			debug (" %lu", S[i]);
+		for (j=0 ; j<n ; j++)
+			debug (" %lu", S[j]);
 #endif
-		
-		i = 0;
-		S_changed = false;
-		while (!S_changed && (i < n)) {
-			S_changed = Sold[i]-S[i] != 0;
-			i++;
-		}
-		if (S_changed) {
-			Sold = copyvector(Sold,S,n);
-			debug ("%s","\n> S_changed !");
-		}
 		niter++;
 	}
 	
@@ -485,6 +498,6 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 	nu, (double) m[nu] / ((double) n*MSB), niter);
 	free (Sold);	Sold = NULL;
 	
-	return m[nu];
+	return mt / (double) TRACED;
 }
 

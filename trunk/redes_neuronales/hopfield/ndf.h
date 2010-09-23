@@ -77,6 +77,15 @@ run_det_network (unsigned long *S, unsigned long *XI, long *m,
 
 
 
+/* Sets new values for the UNTRACED/TRACED # of updates (or time periods)
+ * for the next call to run_stoc_network
+ *
+ * PRE: tr > 0
+ */
+void
+set_stoc_network (unsigned int untr, unsigned int tr);
+
+
 /* Updates the neural network until a fixed point is reached for 'S'
  * The final overlap between 'S' and XI[nu] is the returned value
  *
