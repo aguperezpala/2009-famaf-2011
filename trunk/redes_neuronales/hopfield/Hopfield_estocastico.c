@@ -142,8 +142,8 @@ int main (int argc, char **argv)
 /*	We have access to the following global vars:
 	unsigned long	N = 0,		# of neurons in the net
 			P = 0,		# of memories in the net
-			Pmax = 0,	max # of memories in the net
-			Phop = 0;	magnitude of P Phopping till Pmax reached
+			Tmax = 0,	max noise level
+			Thop = 0;	noise level increment per step till Tmax
 */	unsigned long NN = 0;
 	unsigned long	*S = NULL,	/* Network state (N vector) */
 			*XI=NULL;	/* Stored memories (PxN matrix) */

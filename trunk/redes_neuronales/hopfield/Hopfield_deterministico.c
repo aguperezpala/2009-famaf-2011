@@ -15,10 +15,10 @@
 /** ~~~~~~~~~~~~~~~~~~~ ### CONSTANTS & GLOBAL VARS ### ~~~~~~~~~~~~~~~~~~~~~ */
 /** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#define  _byte_size  (1<<3)
-#define  LSB  0
-#define  MSB  (_byte_size*sizeof(unsigned long))
-#define  MAX_ITER  30
+#define  _byte_size	(1<<3)
+#define  LSB		0
+#define  MSB		(_byte_size*sizeof(unsigned long))
+#define  MAX_ITER	30
 /** NOTE Uncomment the following definition for pretty output printing */
 #define  PP
 
