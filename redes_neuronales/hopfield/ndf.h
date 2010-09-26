@@ -102,7 +102,7 @@ set_stoc_network (unsigned int untr, unsigned int tr);
  *	nu < p
  *	T >= 0.0
  */
-long
+double
 run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 		  unsigned int n, unsigned int p, unsigned int nu, double T);
 

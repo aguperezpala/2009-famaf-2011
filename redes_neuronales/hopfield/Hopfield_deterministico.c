@@ -20,8 +20,8 @@
 #define  MSB		(_byte_size*sizeof(unsigned long))
 #define  MAX_ITER	30
 /** NOTE Uncomment the following definition for pretty output printing */
-#define  PP
-
+/*#define  PP
+*/
 
 /* # of arguments the main function should receive as input */
 #define  ARGC  3

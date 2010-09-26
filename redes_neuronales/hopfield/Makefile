@@ -3,7 +3,9 @@ STOC=stochastic_Hopfield
 SMPL=example_Hopfield
 
 CC=gcc
-CFLAGS = -Wall -ansi -pedantic \
+# For debugging include flag:	-D_DEBUG
+# Otherwise include flag:	-DNDEBUG
+CFLAGS = -Wall -ansi -pedantic -DNDEBUG \
 	 -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes \
 	 -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes \
 	 -Wdeclaration-after-statement -Wno-unused-parameter -Werror
