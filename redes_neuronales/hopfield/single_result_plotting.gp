@@ -7,16 +7,14 @@
 #
 # ~~~ CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FILE="hop_det_n448_p224_h4.dat"
+FILE="hop_det_n448_p224_h2.dat"
 TITLE="Deterministic Hopfield"
 N=448
 
 # ~~~ END CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-set title TITLE
-set object 1 rect from 0.01,0.1 to 0.09,0.2 fs solid lw 2
-set label "N = %g",N at 0.05,0.15 centre
-
+set title TITLE offset first -0.16,0.05 font "serif,16"
+set label "N = ".N offset first 0.45,1.16 center font "sans,14"
 set xtics 0.05
 set mxtics 5
 set ytics 0.1
@@ -26,9 +24,10 @@ set style line 4 lc rgb "grey"
 set grid ls 4
 set border 1+2+4
 set ytics nomirror
-set xlabel "p/N"
+set xlabel "α (p/N)" 
 set ylabel "m (overlap)"
 set key box
-plot FILE with lines lt 2 lw 3 t "Values", \
-	FILE u 1:2:3 w errorb lt 3 t "Deviations"
+set bar 0.3
+plot FILE with lines lt 3 lw 3 t "Values" , \
+	FILE u 1:2:3 w errorb lt 2 t "Deviations"
 
