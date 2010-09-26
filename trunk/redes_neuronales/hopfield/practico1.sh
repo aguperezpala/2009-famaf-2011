@@ -9,23 +9,23 @@ make clean &> $LOG
 make det >> $LOG 2>&1
 echo -e "Fuentes compiladas\n"
 
-N=128
-P=64
+N=448
+P=224
 h=2
 echo "Ejecutando caso N = $N, Pmax = $P, hop = $h"
 ./deterministic_Hopfield $N $P $h &> hop_det_n$N\_p$P\_h$h.dat
 
-# N=256
-# P=128
-# h=4
-# echo "Ejecutando caso N = $N, Pmax = $P, hop = $h"
-# ./deterministic_Hopfield $N $P $h &> hop_det_n$N\_p$P\_h$h.dat
-# 
-# N=512
-# P=256
-# h=8
-# echo "Ejecutando caso N = $N, Pmax = $P, hop = $h"
-# ./deterministic_Hopfield $N $P $h &> hop_det_n$N\_p$P\_h$h.dat
+N=832
+P=416
+h=4
+echo "Ejecutando caso N = $N, Pmax = $P, hop = $h"
+./deterministic_Hopfield $N $P $h &> hop_det_n$N\_p$P\_h$h.dat
+
+N=1664
+P=832
+h=8
+echo "Ejecutando caso N = $N, Pmax = $P, hop = $h"
+./deterministic_Hopfield $N $P $h &> hop_det_n$N\_p$P\_h$h.dat
 
 echo "Fin del caso determinístico."
 echo -e "Salidas en los archivos hop_det_n?_p?_h?.dat\n"
@@ -59,8 +59,8 @@ P=60
 echo "Ejecutando caso N = $N, P = $P"
 ./stochastic_Hopfield $N $P $T $h &> hop_stoc_n$N\_p$P.dat
 
-# ~~~~~~~~~~~~~~~~~~~~~~~ N = 816 ~~~~~~~~~~~~~~~~~~~~~~~~
-N=816
+# ~~~~~~~~~~~~~~~~~~~~~~~ N = 832 ~~~~~~~~~~~~~~~~~~~~~~~~
+N=832
 
 P=20
 echo "Ejecutando caso N = $N, P = $P"
