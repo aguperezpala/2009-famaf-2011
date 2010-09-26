@@ -1,0 +1,8 @@
+Para ejecutar el programa sencillamente abra una consola y tipee:
+./practico1.sh
+
+Requerimientos:
+	Sist.Op. GNU Linux Debian based, kernel version 2.6.24 o superior
+	Paquetes de la librería estándard de C (glibc)
+	Bash shell
+	Soporte para awk scripting language

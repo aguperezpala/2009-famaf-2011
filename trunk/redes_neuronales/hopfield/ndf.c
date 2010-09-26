@@ -41,7 +41,7 @@
   #define  dfor(s)	 for(s)
 #else
   #define  debug(s,...)
-  #define  dfor(s)	 for(s)
+  #define  dfor(s)
 #endif
 
 
@@ -130,7 +130,8 @@ void
 init_S (unsigned long *S , unsigned int n,
 	unsigned long *XI, unsigned int p, unsigned int nu)
 {
-	unsigned int i = 0, base = nu*n;
+	int i = 0;
+	unsigned int base = nu*n;
 	
 	assert (S  != NULL);
 	assert (XI != NULL);
@@ -175,7 +176,7 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 	
 	for (mu=0 ; mu<p ; mu++) {
 		
-		debug ("\t\t> m[%d]: %.4f", mu, (double) m[mu] / (double) N);
+		debug ("\t\t> m[%d]: %.4f", mu, ((double)m[mu]) / ((double)N));
 		
 		b = 0;
 		/* Negative logic is used on XI before XOR'ing it with S */
@@ -185,7 +186,7 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 		}
 		m[mu] = (2*b) - N;
 		
-		debug ("  --->  %.4f\n", (double) m[mu] / (double) N);
+		debug ("  --->  %.4f\n", ((double)m[mu]) / ((double)N));
 	}
 	
 	return;
@@ -304,7 +305,7 @@ run_det_network (unsigned long *S, unsigned long *XI, long *m,
 		 unsigned int n, unsigned int p, unsigned int nu)
 {
 	long i = 0;
-	unsigned long *Sold = NULL, t = 0;
+	unsigned long *Sold = NULL, t = 0, overlap = 0;
 	bool S_changed = true;
 	
 	assert (S  != NULL);
@@ -334,21 +335,18 @@ run_det_network (unsigned long *S, unsigned long *XI, long *m,
 		}
 		
 		t++;
-		
+		overlap += m[nu];
 		
 		debug ("%s","\n> Snew:");
 		dfor(i=0 ; i<n ; i++) {
 			debug ("%s","\t");
 			printbits(S[i]);
 		}
-		
 		debug ("%s","\n> Sold:");
 		dfor(i=0 ; i<n ; i++) {
 			debug ("%s","\t");
 			printbits(Sold[i]);
 		}
-		
-		
 		
 		if (S_changed) {
 			Sold = copyvector(Sold,S,n);
@@ -357,10 +355,17 @@ run_det_network (unsigned long *S, unsigned long *XI, long *m,
 	}
 	
 	debug ("\n\n> Final overlap: m[%u] = %.4f\t\tDIVERGENCE: %d\n\n",
-	       nu, (double) m[nu] / ((double) n*MSB), S_changed);
-	free (Sold);	Sold = NULL;
+	       nu, ((double) m[nu]) / ((double) n*MSB), S_changed);
+	free (Sold);
+	Sold = NULL;
 	
-	return m[nu];
+	if (S_changed) {
+		/* DIVERGENCE: we use the overlap's average */
+		return overlap / Tmax;
+	} else {
+		/* CONVERGENCE: we use the last overlap */
+		return m[nu];
+	}
 }
 
 
@@ -495,7 +500,7 @@ update_stochastic_network (unsigned long *S, unsigned long *XI, long *m,
  *	nu < p
  *	T >= 0.0
  */
-long
+double
 run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 		  unsigned int n, unsigned int p, unsigned int nu, double T)
 {
@@ -509,8 +514,9 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 	assert (T >= 0.0);
 	
 	debug ("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
-	       "Run network\n> Memories: %u\n> Initial overlap: m[%u] = %.4f\n",
-		p, nu, (double) m[nu] / ((double)n*MSB));
+		"Run network\n> Memories: %u\n> Noise level: %f\n> Initial "
+		"overlap: m[%u] = %.4f\n",
+		p, T, nu, ((double) m[nu]) / ((double)n*MSB));
 	
 	for (i=0 ; i < UNTRACED ; i++) {
 		update_stochastic_network (S, XI, m, n, p, T);
@@ -524,7 +530,7 @@ run_stoc_network (unsigned long *S, unsigned long *XI, long *m,
 	}
 	
 	debug ("\n\n> Final overlap: m[%u] = %.4f\n\n",
-		nu, (double) m[nu] / ((double) n*MSB));
+		nu, ((double) m[nu]) / ((double) n*MSB));
 	
 	return mt / (double) TRACED;
 }
