@@ -7,27 +7,40 @@
 #
 # ~~~ CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FILE="hop_det_n448_p224_h2.dat"
-TITLE="Deterministic Hopfield"
-N=448
+FILE="hop_stoc_n1664_p20.dat"
+TITLE="Stochastic_hopfield"
+N="1664"
+P="20"
 
 # ~~~ END CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-set title TITLE offset first -0.16,0.05 font "serif,16"
-set label "N = ".N offset first 0.45,1.16 center font "sans,14"
-set xtics 0.05
+reset
+
+# set title TITLE offset first -0.16,1.12
+# set label "N = ".N offset first 0.45,1.115 center
+set title TITLE offset first -0.4,1.12
+set label "N = ".N offset first 0.85,1.115 center
+set label "P = ".P offset first 1.05,1.115 center
+
+# set xr [0.0:0.5]
+# set yr [0.0:1.05]
+set xr [0.1:1.2]
+set yr [-0.05:1.05]
+set xtics 0.1
 set mxtics 5
 set ytics 0.1
-set xr [0.0:0.5]
-set yr [0.0:1.05]
+set ytics nomirror
 set style line 4 lc rgb "grey"
 set grid ls 4
 set border 1+2+4
-set ytics nomirror
-set xlabel "α (p/N)" 
+
+set xlabel "T (noise level)" 
 set ylabel "m (overlap)"
 set key box
 set bar 0.3
-plot FILE with lines lt 3 lw 3 t "Values" , \
-	FILE u 1:2:3 w errorb lt 2 t "Deviations"
+
+set term png size 800, 600 nocrop
+set out TITLE."_".N."_".P."_plot.png"
+plot FILE with lines lt -1 lw 3 t "Values" , \
+	FILE u 1:2:3 w errorb lt 2 lw 2 t "Deviations"
 
