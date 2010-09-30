@@ -85,12 +85,7 @@ parse_input (int argc, char **argv,
 				 "Debe pasar el # de neuronas de la red "
 				 "como primer argumento\n", err);
 		exit (EXIT_FAILURE);
-/*	} else if (*N % MSB != 0) {
-		fprintf (stderr, "Lo siento, pero el # de neuronas de la red "
-				 "debe ser un multiplo de %lu por cuestiones "
-				 "implementativas\nIntentelo nevamente\n", MSB);
-		exit (EXIT_FAILURE);
-*/	}
+	}
 	
 	/* Retrieving # of memories */
 	*P = (unsigned long) strtol (argv[2], &err, 10);
@@ -177,8 +172,7 @@ int main (int argc, char **argv)
 	S = (unsigned long *) calloc (N, sizeof(unsigned long));
 	assert (S != NULL);
 	
-/*	P += (pad==0) ? pad : (MSB-pad)/2;
-*/	XI = (unsigned long *) calloc (N*P, sizeof(unsigned long));
+	XI = (unsigned long *) calloc (N*P, sizeof(unsigned long));
 	assert (XI != NULL);
 	
 	m = (long *) calloc (P, sizeof(long));

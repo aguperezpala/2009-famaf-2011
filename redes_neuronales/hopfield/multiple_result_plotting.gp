@@ -1,3 +1,4 @@
+#
 # Print final overlap results of a HOPFIELD NETWORK of a specified size N
 #
 # It takes its input from the specified files "FILEi", each of which must be
@@ -85,3 +86,5 @@ plot	FILE1 with linespoints ls 1 t "N = ".N1 , \
 	FILE2 with linespoints ls 2 t "N = ".N2 , \
 	FILE3 with linespoints ls 3 t "N = ".N3
 
+#
+# ~~~ END PLOT SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
