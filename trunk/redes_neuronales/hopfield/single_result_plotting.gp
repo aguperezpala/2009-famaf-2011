@@ -13,11 +13,11 @@ STOC=1
 # ~~~ BEGIN CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-FILE =  "sample_stoc_n416.dat"
-TITLE = "Stochastic_hopfield_2"
+FILE  = "hop_stoc_n1664_p60.dat"
+TITLE = "Stochastic_hopfield"
 
-N = "416"
-P = "5"
+N = "1664"
+P = "60"
 
 COND = STOC
 # Options for COND: { DET , STOC }
@@ -67,7 +67,7 @@ set ylabel "m (overlap)"
 set key box
 set bar 0.3
 set term png size 800, 600 nocrop
-plot FILE with lines lt 3 lw 3 t "Values" , \
+plot FILE with lines lt 8 lw 3 t "Values" , \
 	FILE u 1:2:3 w errorb lt 1 lw 2 t "Deviation"
 
 #
