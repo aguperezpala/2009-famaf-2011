@@ -79,12 +79,12 @@ parse_input (int argc, char **argv,
 				 "Debe pasar el # de neuronas de la red "
 				 "como primer argumento\n", err);
 		exit (EXIT_FAILURE);
-	} else if (*N % MSB != 0) {
-		fprintf (stderr, "Lo siento, pero el # de memorias de la red "
+/*	} else if (*N % MSB != 0) {
+		fprintf (stderr, "Lo siento, pero el # de neuronas de la red "
 				 "debe ser un multiplo de %lu por cuestiones "
 				 "implementativas\nIntentelo nevamente\n", MSB);
 		exit (EXIT_FAILURE);
-	}
+*/	}
 	
 	/* Retrieving max # of memories */
 	*Pmax = (unsigned long) strtol (argv[2], &err, 10);
@@ -130,6 +130,7 @@ int main (int argc, char **argv)
 	long k = 0, overlap = 0;
 	unsigned int nu = 0;
 	double norm = 0.0;
+	long pad = 0;
 	
 	parse_input (argc, argv, &NN, &Pmax, &hop);
 #ifdef PP
@@ -143,12 +144,17 @@ int main (int argc, char **argv)
 	
 	/* Remember work will be bitwise */
 	N = NN / MSB;
-	norm = 1.0 / (double) NN;
+	/* 'pad' provides support for non-64-multiple NN */
+	pad = NN % MSB;
+	if (pad != 0)
+		N++;
+	norm = 1.0 / ((double) NN + (pad ? (MSB-pad) : 0));
 	
 	/* Generating arrays */
 	S = (unsigned long *) calloc (N, sizeof(unsigned long));
 	assert (S != NULL);
 	
+	Pmax += (pad==0) ? pad : (MSB-pad)/2;
 	XI = (unsigned long *) calloc (N*Pmax, sizeof(unsigned long));
 	assert (XI != NULL);
 	

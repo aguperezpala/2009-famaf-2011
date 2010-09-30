@@ -99,9 +99,10 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n)
 	 * execution threads, which itself is non-deterministic.
 	 *	To regain determinism in the creation of the XI matrix simply
 	 * comment the #pragma statement
+	 *	Be warned: mzran13 is NOT threadsafe
 	 */
-	#pragma omp parallel for shared(XI)
-	for (i=0 ; i<p*n ; i++) {
+/*	#pragma omp parallel for shared(XI)
+*/	for (i=0 ; i<p*n ; i++) {
 		XI[i] = (unsigned long) mzran13();
 	}
 	
@@ -174,6 +175,7 @@ update_overlaps (unsigned long *S, unsigned long *XI, long *m,
 	
 	debug ("%s","\n\t\t> Updating overlaps\n");
 	
+	#pragma omp parallel for shared(XI,S,m,N,n,p) private(mu,i,b,mui)
 	for (mu=0 ; mu<p ; mu++) {
 		
 		debug ("\t\t> m[%d]: %.4f", mu, ((double)m[mu]) / ((double)N));
