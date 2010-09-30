@@ -207,7 +207,6 @@ int main (int argc, char **argv)
 	
 	for (T = Thop ; T <= Tmax ; T += Thop) {
 		
-		fprintf (stderr, "\rLoop T = %.1f", T);
 		reset_media_m ();
 		reset_var_m ();
 		nu = 0;
