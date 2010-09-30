@@ -99,7 +99,7 @@ init_XI (unsigned long *XI, unsigned int p, unsigned int n)
 	 * execution threads, which itself is non-deterministic.
 	 *	To regain determinism in the creation of the XI matrix simply
 	 * comment the #pragma statement
-	 *	Be warned: mzran13 is NOT threadsafe
+	 * WARNING mzran13 is NOT threadsafe
 	 */
 /*	#pragma omp parallel for shared(XI)
 */	for (i=0 ; i<p*n ; i++) {
