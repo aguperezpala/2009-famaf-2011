@@ -10,6 +10,14 @@
 #define  MSB		(_byte_size*sizeof(long))
 
 
+/* NOTE
+ * BITWISE STORAGE is used for states in 'S' and stored memories in 'XI'.
+ * That is, each element in those vectors occupies one bit of memory space.
+ * ie: for each S[i] or XI[mu][i] position there are M stored components,
+ * where M = sizeof(long). Usually X = 64.
+ */
+
+
 
 /* Strong Dilution Hopfield Network ADT */
 struct _sdhn_s {
@@ -21,6 +29,7 @@ struct _sdhn_s {
 	long *w;	/* connection weights matrix	*/
 	short XI_init = 0;	/* Whether memories were initialized	*/
 	short neigh_init = 0;	/* Whether neighbours were initialized	*/
+	short w_init = 0;	/* Whether connection weights were init */
 };
 
 

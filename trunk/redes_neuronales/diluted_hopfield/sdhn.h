@@ -2,11 +2,10 @@
  * Neural Networks - Deterministic Hopfield Model with Strong Dilution
  * Network ADT
  *
- * NOTE
- * All functions consider a BITWISE STORAGE within vectors and matrixes.
- * That is, each element is considered to occupy one bit of memory space.
- * ie: for each S[i] or XI[mu][i] position there are X stored components,
- * where X = sizeof(long). Usually X = 64.
+ * $ Author: Carlos E. Budde $
+ * $ Date: 25/10/2010 21:32 $
+ * $ License: GPL v3 $
+ *
  */
 
 
@@ -52,16 +51,16 @@ sdhn_destroy (sdnh_t net);
  * PRE: net != NULL
  */
 void
-sdhn_set_untraced (sdhn_t net);
+sdhn_set_untraced (sdhn_t net, unsigned int untraced);
 
 
-/* Sets the # of updates for which the network will run measuring overlaps(ie: run untraced)
- * before overlap measurements begin
+/* Sets the # of times the network will update itself measuring overlaps
+ * (ie: run traced) before the average overlap is finally returned
  *
  * PRE: net != NULL
  */
 void
-sdhn_set_traced (sdhn_t net);
+sdhn_set_traced (sdhn_t net, unsigned int traced);
 
 
 /* Initializes randomly all the stored memories in 'net'
@@ -90,8 +89,35 @@ void
 sdhn_init_w (sdhn_t net);
 
 
+/* Initializes the state of the network over the stored memory XI[nu]
+ *
+ * PRE: net != NULL
+ *	sdhn_init_XI  was previously used on net
+ *
+ * POS: S == XI[nu]
+ */
+void
+sdhn_init_S (sdhn_t net, unsigned int nu);
+
+
 
 /** ~~~~~~~~~~~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+
+/* Updates net for <untraced> steps without measuring anything.
+ * Then updates net for <traced> steps measuring overlaps between S and XI[nu].
+ * Returns the average overlap measured in the <traced> final steps.
+ *
+ * PRE: net != NULL
+ *	sdhn_init_w  was previously used on net
+ *	nu ∈ {0,...,p-1}  where p is the # of stored memories in net
+ *
+ * USE: m = sdhn_run_net (net, nu)
+ *
+ * POS: m == average overlap between the state S and the memory XI[nu]
+ */
+double
+sdhn_run_net (sdhn_t net, unsigned int nu);
 
 
 
