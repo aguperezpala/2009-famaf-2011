@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <omp.h>
 #include <assert.h>
 #include "sdhn.h"
 #include "mzran13.h"
@@ -22,30 +23,49 @@
 #define  MSB		(_byte_size*sizeof(long))
 
 
-/* Debugging printing function */
+/* Debugging printing functions */
 #ifdef _DEBUG
-  #define  debug(s,...)  fprintf(stderr, s, ##__VA_ARGS__); fflush(stderr)
+  #define  debug(s,...)  fprintf(stderr, s, ##__VA_ARGS__)
   #define  dfor(s)	 for(s)
+  static void
+  printbits (uint64_t n)
+  {
+	uint64_t l = ((uint64_t)1) << 63;
+	short k = 1;
+  	
+	while (l > 0) {
+		debug ("%c", n&l ? '1' : '0');
+		l >>= 1;
+		!(k++ % _byte_size) ? debug("%s"," ") : 0;
+	}
+	debug ("%s","\n");
+  }
 #else
   #define  debug(s,...)
   #define  dfor(s)
+  #define printbits(n)
 #endif
+
+
 
 
 /* Strong Dilution Hopfield Network ADT */
 struct _sdhn_s {
+	
 	int n;		/* # of neurons 		*/
 	int p;		/* # of memories		*/
 	int k;		/* # of neighbours per neuron	*/
 	long traced;	/* # of traced steps per run	*/
 	long untraced;	/* # of untraced steps per run	*/
-	long *S;	/* network state		*/
-	long *XI;	/* stored memories		*/
-	long *neigh;	/* neighbours matrix		*/
-	long *w;	/* connection weights matrix	*/
-	short XI_init;	/* Whether memories were initialized	*/
+	
+	long *neigh;		/* neighbours matrix		*/
+	long *w;		/* connection weights matrix	*/
+	unsigned long *S;	/* network state		*/
+	unsigned long *XI;	/* stored memories		*/
+	
+	short XI_init;		/* Whether memories were initialized	*/
 	short neigh_init;	/* Whether neighbours were initialized	*/
-	short w_init;	/* Whether connection weights were init */
+	short w_init;		/* Whether connection weights were init */
 };
 
 /* NOTE
@@ -77,20 +97,21 @@ sdhn_t sdhn_create (unsigned int n, unsigned int p, unsigned int k)
 	
 	assert ((double) k <= log ((double) n));
 	
-	net = (sdhn_t) malloc (sizeof (struct _sdhn_s *));
+	net = (sdhn_t) malloc (sizeof (struct _sdhn_s));
 	assert (net != NULL);
 	
 	net->n = n & (~(((unsigned long) 1) << (MSB-1)));
 	net->p = p & (~(((unsigned long) 1) << (MSB-1)));
 	net->k = k & (~(((unsigned long) 1) << (MSB-1)));
 	
+	net->neigh = (long *) calloc (n*k, sizeof (long));
+	net->w     = (long *) calloc (n*k, sizeof (long));
+	
 	/* Remember work will be bitwise in S and in XI */
 	N = n/MSB + !(!(n%MSB));
 	
-	net->S  = (long *) calloc (N,   sizeof(long));
-	net->XI = (long *) calloc (N*p, sizeof(long));
-	net->w  = (long *) calloc (n*k, sizeof(long));
-	net->neigh = (long *) calloc (n*k, sizeof(long));
+	net->S  = (unsigned long *) calloc (N,   sizeof (unsigned long));
+	net->XI = (unsigned long *) calloc (N*p, sizeof (unsigned long));
 	
 	assert (net->S  != NULL);
 	assert (net->XI != NULL);
@@ -162,11 +183,11 @@ sdhn_set_traced (sdhn_t net, unsigned int traced)
 void
 sdhn_init_XI (sdhn_t net)
 {
-	long i = 0, size = 0;
+	long i = 0, N = 0;
 	
 	assert (net != NULL);
 	
-	size = net->p * (net->n / MSB + !(!(net->n % MSB)));
+	N = net->n / MSB + !(!(net->n % MSB));
 	
 	/* NOTE With #pragma statement this section becomes non-deterministic,
 	 * as the output memory XI[i] will depend on the execution order of the
@@ -176,11 +197,21 @@ sdhn_init_XI (sdhn_t net)
 	 * WARNING mzran13 is NOT threadsafe
 	 */
 /*	#pragma omp parallel for shared(XI)
-*/	for (i=0 ; i<size ; i++) {
-		net->XI[i] = (long) mzran13();
+*/	for (i=0 ; i < N*net->p ; i++) {
+		net->XI[i] = (unsigned long) mzran13();
 	}
 	
 	net->XI_init = 1;
+	
+	debug ("%s","Memories:\n");
+	dfor (i=0 ; i<net->p ; i++) {
+		debug ("%ld)", i);
+		dfor (int j=0 ; j < N ; j++) {
+			debug ("%s","\t");
+			printbits(net->XI[j+i*N]);
+		}
+	}
+	debug ("%s","\n");
 	
 	return;
 }
@@ -194,6 +225,12 @@ choose_fresh_neigh (sdhn_t net, long i, long j)
 	short fresh = 0;
 	long cand = 0, l = 0;
 	long *ne = net->neigh;
+	
+	/* TODO
+	 * This method is ~ O(n), and therefore higly inneficient.
+	 * The uniqueness of each neighbour should be checked by means of a
+	 * hash table or some other method of O(1)
+	 */
 	
 	while (!fresh) {
 		/* Get a candidate */
@@ -244,29 +281,103 @@ sdhn_init_neigh (sdhn_t net)
 }
 
 
+
+
+/* Calculates and saves the weight w[i][j] */
+static void
+compute_weight (sdhn_t net, long i, long j)
+{
+	long N = 0, m = 0, mu = 0, ne = 0, Xi = 0, Xn = 0;
+	unsigned long mask = 0;
+	long *w = NULL;
+	
+	/* ne == neigh[i][j] */
+	ne = net->neigh[j+i*net->k];
+	/*  w == w[i][j] */
+	w = &(net->w[j+i*net->k]);
+	*w = 0;
+	/* Remember work in XI is bitwise */
+	N = net->n / MSB + !(!(net->n % MSB));
+	
+	for (mu=0 ; mu < net->p ; mu++) {
+		
+		/* Xi = XI[mu][i] */
+		mask = ((unsigned long) 1) << (i%MSB);
+		m = mu*N + i/MSB;
+		Xi = (net->XI[m] & mask) > 0 ? 1 : -1;
+		
+		/* Xn = XI[mu][ne] */
+		mask = ((unsigned long) 1) << (ne%MSB);
+		m = mu*N + ne/MSB;
+		Xn = (net->XI[m] & mask) > 0 ? 1 : -1;
+		
+		*w += Xi * Xn;
+	}
+}
+
+
+
 /* Initializes all connection weights in 'net'
-*
-* PRE: net != NULL
-*	sdhn_init_XI    was previously used on net
-*	sdhn_init_neigh was previously used on net
-*/
+ *
+ * PRE: net != NULL
+ *	sdhn_init_XI    was previously used on net
+ *	sdhn_init_neigh was previously used on net
+ */
 void
 sdhn_init_w (sdhn_t net)
 {
+	long i = 0, j = 0;
+	
+	assert (net != NULL);
+	assert (net->XI_init);
+	assert (net->neigh_init);
+	
+	#pragma omp parallel for shared(net) private(i,j)
+	for (i=0 ; i < net->n ; i++) {
+		for (j=0 ; j < net->k ; j++)
+			compute_weight (net, i, j);
+	}
+	
+	net->w_init = 1;
+	
+	debug ("%s","\nWeights list:\n");
+	dfor (i=0 ; i < net->n ; i++) {
+		debug ("%ld)\t", i);
+		dfor (j=0 ; j < net->k ; j++)
+				debug ("%ld\t", net->w[j+i*net->k]);
+		debug ("%s","\n");
+	}
+	
 	return;
 }
 
 
 /* Initializes the state of the network over the stored memory XI[nu]
-*
-* PRE: net != NULL
-*	sdhn_init_XI  was previously used on net
-*
-* POS: S == XI[nu]
-*/
+ *
+ * PRE: net != NULL
+ *	sdhn_init_XI  was previously used on net
+ *	0 <= nu <= # of memories in net
+ *
+ * POS: S == XI[nu]
+ */
 void
 sdhn_init_S (sdhn_t net, unsigned int nu)
 {
+	int i = 0, N = 0;
+	
+	assert (net != NULL);
+	assert (net->XI_init);
+	assert (nu < net->p);
+	
+	N = net->n/MSB + !(!(net->n % MSB));
+	for (i=0 ; i < N ; i++)
+		net->S[i] = net->XI[i+nu*N];
+	
+	debug ("\nState (memory #%u):\n", nu);
+	dfor (i=0 ; i<N ; i++)
+		printbits(net->S[i]);
+	debug ("%s","\n");
+	
 	return;
 }
 
