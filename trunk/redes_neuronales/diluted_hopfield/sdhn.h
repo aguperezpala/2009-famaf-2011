@@ -16,7 +16,7 @@
 typedef struct _sdhn_s * sdhn_t;
 
 
-/** ~~~~~~~~~~~~~~~~~~ CREATE / DESTROY FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ### ### ### ~~~~~~~ CREATE / DESTROY FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
 /* Creates an instance of the ADT
@@ -38,11 +38,11 @@ sdhn_create (unsigned int n, unsigned int p, unsigned int k);
  * USE: net = sdhn_destroy (net);
  */
 sdhn_t
-sdhn_destroy (sdnh_t net);
+sdhn_destroy (sdhn_t net);
 
 
 
-/** ~~~~~~~~~~~~~~~~~~~~~~ NETWORK INITIALIZERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ### ### ### ~~~~~~~~~~ NETWORK INITIALIZERS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
 /* Sets the # of steps for which the network will relax (ie: run untraced)
@@ -101,7 +101,7 @@ sdhn_init_S (sdhn_t net, unsigned int nu);
 
 
 
-/** ~~~~~~~~~~~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ### ### ### ~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
 /* Updates net for <untraced> steps without measuring anything.
