@@ -93,6 +93,7 @@ sdhn_init_w (sdhn_t net);
  *
  * PRE: net != NULL
  *	sdhn_init_XI  was previously used on net
+ *	0 <= nu <= # of memories in net
  *
  * POS: S == XI[nu]
  */
