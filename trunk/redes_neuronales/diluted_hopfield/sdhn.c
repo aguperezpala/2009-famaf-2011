@@ -3,7 +3,7 @@
  * Network ADT
  *
  * $ Author: Carlos E. Budde $
- * $ Date: 25/10/2010 21:32 $
+ * $ Date: 31/10/2010 21:32 $
  * $ License: GPL v3 $
  *
  */
@@ -425,18 +425,18 @@ update_net (sdhn_t net)
 	N = net->n/MSB + !(!(net->n % MSB));
 	
 	#pragma omp parallel for default(shared) private(i,j,h,ne,mask,Sn)
-	for (i=0 ; i<N ; i++) {
+	for (i=0 ; i < net->n ; i++) {
 		
 		h = 0;
 		for (j=0 ; j < net->k ; j++) {
 			
 			/* Sn = S[neigh[i][j]] */
-			ne = net->neigh[j+i*net->k];
+			ne = net->neigh [i*net->k + j];
 			mask = ((unsigned long) 1) << (ne%MSB);
 			Sn = (net->S[ne/MSB] & mask) > 0 ? 1 : -1;
 			
 			/* h += w[i][j] * Sn   */
-			h += net->w[j+i*net->k] * Sn;
+			h += net->w [i*net->k + j] * Sn;
 		}
 		
 		mask = ((unsigned long) 1) << (i%MSB);
@@ -452,14 +452,10 @@ update_net (sdhn_t net)
 	}
 	
 	/* State update */
-	#pragma omp parallel for
-	for (i=0 ; i<N ; i++)
-		net->S[i] = net->SD[i];
-	aux = aux;
-/*	aux = net->S;
+	aux = net->S;
 	net->S = net->SD;
 	net->SD = aux;
-*/	
+	
 	return;
 }
 
@@ -487,14 +483,22 @@ sdhn_run_net (sdhn_t net, unsigned int nu)
 	assert (net->w_init);
 	assert (nu < net->p);
 	
+	
 	N = net->n/MSB + !(!(net->n % MSB));
 	norm = 1.0 / ((double) net->n);
 	
-	/* Relaxation 
+	
+	dfor (i=0 ; i<N ; i++)
+		b += bitcount (net->S[i] ^ ~(net->XI[nu*N+i]));
+	debug ("\nInitial overlap = %.8f\n\n",
+	        norm * (2.0*b - ((double)net->n)));
+	
+	
+	/* Relaxation */
 	for (t=0 ; t < net->untraced ; t++) {
 		update_net (net);
 	}
-	*/
+	
 	/* Measurement */
 	for (t=0 ; t < net->traced ; t++) {
 		
@@ -506,12 +510,16 @@ sdhn_run_net (sdhn_t net, unsigned int nu)
 			b += bitcount (net->S[i] ^ ~(net->XI[nu*N+i]));
 		
 		/* NOTE Beware of type promotion here */
-		overlap += 2.0*b - ((double)net->n);
+		overlap += 2.0*((double)b) - ((double)net->n);
 		
-		debug ("Update #%ld\tOverlap = %.4f\n",
-		       t, (2.0*b - ((double)net->n))*norm);
+		debug ("Updated #%ld\tState:\n", t);
+		dfor (i=0 ; i<N ; i++)
+			printbits(net->S[i]);
+		debug ("Overlap = %.4f\n",
+		       (2.0*((double)b) - ((double)net->n))*norm);
 	}
-	debug ("\nFinal overlap = %.8f\n", (overlap*norm) / ((double) net->n));
+	debug ("\nFinal overlap = %.8f\n\n",
+	        (overlap*norm) / ((double) net->traced));
 	
 	return (overlap*norm) / ((double) net->traced);
 }

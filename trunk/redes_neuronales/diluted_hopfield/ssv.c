@@ -25,14 +25,15 @@ unsigned int	va = 0,  /* var[va] = varianza anterior  = S^2(n-1) */
  * devuelve el "proximo" valor de la media muestral = X(n)
  */
 void
-media_m (double Xn, double n)
+media_m (double Xn, unsigned long n)
 {
+	float nn = (float) n;
 	/* Recordar:	media[ma] = media anterior  = X(n-1) *
 	 *		media[ms] = media siguiente = X(n)   *
 	 *						     */
 	ma = ms;
 	ms = (ms+1) % SIZE;
-	media[ms] = media[ma] + (Xn-media[ma]) / n;
+	media[ms] = media[ma] + (Xn-media[ma]) / nn;
 	
 	return;
 }
@@ -45,16 +46,17 @@ media_m (double Xn, double n)
  * 	 respectivamente (ver arriba la funcion media_m, "Media muestral")
  */
 void
-var_m (double Xn, double n)
+var_m (double Xn, unsigned long n)
 {
+	float nn = (float) n;
 	/* Recordar:	var[va] = varianza anterior  = S^2(n-1) *
 	 *		var[vs] = varianza siguiente = S^2(n)	*
 	 *							*/
 	if (n > 1) {
 		va = vs;
 		vs = (vs+1) % SIZE;
-		var[vs] = ((n - 1.0) / n) * var[va] + \
-			   (n + 1.0) * pow (media[ms] - media[ma], 2.0);
+		var[vs] = ((nn - 1.0) / nn) * var[va] + \
+			   (nn + 1.0) * pow (media[ms] - media[ma], 2.0);
 	}
 	
 	return;
