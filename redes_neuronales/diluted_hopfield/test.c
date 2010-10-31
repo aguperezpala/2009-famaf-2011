@@ -4,7 +4,7 @@
 #define  UNTRACED  30
 #define  TRACED  100
 
-#define  n  68
+#define  n  64
 #define  p  16
 #define  k  4
 

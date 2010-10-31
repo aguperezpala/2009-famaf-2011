@@ -255,9 +255,14 @@ choose_fresh_neigh (sdhn_t net, long i, long j)
 	 */
 	
 	while (!fresh) {
+		
 		/* Get a candidate */
 		cand = mzran13() % net->n;
-		fresh = 1;
+		if (cand == i)
+			continue;
+		else
+			fresh = 1;
+		
 		/* Check if it's not in the list yet */
 		for (l=0 ; l<j ; l++) {
 			if ( cand == ne[l+i*net->k] ) {
@@ -447,10 +452,14 @@ update_net (sdhn_t net)
 	}
 	
 	/* State update */
-	aux = net->S;
+	#pragma omp parallel for
+	for (i=0 ; i<N ; i++)
+		net->S[i] = net->SD[i];
+	aux = aux;
+/*	aux = net->S;
 	net->S = net->SD;
 	net->SD = aux;
-	
+*/	
 	return;
 }
 
@@ -481,11 +490,11 @@ sdhn_run_net (sdhn_t net, unsigned int nu)
 	N = net->n/MSB + !(!(net->n % MSB));
 	norm = 1.0 / ((double) net->n);
 	
-	/* Relaxation */
+	/* Relaxation 
 	for (t=0 ; t < net->untraced ; t++) {
 		update_net (net);
 	}
-	
+	*/
 	/* Measurement */
 	for (t=0 ; t < net->traced ; t++) {
 		
@@ -496,6 +505,7 @@ sdhn_run_net (sdhn_t net, unsigned int nu)
 		for (i=0 ; i<N ; i++)
 			b += bitcount (net->S[i] ^ ~(net->XI[nu*N+i]));
 		
+		/* NOTE Beware of type promotion here */
 		overlap += 2.0*b - ((double)net->n);
 		
 		debug ("Update #%ld\tOverlap = %.4f\n",
