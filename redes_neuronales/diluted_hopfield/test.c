@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include "sdhn.h"
+#include <math.h>
 
-#define  UNTRACED  30
-#define  TRACED  100
+#define  UNTRACED  0
+#define  TRACED  10
 
 #define  n  64
-#define  p  16
-#define  k  4
+#define  p  2
+#define  k  3
 
-#define  nu 8
+#define  nu 0
 
 int main (void)
 {

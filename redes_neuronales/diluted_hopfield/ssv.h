@@ -17,7 +17,7 @@
  * calcula el "proximo" valor de la media muestral = X(n)
  */
 void
-media_m (double Xn, double n);
+media_m (double Xn, unsigned long n);
 
 
 /* Varianza muestral para el n-esimo paso. Toma una nueva muestra Xn y
@@ -28,7 +28,7 @@ media_m (double Xn, double n);
  *	 ahora la varianza muestral
  */
 void
-var_m (double Xn, double n);
+var_m (double Xn, unsigned long n);
 
 
 /* Devuelve la última media muestral calculada */
