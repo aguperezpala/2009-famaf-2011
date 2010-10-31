@@ -18,6 +18,10 @@
 #include "mzran13.h"
 
 
+
+/** ### ### ### ~~~~~~~ CONSTANTS & MACROS  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+
 #define  _byte_size	(1<<3)
 #define  LSB		0
 #define  MSB		(_byte_size*sizeof(long))
@@ -48,6 +52,20 @@
 
 
 
+/* Counts set bits in x (ie: bits in x equal to '1') */
+static inline int
+bitcount (unsigned long x)
+{
+	int b = 0;
+	for (b = 0; x != 0; x &= (x-1))
+		b++;
+	return b;
+}
+
+
+
+/** ### ### ### ~~~~~~~~~~~~ STRUCTURE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 
 /* Strong Dilution Hopfield Network ADT */
 struct _sdhn_s {
@@ -61,6 +79,7 @@ struct _sdhn_s {
 	long *neigh;		/* neighbours matrix		*/
 	long *w;		/* connection weights matrix	*/
 	unsigned long *S;	/* network state		*/
+	unsigned long *SD;	/* duplicate state, for updates */
 	unsigned long *XI;	/* stored memories		*/
 	
 	short XI_init;		/* Whether memories were initialized	*/
@@ -111,12 +130,14 @@ sdhn_t sdhn_create (unsigned int n, unsigned int p, unsigned int k)
 	N = n/MSB + !(!(n%MSB));
 	
 	net->S  = (unsigned long *) calloc (N,   sizeof (unsigned long));
+	net->SD = (unsigned long *) calloc (N,   sizeof (unsigned long));
 	net->XI = (unsigned long *) calloc (N*p, sizeof (unsigned long));
 	
-	assert (net->S  != NULL);
-	assert (net->XI != NULL);
-	assert (net->w  != NULL);
 	assert (net->neigh != NULL);
+	assert (net->w  != NULL);
+	assert (net->S  != NULL);
+	assert (net->SD != NULL);
+	assert (net->XI != NULL);
 	
 	net->XI_init = 0;
 	net->neigh_init = 0;
@@ -136,10 +157,11 @@ sdhn_destroy (sdhn_t net)
 {
 	assert (net != NULL);
 	
-	free (net->S);		net->S = NULL;
-	free (net->XI);		net->XI = NULL;
-	free (net->w);		net->w = NULL;
 	free (net->neigh);	net->neigh = NULL;
+	free (net->w);		net->w  = NULL;
+	free (net->S);		net->S  = NULL;
+	free (net->SD);		net->SD = NULL;
+	free (net->XI);		net->XI = NULL;
 	free (net);		net = NULL;
 	
 	return net;
@@ -383,24 +405,104 @@ sdhn_init_S (sdhn_t net, unsigned int nu)
 
 
 
-/** ~~~~~~~~~~~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ### ### ### ~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+
+/* Updates the whole network in a single time step, using DETERMINISTIC logic */
+static void
+update_net (sdhn_t net)
+{
+	int i = 0, j = 0;
+	long N = 0, h = 0, ne = 0, Sn = 0;
+	unsigned long mask = 0;
+	unsigned long *aux = NULL;
+	
+	N = net->n/MSB + !(!(net->n % MSB));
+	
+	#pragma omp parallel for default(shared) private(i,j,h,ne,mask,Sn)
+	for (i=0 ; i<N ; i++) {
+		
+		h = 0;
+		for (j=0 ; j < net->k ; j++) {
+			
+			/* Sn = S[neigh[i][j]] */
+			ne = net->neigh[j+i*net->k];
+			mask = ((unsigned long) 1) << (ne%MSB);
+			Sn = (net->S[ne/MSB] & mask) > 0 ? 1 : -1;
+			
+			/* h += w[i][j] * Sn   */
+			h += net->w[j+i*net->k] * Sn;
+		}
+		
+		mask = ((unsigned long) 1) << (i%MSB);
+		/* If h >= 0 then mask holds the position of the bit  *
+		 * we have to set (to 1) in S[i/MSB]		      *
+		 * Otherwise mask's bitwise negation has a single '0' *
+		 * in the exact position of the bit we have to reset  */
+		/** WARNING is this thread-safe ??? */
+		if (h > 0)
+			net->SD[i/MSB] |= mask;
+		else
+			net->SD[i/MSB] &= ~mask;
+	}
+	
+	/* State update */
+	aux = net->S;
+	net->S = net->SD;
+	net->SD = aux;
+	
+	return;
+}
+
 
 
 /* Updates net for <untraced> steps without measuring anything.
-* Then updates net for <traced> steps measuring overlaps between S and XI[nu].
-* Returns the average overlap measured in the <traced> final steps.
-*
-* PRE: net != NULL
-*	sdhn_init_w  was previously used on net
-*	nu ∈ {0,...,p-1}  where p is the # of stored memories in net
-*
-* USE: m = sdhn_run_net (net, nu)
-*
-* POS: m == average overlap between the state S and the memory XI[nu]
-*/
+ * Then updates net for <traced> steps measuring overlaps between S and XI[nu].
+ * Returns the average overlap measured in the <traced> final steps.
+ *
+ * PRE: net != NULL
+ *	sdhn_init_w  was previously used on net
+ *	nu ∈ {0,...,p-1}  where p is the # of stored memories in net
+ *
+ * USE: m = sdhn_run_net (net, nu)
+ *
+ * POS: m == average overlap between the state S and the memory XI[nu]
+ */
 double
 sdhn_run_net (sdhn_t net, unsigned int nu)
 {
-	return 0.0;
+	long N = 0, t = 0, i = 0, b = 0;
+	double overlap = 0.0, norm = 0.0;
+	
+	assert (net != NULL);
+	assert (net->w_init);
+	assert (nu < net->p);
+	
+	N = net->n/MSB + !(!(net->n % MSB));
+	norm = 1.0 / ((double) net->n);
+	
+	/* Relaxation */
+	for (t=0 ; t < net->untraced ; t++) {
+		update_net (net);
+	}
+	
+	/* Measurement */
+	for (t=0 ; t < net->traced ; t++) {
+		
+		update_net (net);
+		
+		/* b = XOR (S, ~XI[nu]) */
+		b = 0;
+		for (i=0 ; i<N ; i++)
+			b += bitcount (net->S[i] ^ ~(net->XI[nu*N+i]));
+		
+		overlap += 2.0*b - ((double)net->n);
+		
+		debug ("Update #%ld\tOverlap = %.4f\n",
+		       t, (2.0*b - ((double)net->n))*norm);
+	}
+	debug ("\nFinal overlap = %.8f\n", (overlap*norm) / ((double) net->n));
+	
+	return (overlap*norm) / ((double) net->traced);
 }
 
