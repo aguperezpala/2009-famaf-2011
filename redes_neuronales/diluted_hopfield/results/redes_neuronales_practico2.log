@@ -1,0 +1,16 @@
+gcc -MM  >.depend
+gcc: no input files
+rm -f .depend diluted_Hopfield test *.o *~
+gcc -MM  >.depend
+gcc: no input files
+gcc -Wall -ansi -pedantic -DNDEBUG -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o mzran13.o mzran13.c
+gcc -Wall -ansi -pedantic -DNDEBUG -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o ssv.o ssv.c
+gcc -Wall -ansi -pedantic -DNDEBUG -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o sdhn.o sdhn.c
+gcc -Wall -ansi -pedantic -DNDEBUG -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o Hopfield_diluido.o Hopfield_diluido.c
+gcc -Wall -ansi -pedantic -DNDEBUG -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror mzran13.o ssv.o sdhn.o Hopfield_diluido.o -lm -o diluted_Hopfield; \
+	echo "\n\nPara ejecutar el programa ingrese \"./diluted_Hopfield\"\n"
+
+
+Para ejecutar el programa ingrese "./diluted_Hopfield"
+
+rm -f .depend diluted_Hopfield test *.o *~
