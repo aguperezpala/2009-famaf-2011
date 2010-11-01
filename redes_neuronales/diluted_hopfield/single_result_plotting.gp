@@ -1,13 +1,16 @@
-#
-# Print final overlap results of a HOPFIELD NETWORK of a specified size N
-#
-# It takes its input from the specified "FILE", which must be composed of
-# 3 columns: 1) x axis values: p/K, where K == mean conectivity
-#	     2) y axis values: mean overlap
-#	     3) standard deviations of the former
-#
-#
-# ~~~ BEGIN CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+################################################################################
+#                                                                              #
+# Print final overlap results of DILUTED HOPFIELD NETWORK of specified size N  #
+#                                                                              #
+# It takes its input from the specified "FILE", which must be composed of      #
+# 3 columns: 1) x axis values: p/K, where K == mean conectivity                #
+#	     2) y axis values: mean overlap				       #
+#	     3) standard deviations of the former			       #
+#                                                                              #
+################################################################################
+#                                                                              #
+#                                                          CONFIG. SECTION     #
+#                                                                              #
 
 
 FILE  = "`echo $DILUTED_HOPFIELD`"
@@ -17,12 +20,13 @@ N = `echo $NNEURONS`
 K = `echo $MEAN_CON`
 
 
-
-# ~~~ END CONFIG. SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+#                                                                              #
+#                                                      END CONFIG. SECTION     #
+#                                                                              #
 ################################################################################
-#
-# ~~~ BEGIN PLOT SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#                                                                              #
+#                                                       BEGIN PLOT SECTION     #
+#                                                                              #
 
 reset
 
@@ -49,5 +53,8 @@ set term png size 800, 600 nocrop
 plot FILE with lines lt 2 lw 3 t "Values" , \
 	FILE u 1:2:3 w errorb lt 8 lw 2 t "Deviation"
 
-#
-# ~~~ END PLOT SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#                                                                              #
+#                                                         END PLOT SECTION     #
+#                                                                              #
+################################################################################
