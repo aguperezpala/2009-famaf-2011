@@ -1,4 +1,4 @@
-DIL=diluted
+DIL=diluted_Hopfield
 TEST=test
 CC=gcc
 
