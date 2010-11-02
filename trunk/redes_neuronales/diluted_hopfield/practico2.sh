@@ -58,7 +58,8 @@ gnuplot single_result_plotting.gp
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~ Superposición ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-echo "Fin sección de cálculo. Graficando superposición de resultados obtenidos"
+echo -e "\nFin sección de cálculo."
+echo "Graficando superposición de resultados obtenidos"
 
 export DILUTED_HOPFIELD1=$FILE1
 export DILUTED_HOPFIELD2=$FILE2
@@ -75,8 +76,8 @@ gnuplot multiple_result_plotting.gp
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~ Shut down ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-echo "Fin de Hopfield diluído."
+echo -e "\nFin de Hopfield diluído."
 echo -e "Tablas en los archivos *.dat\nGráficos en los archivos *.png"
 
 make clean >> $LOG 2>&1
-echo -e "\nRegistro de las actividades en $LOG\nPráctico 2 finalizado\n"
+echo -e "Registro de las actividades en $LOG\n\nPráctico 2 finalizado\n"
