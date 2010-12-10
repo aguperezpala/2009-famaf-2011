@@ -18,15 +18,15 @@ typedef struct _ptron_s *ptron_t;
 #define PTRON_OK  ( 0)
 #define PTRON_ERR (-1)
 
+/* I/O data type */
 typedef enum {
-	ptron_char,
 	ptron_int,
 	ptron_uint,
 	ptron_long,
 	ptron_ulong,
 	ptron_float,
 	ptron_double
-} interface_dtype;
+} io_dtype;
 
 
 /** ### ### ### ~~~~~~~ CREATE / DESTROY FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -99,7 +99,7 @@ ptron_get_layers_size (ptron_t net, unsigned int *N);
 
 
 int
-ptron_set_input (ptron_t net, const void **XI, interface_dtype type);
+ptron_set_input (ptron_t net, const void **XI, io_dtype type);
 
 /* Sets vector XI as the network's new input pattern
  *
@@ -114,7 +114,7 @@ ptron_set_input (ptron_t net, const void **XI, interface_dtype type);
 
 
 int
-ptron_get_output (ptron_t net, void **O, interface_dtype type);
+ptron_get_output (ptron_t net, void **O, io_dtype type);
 
 /* Gets the network output layer values
  * Caller owns the memory allocated for vector 'O'
