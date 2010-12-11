@@ -84,7 +84,7 @@ ptron_get_num_layers (ptron_t net);
  */
 
 
-int
+unsigned int *
 ptron_get_layers_size (ptron_t net, unsigned int *N);
 
 /* Stores in N the # of neurons of each layer in th network,
@@ -94,20 +94,26 @@ ptron_get_layers_size (ptron_t net, unsigned int *N);
  * PRE: net != NULL
  *	N == NULL
  *
- * POS: result == PTRON_OK  &&  sizes stored in N
+ * USE: N = ptron_get_layers_size (net, N);
+ *
+ * POS: result != NULL  &&  sizes stored in N
  *	or
- *	result == PTRON_ERR
+ *	result == NULL
  */
 
 
 int
-ptron_set_input (ptron_t net, const void **XI, io_dtype type);
+ptron_set_input (ptron_t net, const void *XI, size_t length, size_t n);
 
 /* Sets vector XI as the network's new input pattern
  *
+ * PARAMETERS:	net -----> perceptron network
+ *		XI ------> input array
+ *		length --> number of elements in XI
+ *		n -------> size (in bytes) of each element in XI
+ *
  * PRE: net != NULL
- *	type(XI) == type
- *	size(XI) == size(net's input layer)
+ *	XI  != NULL
  *
  * POS: result == PTRON_OK  &&  net's input layer == XI
  *	or
