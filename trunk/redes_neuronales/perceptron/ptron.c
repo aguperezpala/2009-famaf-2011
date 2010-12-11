@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -27,6 +28,8 @@ struct _ptron_s {
 	double **dw;		/* for back-propagation updates */
 };
 
+
+#define  INPUT  0
 
 
 #define  _byte_size	(1<<3)
@@ -208,26 +211,15 @@ ptron_reinit (ptron_t net, double downBound, double upBound)
 
 
 
-unsigned int
-ptron_get_num_layers (ptron_t net)
-{
-	printbits (0);
-	return 0;
-}
-
-
 /* Returns the number of layers the network was created with,
  * including both input and output layer.
  *
  * PRE: net != NULL
  */
+unsigned int
+ptron_get_num_layers (ptron_t net) { assert (net != NULL); return net->A; }
 
 
-int
-ptron_get_layers_size (ptron_t net, unsigned int *N)
-{
-	return 0;
-}
 
 
 /* Stores in N the # of neurons of each layer in th network,
@@ -237,34 +229,74 @@ ptron_get_layers_size (ptron_t net, unsigned int *N)
  * PRE: net != NULL
  *	N == NULL
  *
- * POS: result == PTRON_OK  &&  sizes stored in N
+ * USE: N = ptron_get_layers_size (net, N);
+ *
+ * POS: result != NULL  &&  sizes stored in N
  *	or
- *	result == PTRON_ERR
+ *	result == NULL
  */
-
-
-int
-ptron_set_input (ptron_t net, const void **XI, io_dtype type)
+unsigned int *
+ptron_get_layers_size (ptron_t net, unsigned int *N)
 {
-	return 0;
+	assert (net != NULL);
+	assert (N == NULL);
+	
+	N = (unsigned int *) malloc ((net->A + 1) * sizeof (unsigned int));
+	if (N != NULL) {
+		memcpy (N, net->N, (net->A + 1) * sizeof (unsigned int));
+	}
+	
+	return N;
 }
+
+
 
 
 /* Sets vector XI as the network's new input pattern
  *
+ * PARAMETERS:	net -----> perceptron network
+ *		XI ------> input array
+ *		length --> number of elements in XI
+ *		n -------> size (in bytes) of each element in XI
+ *
  * PRE: net != NULL
- *	type(XI) == type
- *	size(XI) == size(net's input layer)
+ *	XI  != NULL
  *
  * POS: result == PTRON_OK  &&  net's input layer == XI
  *	or
  *	result == PTRON_ERR
  */
+int
+ptron_set_input (ptron_t net, const void *XI, size_t length, size_t n)
+{
+	int i = 0, res = PTRON_OK;
+	
+	assert (net != NULL);
+	assert (XI != NULL);
+	
+	memcpy (&(net->V[INPUT][0]), XI, n*length);
+	
+	/** TODO HACER QUE LA MEMORIA SEA COPIADA EN LA LINEA DE ARRIBA */
+	
+	dfor (i=0 ; i < net->N[INPUT] ; i++) {
+		debug("INPUT[%d] = %.3f\n", i, net->V[INPUT][i]);
+	}
+/*	for (i=0 ; i < net->N[INPUT] ; i++) {
+		store_input (&(net->V[INPUT][i]), &(XI[i]), type);
+		net->V[INPUT][i] = (double) (((int *) XI)[i]);
+		debug("INPUT[%d] = %.3f\n", i, net->V[INPUT][i]);
+	}
+*/	
+	return res;
+}
+
+
 
 
 int
 ptron_get_output (ptron_t net, void **O, io_dtype type)
 {
+	printbits (0);
 	return 0;
 }
 
