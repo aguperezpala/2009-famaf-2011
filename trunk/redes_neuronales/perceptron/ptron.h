@@ -66,6 +66,8 @@ ptron_reinit (ptron_t net, double downBound, double upBound);
 /* Restarts the sinaptic weights to random values between bounds given
  *
  * PRE: net != NULL
+ *	upBound > downBound
+ *
  * POS: result == PTRON_OK  &&  sinaptic weights reinitialized
  *	or
  *	result == PTRON_ERR
@@ -82,7 +84,7 @@ ptron_get_num_layers (ptron_t net);
  */
 
 
-unsigned int
+int
 ptron_get_layers_size (ptron_t net, unsigned int *N);
 
 /* Stores in N the # of neurons of each layer in th network,
