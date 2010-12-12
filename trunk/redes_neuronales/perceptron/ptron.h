@@ -18,15 +18,6 @@ typedef struct _ptron_s *ptron_t;
 #define PTRON_OK  ( 0)
 #define PTRON_ERR (-1)
 
-/* I/O data type */
-typedef enum {
-	ptron_int,
-	ptron_uint,
-	ptron_long,
-	ptron_ulong,
-	ptron_float,
-	ptron_double
-} io_dtype;
 
 
 /** ### ### ### ~~~~~~~ CREATE / DESTROY FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -103,14 +94,10 @@ ptron_get_layers_size (ptron_t net, unsigned int *N);
 
 
 int
-ptron_set_input (ptron_t net, const void *XI, size_t length, size_t n);
+ptron_set_input (ptron_t net, const double *XI, size_t length);
 
-/* Sets vector XI as the network's new input pattern
- *
- * PARAMETERS:	net -----> perceptron network
- *		XI ------> input array
- *		length --> number of elements in XI
- *		n -------> size (in bytes) of each element in XI
+/* Sets vector XI, of lenght "length", as the network's new input pattern
+ * At most length_of(input-layer) elements will be copied out.
  *
  * PRE: net != NULL
  *	XI  != NULL
@@ -122,18 +109,18 @@ ptron_set_input (ptron_t net, const void *XI, size_t length, size_t n);
 
 
 int
-ptron_get_output (ptron_t net, void **O, io_dtype type);
+ptron_get_output (ptron_t net, double *O);
 
 /* Gets the network output layer values
  * Caller owns the memory allocated for vector 'O'
- * Free using standard free()
+ * Free using glibc standard free() routine
  *
  * PRE: net != NULL
- *	*O == NULL
+ *	O == NULL
  *
- * POS: result == PTRON_OK  &&  *O != NULL
+ * POS: result == PTRON_OK  &&  O != NULL
  *	or
- *	result == PTRON_ERR &&  *O == NULL
+ *	result == PTRON_ERR &&  O == NULL
  */
 
 

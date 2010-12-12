@@ -31,6 +31,8 @@ struct _ptron_s {
 
 #define  INPUT  0
 
+#define  MAX(x,y)	((x) > (y) ? (x) : (y))
+#define  MIN(x,y)	((x) > (y) ? (y) : (x))
 
 #define  _byte_size	(1<<3)
 #define  LSB		0
@@ -252,12 +254,8 @@ ptron_get_layers_size (ptron_t net, unsigned int *N)
 
 
 
-/* Sets vector XI as the network's new input pattern
- *
- * PARAMETERS:	net -----> perceptron network
- *		XI ------> input array
- *		length --> number of elements in XI
- *		n -------> size (in bytes) of each element in XI
+/* Sets vector XI, of lenght "length", as the network's new input pattern
+ * At most length_of(input-layer) elements will be copied out.
  *
  * PRE: net != NULL
  *	XI  != NULL
@@ -267,26 +265,46 @@ ptron_get_layers_size (ptron_t net, unsigned int *N)
  *	result == PTRON_ERR
  */
 int
-ptron_set_input (ptron_t net, const void *XI, size_t length, size_t n)
+ptron_set_input (ptron_t net, const double *XI, size_t length)
 {
 	int i = 0, res = PTRON_OK;
+	size_t size = 0;
 	
 	assert (net != NULL);
 	assert (XI != NULL);
 	
-	memcpy (&(net->V[INPUT][0]), XI, n*length);
+	size = MIN (net->N[INPUT], length ) * sizeof (double) ;
 	
-	/** TODO HACER QUE LA MEMORIA SEA COPIADA EN LA LINEA DE ARRIBA */
+	net->V[INPUT] = (double *) memcpy (net->V[INPUT], XI, size);
 	
+	debug ("%s","Receiving new input:\n");
 	dfor (i=0 ; i < net->N[INPUT] ; i++) {
 		debug("INPUT[%d] = %.3f\n", i, net->V[INPUT][i]);
+		if (net->V[INPUT][i] != XI[i])
+			res = PTRON_ERR;
 	}
-/*	for (i=0 ; i < net->N[INPUT] ; i++) {
-		store_input (&(net->V[INPUT][i]), &(XI[i]), type);
-		net->V[INPUT][i] = (double) (((int *) XI)[i]);
-		debug("INPUT[%d] = %.3f\n", i, net->V[INPUT][i]);
-	}
-*/	
+	
+	return res;
+}
+
+
+
+
+/* Gets the network output layer values
+ * Caller owns the memory allocated for vector 'O'
+ * Free using glibc standard free() routine
+ *
+ * PRE: net != NULL
+ *	O == NULL
+ *
+ * POS: result == PTRON_OK  &&  O != NULL
+ *	or
+ *	result == PTRON_ERR &&  O == NULL
+ */
+int
+ptron_get_output (ptron_t net, double *O)
+{
+	int res = PTRON_OK;
 	return res;
 }
 
@@ -294,29 +312,9 @@ ptron_set_input (ptron_t net, const void *XI, size_t length, size_t n)
 
 
 int
-ptron_get_output (ptron_t net, void **O, io_dtype type)
-{
-	printbits (0);
-	return 0;
-}
-
-
-/* Gets the network output layer values
- * Caller owns the memory allocated for vector 'O'
- * Free using standard free()
- *
- * PRE: net != NULL
- *	*O == NULL
- *
- * POS: result == PTRON_OK  &&  *O != NULL
- *	or
- *	result == PTRON_ERR &&  *O == NULL
- */
-
-
-int
 ptron_clear_updates (ptron_t net)
 {
+	printbits (0);
 	return 0;
 }
 
