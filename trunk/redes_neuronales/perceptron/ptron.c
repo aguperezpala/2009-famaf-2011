@@ -22,11 +22,16 @@
 struct _ptron_s {
 	int A;			/* # of layers (counting input & output) */
 	int *N;			/* # of neurons per layer*/
+	double etha;		/* updates scaling parameter */
+	
 	double **V;		/* neurons */
 	double **w;		/* sinaptic weights matrix */
 	double (*g) (double);	/* propagation function */
+	double **delta;		/* for back-propagation updates */
 	double **dw;		/* for back-propagation updates */
-	int ready;		/* is the network ready for fwd-prop? */
+	
+	short ready;		/* is the network ready for fwd-prop? */
+	short fwd;		/* has a fwd propagation recently been done? */
 };
 
 
@@ -93,6 +98,9 @@ ptron_create (unsigned int A, const unsigned int *N, double (*g) (double))
 	/* # of layers */
 	net->A = int_val(A);
 	
+	/* etha parameter for net self-update */
+	net->etha = 0.1;
+	
 	/* size of each layer */
 	net->N = (int *) calloc (net->A+1, sizeof (int));
 	assert (net->N != NULL);
@@ -125,18 +133,29 @@ ptron_create (unsigned int A, const unsigned int *N, double (*g) (double))
 	/* propagation function */
 	net->g = g;
 	
-	/* update deltas
+	/* axuiliary value for the weights update */
+	net->delta = (double **) malloc (net->A * sizeof (double *));
+	assert (net->delta != NULL);
+	for (i=0 ; i < net->A ; i++) {
+		net->delta[i] = (double *) malloc (net->N[i+1] * sizeof (double));
+		assert (net->delta[i] != NULL);
+	}
+	
+	/* weights update values
 	 * net->dw[i] holds the update for the weights in net->w[i]
-	 * For that reason net->dw[i] ranges in [ 0 , net->N[i+1] )
+	 * For that reason net->dw[i] is an [n]x[m] matrix, where
+	 * n == net->N[i] and m == net->N[i+1]
 	 */
 	net->dw = (double **) malloc (net->A * sizeof (double *));
 	assert (net->dw != NULL);
 	for (i=0 ; i < net->A ; i++) {
-		net->dw[i] = (double *) malloc (net->N[i+1] * sizeof (double));
+		net->dw[i] = (double *) malloc (net->N[i] * net->N[i+1] *
+						sizeof (double));
 		assert (net->dw[i] != NULL);
 	}
 	
 	net->ready = 0;
+	net->fwd = 0;
 	
 	return net;
 }
@@ -159,13 +178,15 @@ ptron_destroy (ptron_t net)
 	for (i=0 ; i < net->A ; i++) {
 		free (net->V[i]);	net->V[i] = NULL;
 		free (net->w[i]);	net->w[i] = NULL;
+		free (net->delta[i]);	net->delta[i] = NULL;
 		free (net->dw[i]);	net->dw[i] = NULL;
 	}
 	free (net->V[net->A]);	net->V[net->A] = NULL;
 	
-	free (net->V);	net->V = NULL;
-	free (net->w);	net->w = NULL;
-	free (net->dw);	net->dw = NULL;
+	free (net->V);		net->V = NULL;
+	free (net->w);		net->w = NULL;
+	free (net->delta);	net->delta = NULL;
+	free (net->dw);		net->dw = NULL;
 	
 	free(net);	net = NULL;
 	
@@ -181,21 +202,21 @@ ptron_destroy (ptron_t net)
 /* Restarts the sinaptic weights to random values between bounds given
  *
  * PRE: net != NULL
- *	upBound > downBound
+ *	upBound > lowBound
  *
  * POS: result == PTRON_OK  &&  sinaptic weights reinitialized
  *	or
  *	result == PTRON_ERR
  */
 int
-ptron_reinit (ptron_t net, double downBound, double upBound)
+ptron_reinit (ptron_t net, double lowBound, double upBound)
 {
 	int res = PTRON_OK;
 	int i = 0, j = 0;
 	double ran = 0.0;
 	
 	assert (net != NULL);
-	assert (upBound > downBound);
+	assert (upBound > lowBound);
 	
 	net->ready = 1;
 	
@@ -205,10 +226,10 @@ ptron_reinit (ptron_t net, double downBound, double upBound)
 		for (j=0 ; j < (net->N[i] * net->N[i+1]) ; j++) {
 			
 			ran = ((double) mzran13()) / ((double) ULONG_MAX);
-			net->w[i][j] = ran * (upBound - downBound) + downBound;
+			net->w[i][j] = ran * (upBound - lowBound) + lowBound;
 #ifdef _DEBUG
 			debug("w[%d][%d] = %.4f\n", i, j, net->w[i][j]);
-			if (net->w[i][j] < downBound || net->w[i][j] > upBound) {
+			if (net->w[i][j] < lowBound || net->w[i][j] > upBound) {
 				res = PTRON_ERR;
 				net->ready = 0;
 			}
@@ -341,14 +362,16 @@ ptron_get_output (ptron_t net, double *O)
 void
 ptron_clear_updates (ptron_t net)
 {
-	int i = 0, j = 0;
+	int m = 0, i = 0, j = 0;
 	
 	assert (net != NULL);
 	
-	#pragma omp parallel for default(shared) private(i,j)
-	for (i=0 ; i < net->A ; i++) {
-		for (j=0 ; j < net->N[i+1] ; j++) {
-			net->dw[i][j] = 0.0;
+	#pragma omp parallel for default(shared) private(m,j,i)
+	for (m=0 ; m < net->A ; m++) {
+		for (i=0 ; i < net->N[m] ; i++) {
+			for (j=0 ; j < net->N[m+1] ; j++) {
+				net->dw[m][j + i * net->N[m+1]] = 0.0;
+			}
 		}
 	}
 	
@@ -392,13 +415,20 @@ ptron_fwd_prop (ptron_t net)
 		#pragma omp parallel for default(shared) private(i,j,sum)
 		for (j=0 ; j < net->N[m+1] ; j++) {
 			
+			/* sum = Σ w[m][i,j] * V[m][i] */
 			sum = 0.0;
 			for (i=0 ; i < net->N[m] ; i++)
-				sum += net->w[m][j + i*net->N[m+1]] * net->V[m][i];
+				sum += net->w[m][j + i*net->N[m+1]] *
+					g(net->V[m][i]);
 				/* w[m] rows    represent layer m   *
 				 * w[m] columns represent layer m+1 */
 			
-			net->V[m+1][j] = g(sum);
+			net->V[m+1][j] = sum;
+			/* NOTE: V[m][j] holds the h[m][j] raw value
+			 *	 without the net's function g(x) evaluation.
+			 *	 Thus to get the real V[m][j] value then
+			 *	 g(V[m][j]) must be used
+			 */
 		}
 	}
 	
@@ -407,42 +437,101 @@ ptron_fwd_prop (ptron_t net)
 		debug ("O[%d] = %f\n", j, net->V[net->A][j]);
 	}
 	
+	net->fwd = 1;
+	
 	return res;
 }
 
 
 
 
-int
-ptron_back_prop (ptron_t net)
-{
-	printbits (0);
-	return 0;
-}
-
-
-/* Performs backwards propagation calculations after a forward propagated sample
+/* Performs backwards propagation calculations after a processed sample.
+ * NU holds the expected output for the input given prior to the last
+ * forward propagation invoked on net.
+ *
+ * This can be done (successfully) only once after each forward propagation.
+ * "gp" should be the derivative of the function the net was created with.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
- *	
  *	 To do so ptron_do_updates(net) must be invoked
  *	
  *	 "incrementally" means that newly computed updates are added to any
- *	 previous update value in the network.
+ *	 previous update value stored in the network.
  *
  * PRE: net != NULL
- *	ptron_fwd_prop(net)
+ *	NU  != NULL
+ *	length_of(NU) >= length_of(output-layer)
  *
  * POS: result == PTRON_OK  &&  updates successfully computed
  *	or
- *	result == PTRON_ERR
+ *	result == PTRON_ERR  &&  ptron_fwd_prop(net) must be invoked beforehand
  */
+int
+ptron_back_prop (ptron_t net, double *NU, double (*gp) (double))
+{
+	int m = 0, j = 0, i = 0;
+	double sum = 0.0;
+	double (*g) (double) = NULL;
+	
+	assert (net != NULL);
+	assert (NU  != NULL);
+	
+	if (!net->fwd)
+		return PTRON_ERR;
+	else
+		net->fwd = 0;
+	
+	g = net->g;
+	m = net->A-1;
+	
+	/* Computing the deltas for the output layer */
+	#pragma omp parallel for default(shared) private(i)
+	for (i=0 ; i < net->N[m+1] ; i++) {
+		net->delta[m][i] = gp (net->V[m+1][i]) *
+					(NU[i] - g (net->V[m+1][i]));
+		/* Remember net->delta has length net->N[m+1] */
+	}
+	
+	/* Recursively (backwards) computing the deltas for each layer */
+	for (m = net->A-1 ; m > 0 ; m--) {
+		
+		#pragma omp parallel for default(shared) private(i,j,sum)
+		for (i=0 ; i < net->N[m] ; i++) {
+			
+			/* sum = Σ w[m][i,j] * δ[m][j] */
+			sum = 0.0;
+			for (j=0 ; j < net->N[m+1] ; j++) {
+				
+				sum += net->w[m][j + i*net->N[m+1]] *
+					net->delta[m][j];
+			}
+			/* δ[m-1][i] = gp (h[m][i]) * sum    */
+			net->delta[m-1][i] = gp (net->V[m][i]) * sum;
+		}
+	}
+	
+	/* Computing parallely all weights updates */
+	#pragma omp parallel for default(shared) private(m,j,i)
+	for (m=0 ; m < net->A ; m++) {
+		for (j=0 ; j < net->N[m+1] ; j++) {
+			for (i=0 ; i < net->N[m] ; i++) {
+				net->dw[m][j + i*net->N[m+1]] += net->etha *
+					net->delta[m][j] * net->V[m][i];
+			}
+		}
+	}
+	
+	return PTRON_OK;
+}
+
+
 
 
 int
 ptron_do_updates (ptron_t net)
 {
+	printbits (0);
 	return 0;
 }
 

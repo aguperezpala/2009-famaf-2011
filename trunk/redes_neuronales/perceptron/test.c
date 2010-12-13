@@ -8,12 +8,11 @@
 #include "ptron.h"
 
 
-double	n1 = 1.2,
-	n2 = 0.66;
-
+#define  LBOUND    0.66
+#define  UBOUND     1.2
 #define  A  4
 #define  INPUT_SIZE   5
-#define  OUTPUT_SIZE  1
+#define  OUTPUT_SIZE  2
 
 unsigned int N[A+1] = {INPUT_SIZE, 4, 3, 5, OUTPUT_SIZE};
 
@@ -42,7 +41,7 @@ int main (void)
 	free (NN);
 	
 	/* Restarting sinaptic weights */
-	ptron_reinit (net, n2, n1);
+	ptron_reinit (net, LBOUND, UBOUND);
 	
 	/* Setting input */
 	printf ("Setting new input:\n");

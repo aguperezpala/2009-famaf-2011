@@ -52,12 +52,12 @@ ptron_destroy (ptron_t net);
 
 
 int
-ptron_reinit (ptron_t net, double downBound, double upBound);
+ptron_reinit (ptron_t net, double lowBound, double upBound);
 
 /* Restarts the sinaptic weights to random values between bounds given
  *
  * PRE: net != NULL
- *	upBound > downBound
+ *	upBound > lowBound
  *
  * POS: result == PTRON_OK  &&  sinaptic weights reinitialized
  *	or
@@ -155,24 +155,29 @@ ptron_fwd_prop (ptron_t net);
 
 
 int
-ptron_back_prop (ptron_t net);
+ptron_back_prop (ptron_t net, double *NU, double (*gp) (double));
 
-/* Performs backwards propagation calculations after a forward propagated sample
+/* Performs backwards propagation calculations after a processed sample.
+ * NU holds the expected output for the input given prior to the last
+ * forward propagation invoked on net.
+ *
+ * This can be done (successfully) only once after each forward propagation.
+ * "gp" should be the derivative of the function the net was created with.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
- *	
  *	 To do so ptron_do_updates(net) must be invoked
  *	
  *	 "incrementally" means that newly computed updates are added to any
- *	 previous update value in the network.
+ *	 previous update value stored in the network.
  *
  * PRE: net != NULL
- *	ptron_fwd_prop(net)
+ *	NU  != NULL
+ *	length_of(NU) >= length_of(output-layer)
  *
  * POS: result == PTRON_OK  &&  updates successfully computed
  *	or
- *	result == PTRON_ERR
+ *	result == PTRON_ERR  &&  ptron_fwd_prop(net) must be invoked beforehand
  */
 
 
