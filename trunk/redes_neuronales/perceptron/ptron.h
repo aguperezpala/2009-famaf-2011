@@ -108,7 +108,7 @@ ptron_set_input (ptron_t net, const double *XI, size_t length);
  */
 
 
-int
+double *
 ptron_get_output (ptron_t net, double *O);
 
 /* Gets the network output layer values
@@ -118,13 +118,15 @@ ptron_get_output (ptron_t net, double *O);
  * PRE: net != NULL
  *	O == NULL
  *
- * POS: result == PTRON_OK  &&  O != NULL
+ * USE: O = ptron_get_output (net, O)
+ *
+ * POS: O != NULL  &&  result stored in vector O
  *	or
- *	result == PTRON_ERR &&  O == NULL
+ *	O == NULL
  */
 
 
-int
+void
 ptron_clear_updates (ptron_t net);
 
 /* Erases weight updates calculations (aka: delta_w) stored in the network,
