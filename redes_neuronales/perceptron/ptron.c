@@ -26,6 +26,7 @@ struct _ptron_s {
 	double **w;		/* sinaptic weights matrix */
 	double (*g) (double);	/* propagation function */
 	double **dw;		/* for back-propagation updates */
+	int ready;		/* is the network ready for fwd-prop? */
 };
 
 
@@ -135,6 +136,8 @@ ptron_create (unsigned int A, const unsigned int *N, double (*g) (double))
 		assert (net->dw[i] != NULL);
 	}
 	
+	net->ready = 0;
+	
 	return net;
 }
 
@@ -194,15 +197,21 @@ ptron_reinit (ptron_t net, double downBound, double upBound)
 	assert (net != NULL);
 	assert (upBound > downBound);
 	
-	debug("%s","Restarting deltas\n");
+	net->ready = 1;
+	
+	debug("%s","Restarting sinaptic weights\n");
 	for (i=0 ; i < net->A ; i++) {
-		for (j=0 ; j < net->N[i+1] ; j++) {
+		
+		for (j=0 ; j < (net->N[i] * net->N[i+1]) ; j++) {
+			
 			ran = ((double) mzran13()) / ((double) ULONG_MAX);
-			net->dw[i][j] = ran * (upBound - downBound) + downBound;
+			net->w[i][j] = ran * (upBound - downBound) + downBound;
 #ifdef _DEBUG
-			debug("dw[%d][%d] = %.4f\n", i, j, net->dw[i][j]);
-			if (net->dw[i][j] < downBound || net->dw[i][j] > upBound)
+			debug("w[%d][%d] = %.4f\n", i, j, net->w[i][j]);
+			if (net->w[i][j] < downBound || net->w[i][j] > upBound) {
 				res = PTRON_ERR;
+				net->ready = 0;
+			}
 #endif
 		}
 	}
@@ -220,7 +229,6 @@ ptron_reinit (ptron_t net, double downBound, double upBound)
  */
 unsigned int
 ptron_get_num_layers (ptron_t net) { assert (net != NULL); return net->A; }
-
 
 
 
@@ -280,8 +288,9 @@ ptron_set_input (ptron_t net, const double *XI, size_t length)
 	debug ("%s","Receiving new input:\n");
 	dfor (i=0 ; i < net->N[INPUT] ; i++) {
 		debug("INPUT[%d] = %.3f\n", i, net->V[INPUT][i]);
-		if (net->V[INPUT][i] != XI[i])
+		if (net->V[INPUT][i] != XI[i]) {
 			res = PTRON_ERR;
+		}
 	}
 	
 	return res;
@@ -297,43 +306,60 @@ ptron_set_input (ptron_t net, const double *XI, size_t length)
  * PRE: net != NULL
  *	O == NULL
  *
- * POS: result == PTRON_OK  &&  O != NULL
+ * USE: O = ptron_get_output (net, O)
+ *
+ * POS: O != NULL  &&  result stored in vector O
  *	or
- *	result == PTRON_ERR &&  O == NULL
+ *	O == NULL
  */
-int
+double *
 ptron_get_output (ptron_t net, double *O)
 {
-	int res = PTRON_OK;
-	return res;
+	size_t size = 0;
+	
+	assert (net != NULL);
+	assert (O == NULL);
+	
+	size = net->N[net->A] * sizeof (double);
+	O = (double *) malloc (size);
+	
+	if (O != NULL) {
+		O = memcpy (O, net->V[net->A], size);
+	}
+	
+	return O;
 }
 
 
 
-
-int
-ptron_clear_updates (ptron_t net)
-{
-	printbits (0);
-	return 0;
-}
 
 
 /* Erases weight updates calculations (aka: delta_w) stored in the network,
  * setting all of them to zero.
  * PRE: net != NULL
  */
+void
+ptron_clear_updates (ptron_t net)
+{
+	int i = 0, j = 0;
+	
+	assert (net != NULL);
+	
+	#pragma omp parallel for default(shared) private(i,j)
+	for (i=0 ; i < net->A ; i++) {
+		for (j=0 ; j < net->N[i+1] ; j++) {
+			net->dw[i][j] = 0.0;
+		}
+	}
+	
+	return;
+}
+
+
 
 
 
 /** ### ### ### ~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-
-int
-ptron_fwd_prop (ptron_t net)
-{
-	return 0;
-}
 
 
 /* Performs forward propagation of the input value across the network
@@ -346,11 +372,51 @@ ptron_fwd_prop (ptron_t net)
  *	or
  *	result == PTRON_ERR
  */
+int
+ptron_fwd_prop (ptron_t net)
+{
+	int res = PTRON_OK;
+	int	m = 0,	/* layers iterator	*/
+		j = 0,	/* m+1 layer iterator	*/
+		i = 0;	/*  m  layer iterator	*/
+	double sum = 0.0;
+	double (*g) (double) = NULL;
+	
+	assert (net != NULL);
+	assert (net->ready);
+	g = net->g;
+	
+	debug ("%s\n","About to perform forward propagation");
+	
+	for (m=0 ; m < net->A ; m++) {
+		#pragma omp parallel for default(shared) private(i,j,sum)
+		for (j=0 ; j < net->N[m+1] ; j++) {
+			
+			sum = 0.0;
+			for (i=0 ; i < net->N[m] ; i++)
+				sum += net->w[m][j + i*net->N[m+1]] * net->V[m][i];
+				/* w[m] rows    represent layer m   *
+				 * w[m] columns represent layer m+1 */
+			
+			net->V[m+1][j] = g(sum);
+		}
+	}
+	
+	debug ("%s\n", "Produced output:");
+	dfor (j=0 ; j < net->N[net->A] ; j++) {
+		debug ("O[%d] = %f\n", j, net->V[net->A][j]);
+	}
+	
+	return res;
+}
+
+
 
 
 int
 ptron_back_prop (ptron_t net)
 {
+	printbits (0);
 	return 0;
 }
 
