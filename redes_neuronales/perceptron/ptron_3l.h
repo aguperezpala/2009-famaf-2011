@@ -26,16 +26,16 @@ typedef struct _ptron3_s *ptron3_t;
 /** ### ### ### ~~~~~~~ SUPER-HARDCODED SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
-/* β coefficient for g(x) == tanh (βx)
- * g is the network internal function */
 #define  T		0.1
 #define  B		1.0/T
+/* β coefficient for g(x) == tanh (βx)
+ * g is the network internal function */
 
+#define  g(x)		tanh(B*x)
 /* Network internal function (for both the hidden and the output layer)
  * Changes in g must be reflected in the source code of functions
  * ptron_fwd_prop() and ptron_back_prop()
  */
-#define  g(x)  tanh(B*x)
 
 
 
@@ -43,7 +43,7 @@ typedef struct _ptron3_s *ptron3_t;
 
 
 ptron3_t
-ptron_create (const unsigned int *N, double etha, double (*f) (double));
+ptron_create (const unsigned int N[NLAYERS], double etha, double (*f) (double));
 
 /* Creates an instance of the ADT
  *
@@ -52,7 +52,6 @@ ptron_create (const unsigned int *N, double etha, double (*f) (double));
  *		etha --> proportionality constant for the gradient descent learn
  *		f -----> sinaptic function
  *
- * PRE: N != NULL
  * POS: result != NULL
  *
  * NOTE: In the current implementation function 'f' is ignored
@@ -91,18 +90,15 @@ ptron_reinit (ptron3_t net, double lowBound, double upBound);
 
 
 
-
-int
-ptron_get_layers_size (ptron3_t net, unsigned int N[A]);
+void
+ptron_get_layers_size (ptron3_t net, unsigned int N[NLAYERS]);
 
 /* Stores in N the # of neurons of each layer in th network,
  * including both input and output layers.
  *
  * PRE: net != NULL
  *
- * POS: result == PTRON_OK  &&  sizes stored in N
- *	or
- *	result == PTRON_ERR
+ * POS: sizes stored in N
  */
 
 
@@ -148,7 +144,7 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len);
  * will be used in the propagation.
  *
  * PRE: net != NULL
- *	weights in net have been initialized
+ *	weights in net have been initialized at least once
  *	XI != NULL
  *
  * POS: result == PTRON_OK  &&  values successfully propagated
@@ -161,12 +157,11 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len);
 int
 ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double));
 
-/* Performs backwards propagation calculations after a processed sample.
- * NU holds the expected output for the input given to perform the last
- * forward propagation invoked on net.
+/* Performs backwards propagation computations after a processed sample.
+ * NU holds the expected output for the last forward propagation.
  *
  * This can be done (successfully) only once after each forward propagation.
- * "gp" should be the derivative of the function the net was created with.
+ * "df" should be the derivative of the function f(x) the net was created with.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
@@ -175,14 +170,18 @@ ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double));
  *	 "incrementally" means that newly computed updates are added to any
  *	 previous update value stored in the network.
  *
+ * NOTE: in the current implementation the function "df" is ignored
+ *	 The derivative of the predefined funtion g(x) is used instead
+ *
  * PRE: net != NULL
  *	NU  != NULL
  *	length_of(NU) >= length_of(output-layer)
  *
  * POS: result == PTRON_OK  &&  updates successfully computed
  *	or
- *	result == PTRON_ERR  &&  ptron_fwd_prop(net) must be invoked beforehand
+ *	result == PTRON_ERR  &&  ptron_fwd_prop() must be invoked beforehand
  */
+
 
 
 int

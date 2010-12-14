@@ -19,23 +19,21 @@
 #include <inttypes.h>
 #include <limits.h>
 
-#include "ptron.h"
+#include "ptron_3l.h"
 #include "mzran13.h"
 
 struct _ptron3_s {
-	int *N;			/* # of neurons per layer*/
+	int N[NLAYERS];		/* # of neurons per layer*/
+	double (*f) (double);	/* Sinaptic function */
+	
+	double *V [NLAYERS];	/* Neurons. Input layer (V[0]) is NULL */
+	double *w [NLAYERS-1];	/* Sinaptic weights */
+	double *dw[NLAYERS-1];	/* Back-propagation updates */
+	double *d [NLAYERS];	/* Auxiliary values for dw calculation */
+	
 	double etha;		/* updates scaling parameter */
-	
-	double *V;		/* Middle layer neurons */
-	double *O;		/* Output layer neurons */
-	
-	double *w1;		/* Weights between input  & middle layers */
-	double *w2;		/* Weights between middle & output layers */
-	
-	double *dw1;		/* Back-propagation updates for w1 */
-	double *dw2;		/* Back-propagation updates for w2 */
-	double *d1;		/* Auxiliary values for dw1 calculation */
-	double *d2;		/* Auxiliary values for dw2 calculation */
+	short rdy;		/* is the network ready for fwd-prop? */
+	short fwd;		/* has a fwd propagation recently been done? */
 };
 
 
@@ -82,20 +80,54 @@ struct _ptron3_s {
 /* Creates an instance of the ADT
  *
  * PARAMETERS:	N[i] --> # of neurons of the i-th layer.
- *			 N ranges from 0 (input layer) to 2 (output layer)
+ *			 N ranges from 0 (input layer) to NLAYERS (output layer)
  *		etha --> proportionality constant for the gradient descent learn
  *		f -----> sinaptic update function
  *
- * PRE: N != NULL
  * POS: result != NULL
  *
  * NOTE: In the current implementation function 'f' is ignored
  *	 Predefined function g(x) is used instead
  */
-ptron_t
-ptron_create (const unsigned int *N, double etha, double (*f) (double))
+ptron3_t
+ptron_create (const unsigned int N[NLAYERS], double etha, double (*f) (double))
 {
-	ptron
+	ptron3_t net = NULL;
+	int m = 0;
+	
+	net = (ptron3_t) malloc (sizeof (struct _ptron3_s));
+	assert (net != NULL);
+	
+	/* Size of each layer */
+	for (m=0 ; m < NLAYERS ; m++) {
+		net->N[m] = N[m];
+	}
+	
+	/* Network neurons
+	 * We create N[m]+1 places in order to store the threshold value
+	 * First layer (V[0], aka "input layer") is left NULL */
+	for (m=1 ; m < NLAYERS ; m++) {
+		net->V[m] = (double *) malloc ((N[m]+1) * sizeof(double));
+	}
+	net->V[0] = NULL;
+	
+	/* Sinaptic weights and related paraphernalia
+	 * Again N[m]+1 is used to include threshold value */
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		net->w[m] = (double *) calloc ((N[m]+1) * N[m+1] , sizeof (double));
+		assert (net->w[m] != NULL);
+		net->dw[m] = (double *) calloc ((N[m]+1) * N[m+1] , sizeof (double));
+		assert (net->dw[m] != NULL);
+		net->d[m+1] = (double *) calloc ((N[m+1]+1) , sizeof (double));
+		assert (net->d[m+1] != NULL);
+		/* Notice d[0] is a NULL vector */
+	}
+	net->d[0] = NULL;
+	
+	net->f = f;
+	net->etha = etha;
+	net->rdy = 0;
+	net->fwd = 0;
 	
 	return net;
 }
@@ -103,22 +135,35 @@ ptron_create (const unsigned int *N, double etha, double (*f) (double))
 
 
 
-ptron_t
-ptron_destroy (ptron_t net);
-
 /* Destroys the ADT and frees its memory resources
  * PRE: net != NULL
  * USE: net = ptron_destroy (net);
  */
+ptron3_t
+ptron_destroy (ptron3_t net)
+{
+	int m = 0;
+	
+	assert (net != NULL);
+	
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		free (net->V[m+1]);	net->V[m+1] = NULL;
+		free (net->w[m]);	net->w[m]   = NULL;
+		free (net->dw[m]);	net->dw[m]  = NULL;
+		free (net->d[m+1]);	net->d[m+1] = NULL;
+	}
+	
+	free (net);
+	net = NULL;
+	
+	return net;
+}
 
 
 
 
 /** ### ### ### ~~~~~~~~~ NETWORK INITIALIZERS/OBSERVERS ~~~~~~~~~~~~~~~~~~~~ */
 
-
-int
-ptron_reinit (ptron_t net, double lowBound, double upBound);
 
 /* Restarts the sinaptic weights to random values between bounds given.
  * This also changes the threshold for the input and middle layers.
@@ -130,27 +175,70 @@ ptron_reinit (ptron_t net, double lowBound, double upBound);
  *	or
  *	result == PTRON_ERR
  */
-
-
-
-
 int
-ptron_get_layers_size (ptron_t net, unsigned int N[A]);
+ptron_reinit (ptron3_t net, double lowBound, double upBound)
+{
+	int res = PTRON_OK;
+	int m = 0, i = 0;
+	double ran = 0.0;
+	
+	assert (net != NULL);
+	assert (upBound > lowBound);
+	
+	net->rdy = 1;
+	
+	debug("%s\n","Restarting sinaptic weights");
+	/* WARNING: do not parallelize this loop
+	 *	    mzran13 is NOT threadsafe
+	 */
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		
+		debug ("%s\n","----------------------------------");
+		for (i=0 ; i < ((net->N[m]+1) * net->N[m+1]) ; i++) {
+			
+			ran = ((double) mzran13()) / ((double) ULONG_MAX);
+			net->w[m][i] = ran * (upBound - lowBound) + lowBound;
+#ifdef _DEBUG
+			debug("w[%d][%d,%d] = %.4f\n", m,
+			      i%(net->N[m]+1), i/(net->N[m]+1), net->w[m][i]);
+			if (net->w[m][i] < lowBound || net->w[m][i] > upBound) {
+				res = PTRON_ERR;
+				net->rdy = 0;
+			}
+#endif
+		}
+		debug("%s","\n");
+	}
+	
+	return res;
+}
 
-/* Stores in N the # of neurons of each layer in th network,
+
+
+
+/* Stores in N the # of neurons of each layer in th network
  * including both input and output layers.
  *
  * PRE: net != NULL
  *
- * POS: result == PTRON_OK  &&  sizes stored in N
- *	or
- *	result == PTRON_ERR
+ * POS: sizes stored in N
  */
+void
+ptron_get_layers_size (ptron3_t net, unsigned int N[NLAYERS])
+{
+	int m = 0;
+	
+	assert (net != NULL);
+	
+	for (m=0 ; m < NLAYERS ; m++) {
+		N[m] = net->N[m];
+	}
+	
+	return;
+}
 
 
 
-double *
-ptron_get_output (ptron_t net, double *O);
 
 /* Gets the network output layer values
  * Caller owns the memory allocated for vector 'O'
@@ -165,16 +253,45 @@ ptron_get_output (ptron_t net, double *O);
  *	or
  *	O == NULL
  */
+double *
+ptron_get_output (ptron3_t net, double *O)
+{
+	int i = 0;
+	
+	assert (net != NULL);
+	assert (O == NULL);
+	
+	O = (double *) malloc (net->N[NLAYERS-1] * sizeof (double));
+	if (O != NULL) {
+		for (i=0 ; i < net->N[NLAYERS-1] ; i++)
+			O[i] = net->V[NLAYERS-1][i];
+	}
+	
+	return O;
+}
 
 
 
-void
-ptron_clear_updates (ptron_t net);
 
 /* Erases weight updates calculations (aka: delta_w) stored in the network,
  * setting all of them to zero.
  * PRE: net != NULL
  */
+void
+ptron_clear_updates (ptron3_t net)
+{
+	int m = 0, i = 0;
+	
+	assert (net != NULL);
+	
+	#pragma omp parallel for default(shared) private (m,i)
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		for (i=0 ; i < ((net->N[m]+1) * net->N[m+1]) ; i++) {
+			net->dw[m][i] = 0.0;
+		}
+	}
+}
+
 
 
 
@@ -182,33 +299,40 @@ ptron_clear_updates (ptron_t net);
 /** ### ### ### ~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
-int
-ptron_fwd_prop (ptron_t net, const double *XI, size_t len);
-
 /* Performs forward propagation of the input value "XI" across the network.
  * XI is of length "len", and at most length_of(input-layer) elements of it
  * will be used in the propagation.
  *
  * PRE: net != NULL
- *	weights in net have been initialized
+ *	weights in net have been initialized at least once
  *	XI != NULL
  *
  * POS: result == PTRON_OK  &&  values successfully propagated
  *	or
  *	result == PTRON_ERR
  */
-
-
-
 int
-ptron_back_prop (ptron_t net, double *NU, double (*gp) (double));
+ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
+{
+	int res = PTRON_OK;
+	
+	assert (net != NULL);
+	assert (net->rdy);
+	assert (XI != NULL);
+	
+	
+	
+	return res;
+}
 
-/* Performs backwards propagation calculations after a processed sample.
- * NU holds the expected output for the input given to perform the last
- * forward propagation invoked on net.
+
+
+
+/* Performs backwards propagation computations after a processed sample.
+ * NU holds the expected output for the last forward propagation.
  *
  * This can be done (successfully) only once after each forward propagation.
- * "gp" should be the derivative of the function the net was created with.
+ * "df" should be the derivative of the function f(x) the net was created with.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
@@ -217,18 +341,32 @@ ptron_back_prop (ptron_t net, double *NU, double (*gp) (double));
  *	 "incrementally" means that newly computed updates are added to any
  *	 previous update value stored in the network.
  *
+ * NOTE: in the current implementation the function "df" is ignored
+ *	 The derivative of the predefined funtion g(x) is used instead
+ *
  * PRE: net != NULL
  *	NU  != NULL
  *	length_of(NU) >= length_of(output-layer)
  *
  * POS: result == PTRON_OK  &&  updates successfully computed
  *	or
- *	result == PTRON_ERR  &&  ptron_fwd_prop(net) must be invoked beforehand
+ *	result == PTRON_ERR  &&  ptron_fwd_prop() must be invoked beforehand
  */
-
-
 int
-ptron_do_updates (ptron_t net);
+ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double))
+{
+	int res = PTRON_OK;
+	
+	assert (net != NULL);
+	assert (NU != NULL);
+	
+	
+	
+	return res;
+}
+
+
+
 
 /* Applies the stored update values to the sinaptic weights
  *
@@ -237,6 +375,16 @@ ptron_do_updates (ptron_t net);
  *	or
  *	result == PTRON_ERR
 */
+int
+ptron_do_updates (ptron3_t net)
+{
+	int res = PTRON_OK;
+	
+	assert (net != NULL);
+	
+	printbits (0);
+	
+	return res;
+}
 
 
-#endif
