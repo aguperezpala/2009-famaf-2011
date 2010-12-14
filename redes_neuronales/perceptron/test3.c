@@ -12,23 +12,23 @@
 #define  OUTPUT_SIZE  2
 
 #define  ETHA       0.1
-#define  LBOUND    0.66
-#define  UBOUND     1.2
+#define  LBOUND    0.15
+#define  UBOUND     0.3
 
 
 const unsigned int N[NUM_LAYERS] = {INPUT_SIZE, 4, OUTPUT_SIZE};
 
 double XI[INPUT_SIZE] = { -8.0,
 			   5.02,
-			   2000.0,
-			   123579985.0,
-			   0.996 };
+			   2.0,
+			   4.0,
+			   -0.996 };
 
-double NU[OUTPUT_SIZE] = {12.006, 1.2107};
+double NU[OUTPUT_SIZE] = {0.906, 0.7107};
 
 
 double f (double x);
-double f (double x) { return cos(x); }
+double f (double x) { return sin(x); }
 
 
 int main (void)
@@ -49,24 +49,22 @@ int main (void)
 	/* Restarting sinaptic weights */
 	ptron_reinit (net, LBOUND, UBOUND);
 	
+	/* Performing forward propagation of the input across the network */
+	res = ptron_fwd_prop (net, XI, INPUT_SIZE);
+	assert (res == PTRON_OK);
 	
-	O = O;
-	res = res;
-	/* Performing forward propagation of the input across the network 
-	res = ptron_fwd_prop (net);
-	assert (res == PTRON_OK);*/
-	
-	/* Getting back the results obtained in the propagation 
+	/* Getting back the results obtained in the propagation */
 	O = ptron_get_output (net, O);
 	assert (O != NULL);
 	printf ("Retrieved output:\n");
 	for (i=0 ; i < OUTPUT_SIZE ; i++)
 		printf ("O[%d] = %f\n", i, O[i]);
 	free (O);
-	O = NULL;*/
+	O = NULL;
 	
 	/* Performing back-propagation for that input */
-	
+	res = ptron_back_prop (net, NU, f);
+	assert (res == PTRON_OK);
 	
 	/* Destruction */
 	net = ptron_destroy (net);
