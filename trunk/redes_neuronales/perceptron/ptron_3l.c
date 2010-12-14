@@ -106,10 +106,13 @@ ptron_create (const unsigned int N[NLAYERS], double etha, double (*f) (double))
 	/* Network neurons
 	 * We create N[m]+1 places in order to store the threshold value
 	 * First layer (V[0], aka "input layer") is left NULL */
-	for (m=1 ; m < NLAYERS ; m++) {
+	for (m=0 ; m < NLAYERS ; m++) {
 		net->V[m] = (double *) malloc ((N[m]+1) * sizeof(double));
+		assert (net->V[m] != NULL);
+		/* Last place of all layers is -1
+		 * to simulate threshold inhibition */
+		net->V[m][N[m]] = -1.0;
 	}
-	net->V[0] = NULL;
 	
 	/* Sinaptic weights and related paraphernalia
 	 * Again N[m]+1 is used to include threshold value */
@@ -147,11 +150,12 @@ ptron_destroy (ptron3_t net)
 	assert (net != NULL);
 	
 	for (m=0 ; m < NLAYERS-1 ; m++) {
-		free (net->V[m+1]);	net->V[m+1] = NULL;
+		free (net->V[m]);	net->V[m] = NULL;
 		free (net->w[m]);	net->w[m]   = NULL;
 		free (net->dw[m]);	net->dw[m]  = NULL;
 		free (net->d[m+1]);	net->d[m+1] = NULL;
 	}
+	free (net->V[m]);	net->V[m] = NULL;
 	
 	free (net);
 	net = NULL;
@@ -273,8 +277,7 @@ ptron_get_output (ptron3_t net, double *O)
 
 
 
-/* Erases weight updates calculations (aka: delta_w) stored in the network,
- * setting all of them to zero.
+/* Erases weight updates (aka: delta_w) stored in the network, setting them to 0
  * PRE: net != NULL
  */
 void
@@ -315,12 +318,50 @@ int
 ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
 {
 	int res = PTRON_OK;
+	int m = 0, i = 0, k = 0;
+	size_t size = 0;
+	double sum = 0.0;
 	
 	assert (net != NULL);
 	assert (net->rdy);
 	assert (XI != NULL);
 	
+	size = MIN (net->N[INPUT], len) * sizeof (double) ;
+	net->V[INPUT] = (double *) memcpy (net->V[INPUT], XI, size);
 	
+	debug ("%s\n","Received input:");
+	dfor (i=0 ; i < net->N[INPUT] ; i++) {
+		debug("INPUT[%d] = %.3f\n", i, net->V[INPUT][i]);
+		if (net->V[INPUT][i] != XI[i]) {
+			res = PTRON_ERR;
+		}
+	}
+	debug ("%s\n","\nAbout to perform forward propagation");
+	
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		#pragma omp parallel for default(shared) private(i,k,sum)
+		for (i=0 ; i < net->N[m+1] ; i++) {
+			/* w[m] rows    span over layer m   (index k) *
+			 * w[m] columns span over layer m+1 (index i) */
+			
+			sum = 0.0;
+			for (k=0 ; k < net->N[m] ; k++) {
+				sum += net->V[m][k] * net->w[m][i + k*net->N[m+1]];
+			}
+			/* ... plus the threshold inhibition ... */
+			k = net->N[m];
+			sum += -1.0 * net->w[m][i + k*net->N[m+1]];
+			
+			net->V[m+1][i] = g(sum);
+		}
+	}
+	
+	debug ("%s\n", "Produced output:");
+	dfor (i=0 ; i < net->N[NLAYERS-1] ; i++) {
+		debug ("O[%d] = %f\n", i, net->V[net->N[NLAYERS-1]][i]);
+	}
+	
+	net->fwd = 1;
 	
 	return res;
 }
@@ -355,14 +396,70 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
 int
 ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double))
 {
-	int res = PTRON_OK;
+	int m = 0, i = 0, k = 0;
+	double sum = 0.0;
 	
 	assert (net != NULL);
 	assert (NU != NULL);
 	
+	if (!net->fwd)
+		return PTRON_ERR;
+	else
+		net->fwd = 0;
 	
+	m = NLAYERS-1;
+	/* Computing the deltas for the output layer	*
+	 * There's no threshold here			*/
+	#pragma omp parallel for default(shared) private(i)
+	for (i=0 ; i < net->N[m] ; i++) {
+		/* The following is correct only when g(x) == tanh(B*x) */
+		net->d[m][i] = B * (1.0 - (net->V[m][i] * net->V[m][i])) *
+				(NU[i] - net->V[m][i]);
+	}
 	
-	return res;
+	/* Recursively computing (backwards) the deltas for each layer	*
+	 * Threshold unit in each layer is also considered		*/
+	for (m = NLAYERS-2 ; m > 0 ; m--) {
+		
+		#pragma omp parallel for default(shared) private(i,k,sum)
+		for (i=0 ; i < net->N[m]+1 ; i++) {
+			
+			/* sum(i) = Σ w[m][i,k] * δ[m+1][k] */
+			sum = 0.0;
+			for (k=0 ; k < net->N[m+1] ; k++) {
+				sum += net->w[m][k + i*net->N[m+1]] *
+					net->d[m+1][k];
+			}
+			/* Only for g(x) == tanh(B*x) */
+			net->d[m][i] = B * (1.0 - (net->V[m][i] * net->V[m][i]))
+					 * sum;
+		}
+	}
+	
+	/* Computing parallely all weights updates */
+	#pragma omp parallel for default(shared) private(m,i,k)
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		for (i=0 ; i < net->N[m+1] ; i++) {
+			for (k=0 ; k < net->N[m]+1 ; k++) {
+				/* Threshold weights are modified as well */
+				net->dw[m][i + k*net->N[m+1]] += net->etha * 
+						net->d[m+1][i] * net->V[m][k];
+			}
+		}
+	}
+	
+	debug("\n%s\n","Weight updates generated:");
+	dfor (m=0 ; m < NLAYERS-1 ; m++) {
+		debug ("\nLayer # %d\n", m);
+		dfor (i=0 ; i < net->N[m+1] ; i++) {
+			dfor (k=0 ; k < net->N[m]+1 ; k++) {
+				debug ("dw[%d][%d,%d] = %f\n", m, k, i,
+				       net->dw[m][i + k*net->N[m+1]]);
+			}
+		}
+	}
+	
+	return PTRON_OK;
 }
 
 

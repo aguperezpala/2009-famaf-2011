@@ -125,8 +125,7 @@ ptron_get_output (ptron3_t net, double *O);
 void
 ptron_clear_updates (ptron3_t net);
 
-/* Erases weight updates calculations (aka: delta_w) stored in the network,
- * setting all of them to zero.
+/* Erases weight updates (aka: delta_w) stored in the network, setting them to 0
  * PRE: net != NULL
  */
 
