@@ -473,6 +473,7 @@ ptron_back_prop (ptron_t net, double *NU, double (*gp) (double))
 	int m = 0, j = 0, i = 0;
 	double sum = 0.0;
 	double (*g) (double) = NULL;
+	static unsigned long sample = 0;
 	
 	assert (net != NULL);
 	assert (NU  != NULL);
@@ -481,6 +482,8 @@ ptron_back_prop (ptron_t net, double *NU, double (*gp) (double))
 		return PTRON_ERR;
 	else
 		net->fwd = 0;
+	
+	debug ("Performing back-propagation for sample # %lu\n", ++sample);
 	
 	g = net->g;
 	m = net->A-1;
@@ -518,6 +521,17 @@ ptron_back_prop (ptron_t net, double *NU, double (*gp) (double))
 			for (i=0 ; i < net->N[m] ; i++) {
 				net->dw[m][j + i*net->N[m+1]] += net->etha *
 					net->delta[m][j] * net->V[m][i];
+			}
+		}
+	}
+	
+	debug("%s","Weight updates generated:");
+	dfor (m=0 ; m < net->A ; m++) {
+		debug ("\nLayer # %d\n", m);
+		dfor (j=0 ; j < net->N[m+1] ; j++) {
+			dfor (i=0 ; i < net->N[m] ; i++) {
+				debug ("dw[%d][%d,%d] = %f\t", m, i, j,
+				       net->dw[m][j + i*net->N[m+1]]);
 			}
 		}
 	}

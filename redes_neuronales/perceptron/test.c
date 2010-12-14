@@ -10,9 +10,10 @@
 
 #define  LBOUND    0.66
 #define  UBOUND     1.2
-#define  A  4
+#define  A            4
 #define  INPUT_SIZE   5
 #define  OUTPUT_SIZE  2
+#define  T         10.0
 
 unsigned int N[A+1] = {INPUT_SIZE, 4, 3, 5, OUTPUT_SIZE};
 
@@ -22,6 +23,11 @@ double XI[INPUT_SIZE] = { -8.0,
 			   123579985.0,
 			   0.996 };
 
+double NU[OUTPUT_SIZE] = {12.006, 1.2107};
+
+
+double g (double x);
+double g (double x) { return tanh ((1.0/T)*x); }
 
 
 int main (void)
@@ -61,6 +67,9 @@ int main (void)
 		printf ("O[%d] = %f\n", i, O[i]);
 	free (O);
 	O = NULL;
+	
+	/* Performing back-propagation for that input */
+	
 	
 	/* Destruction */
 	net = ptron_destroy (net);
