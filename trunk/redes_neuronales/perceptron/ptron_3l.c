@@ -391,6 +391,7 @@ ptron_reset (ptron3_t net)
 	for (m=0 ; m < NLAYERS-1 ; m++) {
 		for (i=0 ; i < ((net->N[m]+1) * net->N[m+1]) ; i++) {
 			net->dw[m][i] = 0.0;
+			net->old_dw[m][i] = 0.0;
 		}
 	}
 	#pragma omp parallel for default(shared) private (i)
@@ -564,6 +565,18 @@ ptron_back_prop (ptron3_t net, double *NU)
 }
 
 
+static void
+ptron_std_update (ptron3_t net)
+{
+	int m = 0, i = 0;
+	
+	#pragma omp parallel for default(shared) private(m,i)
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		for (i=0 ; i < ((net->N[m]+1) * net->N[m+1]) ; i++) {
+			net->w[m][i] += net->dw[m][i];
+		}
+	}
+}
 
 
 /* Applies the stored update values to the sinaptic weights,
@@ -581,7 +594,23 @@ ptron_do_updates (ptron3_t net, ptron_update mode)
 	
 	assert (net != NULL);
 	
+	if (mode == std) {
+		ptron_std_update (net);
+	}
 	
+	/** TODO: fill <mom> and <adp> mode updates */
+	
+	if (mode == mom || mode == full) {
+	
+	}
+	
+	if (mode == adp || mode == full) {
+	
+	}
+	
+	if (mode != std && mode != mom && mode != adp && mode != full) {
+		res = PTRON_ERR;
+	}
 	
 	return res;
 }
