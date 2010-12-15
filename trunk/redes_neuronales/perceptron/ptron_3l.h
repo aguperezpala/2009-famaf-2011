@@ -22,6 +22,14 @@ typedef struct _ptron3_s *ptron3_t;
 #define  PTRON_OK	( 0)
 #define  PTRON_ERR	(-1)
 
+/* Net update modes */
+typedef enum {
+	std,	/* Standard */
+	mom,	/* Momentum */
+	adp,	/* Adaptive parameters */
+	full	/* Momentum + adaptive parameters */
+} ptron_update;
+
 
 /** ### ### ### ~~~~~~~ SUPER-HARDCODED SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -43,20 +51,25 @@ typedef struct _ptron3_s *ptron3_t;
 
 
 ptron3_t
-ptron_create (const unsigned int N[NLAYERS], double etha, double (*f) (double));
+ptron_create (const unsigned int N[NLAYERS], double etha,
+	      double (*f) (double), double (*df) (double));
 
 /* Creates an instance of the ADT
  *
  * PARAMETERS:	N[i] --> # of neurons of the i-th layer.
  *			 N ranges from 0 (input layer) to NLAYERS (output layer)
- *		etha --> proportionality constant for the gradient descent learn
- *		f -----> sinaptic function
+ *		etha --> initial value for the proportionality constant
+ *			 of the gradient descent learning heuristic
+ *		f -----> sinaptic update function
+ *		df ----> function f derivative
  *
  * POS: result != NULL
  *
  * NOTE: In the current implementation function 'f' is ignored
  *	 Predefined function g(x) is used instead
+ *	 Same for 'df'
  */
+
 
 
 
@@ -75,7 +88,7 @@ ptron_destroy (ptron3_t net);
 
 
 int
-ptron_reinit (ptron3_t net, double lowBound, double upBound);
+ptron_reinit_weights (ptron3_t net, double lowBound, double upBound);
 
 /* Restarts the sinaptic weights to random values between bounds given.
  * This also changes the threshold for the input and middle layers.
@@ -104,28 +117,74 @@ ptron_get_layers_size (ptron3_t net, unsigned int N[NLAYERS]);
 
 
 double *
-ptron_get_output (ptron3_t net, double *O);
+ptron_get_output (ptron3_t net);
 
 /* Gets the network output layer values
- * Caller owns the memory allocated for vector 'O'
+ * Caller owns the memory allocated for returned vector
  * Free using glibc standard free() routine
  *
  * PRE: net != NULL
- *	O == NULL
  *
- * USE: O = ptron_get_output (net, O)
+ * USE: Out = ptron_get_output (net)
  *
- * POS: O != NULL  &&  result stored in vector O
+ * POS: Out != NULL  &&  result stored in vector 'Out'
  *	or
- *	O == NULL
+ *	Out == NULL
  */
 
 
 
-void
-ptron_clear_updates (ptron3_t net);
+double
+ptron_calc_err (ptron3_t net, double *NU);
 
-/* Erases weight updates (aka: delta_w) stored in the network, setting them to 0
+/* Computes the learning error: the difference between the output produced
+ * in the last forward propagation and the expected result given in vector 'NU'
+ *
+ * NOTE: error calculation is done incrementally, meaning each time
+ *	 ptron_get_error() is called on net, the distance between
+ *	 the newly produced output and the expected result 'NU'
+ *	 IS ADDED UP internally to previous values.
+ *	
+ *	 To reset error values call ptron_reset(net)
+ *
+ * PRE: net != NULL
+ *	NU  != NULL
+ *	length_of(NU) >= length_of(output-layer)
+ *
+ * POS: result == last propagation's learning error: the error sumation of
+ *		  every neuron in the output layer, disregarding prev. results
+ *	or
+ *	result == DBL_MAX  &&  ptron_fwd_prop() must be invoked beforehand
+ *
+ */
+
+
+
+
+double *
+ptron_get_err (ptron3_t net);
+
+/* Returns the accumulated learning error value for each output layer neuron
+ * Caller owns the memory allocated for returned vector
+ * Free using glibc standard free() routine
+ * 
+ * PRE: net != NULL
+ *
+ * USE: Err = ptron_get_output (net)
+ *
+ * POS: Err != NULL  &&  errors stored in vector 'Err'
+ *	or
+ *	Err == NULL
+ */
+
+
+
+
+void
+ptron_reset (ptron3_t net);
+
+/* Erases weight updates (aka: delta_w) and learning error values
+ * stored in the network, setting them all to 0
  * PRE: net != NULL
  */
 
@@ -154,13 +213,11 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len);
 
 
 int
-ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double));
+ptron_back_prop (ptron3_t net, double *NU);
 
 /* Performs backwards propagation computations after a processed sample.
  * NU holds the expected output for the last forward propagation.
- *
  * This can be done (successfully) only once after each forward propagation.
- * "df" should be the derivative of the function f(x) the net was created with.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
@@ -168,9 +225,6 @@ ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double));
  *	
  *	 "incrementally" means that newly computed updates are added to any
  *	 previous update value stored in the network.
- *
- * NOTE: in the current implementation the function "df" is ignored
- *	 The derivative of the predefined funtion g(x) is used instead
  *
  * PRE: net != NULL
  *	NU  != NULL
@@ -184,9 +238,10 @@ ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double));
 
 
 int
-ptron_do_updates (ptron3_t net);
+ptron_do_updates (ptron3_t net, ptron_update mode);
 
-/* Applies the stored update values to the sinaptic weights
+/* Applies the stored update values to the sinaptic weights,
+ * according to the update mode specified.
  *
  * PRE: net != NULL
  * POS: result == PTRON_OK  &&  updates successfully applied

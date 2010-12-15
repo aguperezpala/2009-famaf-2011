@@ -37,9 +37,10 @@ int main (void)
 	unsigned int NN[NUM_LAYERS] = {0, 0, 0};
 	int i = 0, res = 0;
 	double *O = NULL;
+	double err = 0.0;
 	
 	/* Creation */
-	net = ptron_create (N, ETHA, f);
+	net = ptron_create (N, ETHA, f, f);
 	
 	/* Getting layers' size info */
 	ptron_get_layers_size (net, NN);
@@ -47,14 +48,14 @@ int main (void)
 		printf ("N[%d] = %u\n", i, NN[i]);
 	
 	/* Restarting sinaptic weights */
-	ptron_reinit (net, LBOUND, UBOUND);
+	ptron_reinit_weights (net, LBOUND, UBOUND);
 	
 	/* Performing forward propagation of the input across the network */
 	res = ptron_fwd_prop (net, XI, INPUT_SIZE);
 	assert (res == PTRON_OK);
 	
 	/* Getting back the results obtained in the propagation */
-	O = ptron_get_output (net, O);
+	O = ptron_get_output (net);
 	assert (O != NULL);
 	printf ("Retrieved output:\n");
 	for (i=0 ; i < OUTPUT_SIZE ; i++)
@@ -62,9 +63,16 @@ int main (void)
 	free (O);
 	O = NULL;
 	
+	/* Retrieving learning error for that propagation */
+	err = ptron_calc_err (net, NU);
+	printf ("Learning error generated: %.12f\n", err);
+	
 	/* Performing back-propagation for that input */
-	res = ptron_back_prop (net, NU, f);
+	res = ptron_back_prop (net, NU);
 	assert (res == PTRON_OK);
+	
+	/* Clearing accumulated info */
+	ptron_reset (net);
 	
 	/* Destruction */
 	net = ptron_destroy (net);

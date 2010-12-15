@@ -16,8 +16,10 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+
 #include <inttypes.h>
 #include <limits.h>
+#include <float.h>
 
 #include "ptron_3l.h"
 #include "mzran13.h"
@@ -25,11 +27,16 @@
 struct _ptron3_s {
 	int N[NLAYERS];		/* # of neurons per layer*/
 	double (*f) (double);	/* Sinaptic function */
+	double (*df) (double);	/* f's derivative */
 	
 	double *V [NLAYERS];	/* Neurons. Input layer (V[0]) is NULL */
 	double *w [NLAYERS-1];	/* Sinaptic weights */
 	double *dw[NLAYERS-1];	/* Back-propagation updates */
 	double *d [NLAYERS];	/* Auxiliary values for dw calculation */
+	
+	double *err;		/* Learning errors (Ei) */
+	double *old_dw[NLAYERS-1];	/* Updates of previous step	*
+					 * (for momentum update mode)	*/
 	
 	double etha;		/* updates scaling parameter */
 	short rdy;		/* is the network ready for fwd-prop? */
@@ -81,16 +88,20 @@ struct _ptron3_s {
  *
  * PARAMETERS:	N[i] --> # of neurons of the i-th layer.
  *			 N ranges from 0 (input layer) to NLAYERS (output layer)
- *		etha --> proportionality constant for the gradient descent learn
+ *		etha --> initial value for the proportionality constant
+ *			 of the gradient descent learning heuristic
  *		f -----> sinaptic update function
+ *		df ----> function f derivative
  *
  * POS: result != NULL
  *
  * NOTE: In the current implementation function 'f' is ignored
  *	 Predefined function g(x) is used instead
+ *	 Same for 'df'
  */
 ptron3_t
-ptron_create (const unsigned int N[NLAYERS], double etha, double (*f) (double))
+ptron_create (const unsigned int N[NLAYERS], double etha,
+	      double (*f) (double), double (*df) (double))
 {
 	ptron3_t net = NULL;
 	int m = 0;
@@ -117,20 +128,31 @@ ptron_create (const unsigned int N[NLAYERS], double etha, double (*f) (double))
 	/* Sinaptic weights and related paraphernalia
 	 * Again N[m]+1 is used to include threshold value */
 	for (m=0 ; m < NLAYERS-1 ; m++) {
+		
 		net->w[m] = (double *) calloc ((N[m]+1) * N[m+1] , sizeof (double));
 		assert (net->w[m] != NULL);
+		
 		net->dw[m] = (double *) calloc ((N[m]+1) * N[m+1] , sizeof (double));
 		assert (net->dw[m] != NULL);
+		
 		net->d[m+1] = (double *) calloc ((N[m+1]+1) , sizeof (double));
 		assert (net->d[m+1] != NULL);
 		/* Notice d[0] is a NULL vector */
+		
+		net->old_dw[m] = (double *) calloc ((N[m]+1) * N[m+1] ,
+				  			sizeof (double));
+		assert (net->old_dw[m] != NULL);
 	}
 	net->d[0] = NULL;
 	
-	net->f = f;
+	net->err = (double *) malloc (N[NLAYERS-1] * sizeof (double));
+	assert (net->err != NULL);
+	
+	net->f    = f;
+	net->df   = df;
 	net->etha = etha;
-	net->rdy = 0;
-	net->fwd = 0;
+	net->rdy  = 0;
+	net->fwd  = 0;
 	
 	return net;
 }
@@ -150,17 +172,20 @@ ptron_destroy (ptron3_t net)
 	assert (net != NULL);
 	
 	for (m=0 ; m < NLAYERS-1 ; m++) {
-		free (net->V[m]);	net->V[m] = NULL;
+		free (net->V[m]);	net->V[m]   = NULL;
 		free (net->w[m]);	net->w[m]   = NULL;
 		free (net->dw[m]);	net->dw[m]  = NULL;
 		free (net->d[m+1]);	net->d[m+1] = NULL;
+		free (net->old_dw[m]);	net->old_dw[m] = NULL;
 	}
 	free (net->V[m]);	net->V[m] = NULL;
+	free (net->err);	net->err  = NULL;
 	
 	free (net);
 	net = NULL;
 	
 	return net;
+	printbits(0);
 }
 
 
@@ -180,7 +205,7 @@ ptron_destroy (ptron3_t net)
  *	result == PTRON_ERR
  */
 int
-ptron_reinit (ptron3_t net, double lowBound, double upBound)
+ptron_reinit_weights (ptron3_t net, double lowBound, double upBound)
 {
 	int res = PTRON_OK;
 	int m = 0, i = 0;
@@ -245,25 +270,24 @@ ptron_get_layers_size (ptron3_t net, unsigned int N[NLAYERS])
 
 
 /* Gets the network output layer values
- * Caller owns the memory allocated for vector 'O'
+ * Caller owns the memory allocated for returned vector
  * Free using glibc standard free() routine
  *
  * PRE: net != NULL
- *	O == NULL
  *
- * USE: O = ptron_get_output (net, O)
+ * USE: Out = ptron_get_output (net)
  *
- * POS: O != NULL  &&  result stored in vector O
+ * POS: Out != NULL  &&  result stored in vector 'Out'
  *	or
- *	O == NULL
+ *	Out == NULL
  */
 double *
-ptron_get_output (ptron3_t net, double *O)
+ptron_get_output (ptron3_t net)
 {
 	int i = 0;
+	double *O = NULL;
 	
 	assert (net != NULL);
-	assert (O == NULL);
 	
 	O = (double *) malloc (net->N[NLAYERS-1] * sizeof (double));
 	if (O != NULL) {
@@ -277,11 +301,87 @@ ptron_get_output (ptron3_t net, double *O)
 
 
 
-/* Erases weight updates (aka: delta_w) stored in the network, setting them to 0
+/* Computes the learning error: the difference between the output produced
+ * in the last forward propagation and the expected result given in vector 'NU'
+ *
+ * NOTE: error calculation is done incrementally, meaning each time
+ *	 ptron_get_error() is called on net, the distance between
+ *	 the newly produced output and the expected result 'NU'
+ *	 IS ADDED UP internally to previous values.
+ *	
+ *	 To reset error values call ptron_reset(net)
+ *
+ * PRE: net != NULL
+ *	NU  != NULL
+ *	length_of(NU) >= length_of(output-layer)
+ *
+ * POS: result == last propagation's learning error: the error sumation of
+ *		  every neuron in the output layer, disregarding prev. results
+ *	or
+ *	result == DBL_MAX  &&  ptron_fwd_prop() must be invoked beforehand
+ *
+ */
+double
+ptron_calc_err (ptron3_t net, double *NU)
+{
+	double err = DBL_MAX, diff = 0.0;
+	int i = 0;
+	
+	assert (net != NULL);
+	assert (NU  != NULL);
+	
+	err = 0.0;
+	for (i=0 ; i < net->N[NLAYERS-1] ; i++) {
+		diff = net->V[NLAYERS-1][i] - NU[i];
+		net->err[i] += diff * diff;
+		err += diff * diff;
+	}
+	
+	return 0.5 * err;
+}
+
+
+
+
+/* Returns the accumulated learning error value for each output layer neuron
+ * Caller owns the memory allocated for returned vector
+ * Free using glibc standard free() routine
+ * 
+ * PRE: net != NULL
+ *
+ * USE: Err = ptron_get_output (net)
+ *
+ * POS: Err != NULL  &&  errors stored in vector 'Err'
+ *	or
+ *	Err == NULL
+ */
+double *
+ptron_get_err (ptron3_t net)
+{
+	double *err = NULL;
+	int i = 0;
+	
+	assert (net != NULL);
+	
+	err = (double *) malloc (net->N[NLAYERS-1] * sizeof (double));
+	if (err != NULL) {
+		for (i=0 ; i < net->N[NLAYERS-1] ; i++) {
+			err[i] = net->err[i];
+		}
+	}
+	
+	return err;
+}
+
+
+
+
+/* Erases weight updates (aka: delta_w) and learning error values
+ * stored in the network, setting them all to 0
  * PRE: net != NULL
  */
 void
-ptron_clear_updates (ptron3_t net)
+ptron_reset (ptron3_t net)
 {
 	int m = 0, i = 0;
 	
@@ -293,6 +393,12 @@ ptron_clear_updates (ptron3_t net)
 			net->dw[m][i] = 0.0;
 		}
 	}
+	#pragma omp parallel for default(shared) private (i)
+	for (i=0 ; i < net->N[NLAYERS-1] ; i++) {
+		net->err[i] = 0.0;
+	}
+	
+	return;
 }
 
 
@@ -371,9 +477,7 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
 
 /* Performs backwards propagation computations after a processed sample.
  * NU holds the expected output for the last forward propagation.
- *
  * This can be done (successfully) only once after each forward propagation.
- * "df" should be the derivative of the function f(x) the net was created with.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
@@ -381,9 +485,6 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
  *	
  *	 "incrementally" means that newly computed updates are added to any
  *	 previous update value stored in the network.
- *
- * NOTE: in the current implementation the function "df" is ignored
- *	 The derivative of the predefined funtion g(x) is used instead
  *
  * PRE: net != NULL
  *	NU  != NULL
@@ -394,7 +495,7 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
  *	result == PTRON_ERR  &&  ptron_fwd_prop() must be invoked beforehand
  */
 int
-ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double))
+ptron_back_prop (ptron3_t net, double *NU)
 {
 	int m = 0, i = 0, k = 0;
 	double sum = 0.0;
@@ -465,21 +566,22 @@ ptron_back_prop (ptron3_t net, double *NU, double (*gp) (double))
 
 
 
-/* Applies the stored update values to the sinaptic weights
+/* Applies the stored update values to the sinaptic weights,
+ * according to the update mode specified.
  *
  * PRE: net != NULL
  * POS: result == PTRON_OK  &&  updates successfully applied
  *	or
  *	result == PTRON_ERR
-*/
+ */
 int
-ptron_do_updates (ptron3_t net)
+ptron_do_updates (ptron3_t net, ptron_update mode)
 {
 	int res = PTRON_OK;
 	
 	assert (net != NULL);
 	
-	printbits (0);
+	
 	
 	return res;
 }
