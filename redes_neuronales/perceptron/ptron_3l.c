@@ -31,14 +31,16 @@ struct _ptron3_s {
 	
 	double *V [NLAYERS];	/* Neurons. Input layer (V[0]) is NULL */
 	double *w [NLAYERS-1];	/* Sinaptic weights */
-	double *dw[NLAYERS-1];	/* Back-propagation updates */
-	double *d [NLAYERS];	/* Auxiliary values for dw calculation */
 	
-	double *err;		/* Learning errors (Ei) */
+	double *d [NLAYERS];	/* Auxiliary values for dw calculation */
+	double *dw[NLAYERS-1];	/* Back-propagation updates */
 	double *old_dw[NLAYERS-1];	/* Updates of previous step	*
 					 * (for momentum update mode)	*/
+	double *err;		/* Learning errors (Ei) */
+	double error;		/* Last error (Ei sumation) */
 	
 	double etha;		/* updates scaling parameter */
+	double alpha;		/* previous update importance (mom update) */
 	short rdy;		/* is the network ready for fwd-prop? */
 	short fwd;		/* has a fwd propagation recently been done? */
 };
@@ -90,6 +92,8 @@ struct _ptron3_s {
  *			 N ranges from 0 (input layer) to NLAYERS (output layer)
  *		etha --> initial value for the proportionality constant
  *			 of the gradient descent learning heuristic
+ *		alpha -> importance of the previous update value,
+ *			 for the "momentum" update mode
  *		f -----> sinaptic update function
  *		df ----> function f derivative
  *
@@ -100,7 +104,7 @@ struct _ptron3_s {
  *	 Same for 'df'
  */
 ptron3_t
-ptron_create (const unsigned int N[NLAYERS], double etha,
+ptron_create (const unsigned int N[NLAYERS], double etha, double alpha,
 	      double (*f) (double), double (*df) (double))
 {
 	ptron3_t net = NULL;
@@ -148,11 +152,13 @@ ptron_create (const unsigned int N[NLAYERS], double etha,
 	net->err = (double *) malloc (N[NLAYERS-1] * sizeof (double));
 	assert (net->err != NULL);
 	
-	net->f    = f;
-	net->df   = df;
-	net->etha = etha;
-	net->rdy  = 0;
-	net->fwd  = 0;
+	net->f     = f;
+	net->df    = df;
+	net->etha  = etha;
+	net->alpha = alpha;
+	net->error = 0.0;
+	net->rdy   = 0;
+	net->fwd   = 0;
 	
 	return net;
 }
@@ -476,38 +482,14 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len)
 
 
 
-/* Performs backwards propagation computations after a processed sample.
- * NU holds the expected output for the last forward propagation.
- * This can be done (successfully) only once after each forward propagation.
- *
- * NOTE: this function computes the next sinaptic weight updates and stores them
- *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
- *	 To do so ptron_do_updates(net) must be invoked
- *	
- *	 "incrementally" means that newly computed updates are added to any
- *	 previous update value stored in the network.
- *
- * PRE: net != NULL
- *	NU  != NULL
- *	length_of(NU) >= length_of(output-layer)
- *
- * POS: result == PTRON_OK  &&  updates successfully computed
- *	or
- *	result == PTRON_ERR  &&  ptron_fwd_prop() must be invoked beforehand
- */
-int
-ptron_back_prop (ptron3_t net, double *NU)
+/* ~~~~~~~~~~~~  Auxiliary functions for ptron_back_prop  ~~~~~~~~~~~~~~~~~~~~*/
+
+/* Performs 'd' auxiliary values calculations */
+static void
+ptron_compute_d (ptron3_t net, double *NU)
 {
 	int m = 0, i = 0, k = 0;
 	double sum = 0.0;
-	
-	assert (net != NULL);
-	assert (NU != NULL);
-	
-	if (!net->fwd)
-		return PTRON_ERR;
-	else
-		net->fwd = 0;
 	
 	m = NLAYERS-1;
 	/* Computing the deltas for the output layer	*
@@ -537,18 +519,114 @@ ptron_back_prop (ptron3_t net, double *NU)
 					 * sum;
 		}
 	}
+	return;
+}
+
+
+/* Computes net's dw values (weights updates)  */
+static void
+ptron_compute_dw (ptron3_t net, ptron_dynamic mode)
+{
+	int m = 0, i = 0;
+	size_t size = 0;
 	
-	/* Computing parallely all weights updates */
-	#pragma omp parallel for default(shared) private(m,i,k)
+	if ((mode == mom || mode == full) && net->rdy < 2) {
+		/* Momentum dynamics is used, but this is the first update,
+		 * and thus there are still no "past updates". Setting to zero.
+		 */
+		#pragma omp parallel for default(shared) private(m)
+		for (m=0 ; m < NLAYERS-1 ; m++) {
+			size = (net->N[m]+1) * net->N[m+1] * sizeof (double);
+			net->old_dw[m] = memset (net->old_dw[m], 0, size);
+		}
+		
+		net->rdy = 2;
+	}
+	
+	/* Computing parallely all weight updates */
+	#pragma omp parallel for default(shared) private(m,i)
 	for (m=0 ; m < NLAYERS-1 ; m++) {
-		for (i=0 ; i < net->N[m+1] ; i++) {
-			for (k=0 ; k < net->N[m]+1 ; k++) {
-				/* Threshold weights are modified as well */
-				net->dw[m][i + k*net->N[m+1]] += net->etha * 
-						net->d[m+1][i] * net->V[m][k];
-			}
+		for (i=0 ; i < ((net->N[m]+1) * net->N[m+1]) ; i++) {
+			/* Threshold weights are modified as well */
+			net->dw[m][i] += net->etha *
+					 net->d[m+1][i % net->N[m+1]] *
+					 net->V[m]  [i / net->N[m+1]];
+			net->dw[m][i] += (mode!=mom && mode!=full) ? 0.0 :
+					 net->alpha * net->old_dw[m][i];
 		}
 	}
+	
+	/* Actual updates now become the old updates */
+	#pragma omp parallel for default(shared) private(m)
+	for (m=0 ; m < NLAYERS-1 ; m++) {
+		size = (net->N[m]+1) * net->N[m+1] * sizeof(double);
+		net->old_dw[m] = memcpy (net->old_dw[m], net->dw[m], size);
+	}
+	
+	return;
+}
+
+
+
+/* Performs backwards propagation computations after a processed sample.
+ * NU holds the expected output for the last forward propagation.
+ *
+ * This can be done (successfully) only once after each forward propagation.
+ * The "mode" parameter is for choosing among the different update alternatives
+ * (ie: standard, with weight momentum, with adaptive parameter ETHA ...)
+ *
+ * NOTE: just as ptron_calc_err(), this funtion performs an internal error
+ *	 calculation. So calling ptron_back_prop() and then ptron_calc_err()
+ *	 is usually a mistake.
+ *
+ * NOTE: this function computes the next sinaptic weight updates and stores them
+ *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
+ *	 To do so ptron_do_updates(net) must be invoked
+ *	
+ *	 "incrementally" means that newly computed updates are added to any
+ *	 previous update value stored in the network.
+ *
+ * PRE: net != NULL
+ *	NU  != NULL
+ *	length_of(NU) >= length_of(output-layer)
+ *
+ * POS: result == PTRON_OK  &&  updates successfully computed
+ *	or
+ *	result == PTRON_ERR  &&  ptron_fwd_prop() must be invoked beforehand
+ */
+int
+ptron_back_prop (ptron3_t net, double *NU, ptron_dynamic mode)
+{
+	int m = 0, i = 0, k = 0;
+	double err = 0.0;
+	
+	assert (net != NULL);
+	assert (NU != NULL);
+	
+	if (!net->fwd)
+		return PTRON_ERR;
+	else
+		net->fwd = 0;
+	
+	/* Computing auxiliary values d[m][i] */
+	ptron_compute_d (net, NU);
+	
+	/* Computing the updates for this iteration */
+	ptron_compute_dw (net, mode);
+	
+	/* Computing new learning error */
+	err = ptron_calc_err (net, NU);
+	
+	/* Updating parameters if requested */
+	if (mode == adp || mode == full) {
+		if (err <= net->error) {
+			net->etha += INCREASE;
+		} else {
+			net->etha -= DECREASE * net->etha;
+		}
+	}
+	
+	net->error = err;
 	
 	debug("\n%s\n","Weight updates generated:");
 	dfor (m=0 ; m < NLAYERS-1 ; m++) {
@@ -565,10 +643,20 @@ ptron_back_prop (ptron3_t net, double *NU)
 }
 
 
-static void
-ptron_std_update (ptron3_t net)
+
+
+/* Applies the stored update values to the sinaptic weights,
+ * according to the update mode specified.
+ *
+ * PRE: net != NULL
+ * POS: network sinaptic weights updated
+ */
+void
+ptron_do_updates (ptron3_t net)
 {
 	int m = 0, i = 0;
+	
+	assert (net != NULL);
 	
 	#pragma omp parallel for default(shared) private(m,i)
 	for (m=0 ; m < NLAYERS-1 ; m++) {
@@ -576,43 +664,8 @@ ptron_std_update (ptron3_t net)
 			net->w[m][i] += net->dw[m][i];
 		}
 	}
-}
-
-
-/* Applies the stored update values to the sinaptic weights,
- * according to the update mode specified.
- *
- * PRE: net != NULL
- * POS: result == PTRON_OK  &&  updates successfully applied
- *	or
- *	result == PTRON_ERR
- */
-int
-ptron_do_updates (ptron3_t net, ptron_update mode)
-{
-	int res = PTRON_OK;
 	
-	assert (net != NULL);
-	
-	if (mode == std) {
-		ptron_std_update (net);
-	}
-	
-	/** TODO: fill <mom> and <adp> mode updates */
-	
-	if (mode == mom || mode == full) {
-	
-	}
-	
-	if (mode == adp || mode == full) {
-	
-	}
-	
-	if (mode != std && mode != mom && mode != adp && mode != full) {
-		res = PTRON_ERR;
-	}
-	
-	return res;
+	return;
 }
 
 

@@ -12,6 +12,7 @@
 #define  OUTPUT_SIZE  2
 
 #define  ETHA       0.1
+#define  ALPHA      0.9
 #define  LBOUND    0.15
 #define  UBOUND     0.3
 
@@ -34,13 +35,14 @@ double f (double x) { return sin(x); }
 int main (void)
 {
 	ptron3_t net = NULL;
+	ptron_dynamic mode = std;
 	unsigned int NN[NUM_LAYERS] = {0, 0, 0};
 	int i = 0, res = 0;
 	double *O = NULL;
 	double err = 0.0;
 	
 	/* Creation */
-	net = ptron_create (N, ETHA, f, f);
+	net = ptron_create (N, ETHA, ALPHA, f, f);
 	
 	/* Getting layers' size info */
 	ptron_get_layers_size (net, NN);
@@ -68,7 +70,8 @@ int main (void)
 	printf ("Learning error generated: %.12f\n", err);
 	
 	/* Performing back-propagation for that input */
-	res = ptron_back_prop (net, NU);
+	mode = full;
+	res = ptron_back_prop (net, NU, mode);
 	assert (res == PTRON_OK);
 	
 	/* Clearing accumulated info */
