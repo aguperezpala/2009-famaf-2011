@@ -619,11 +619,13 @@ ptron_back_prop (ptron3_t net, double *NU, ptron_dynamic mode)
 	
 	/* Updating parameters if requested */
 	if (mode == adp || mode == full) {
+		debug ("Modifying parameters\nOld η = %.4f\n", net->etha);
 		if (err <= net->error) {
 			net->etha += INCREASE;
 		} else {
 			net->etha -= DECREASE * net->etha;
 		}
+		debug ("New η = %.4f\n", net->etha);
 	}
 	
 	net->error = err;
