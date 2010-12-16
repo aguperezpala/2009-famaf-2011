@@ -22,13 +22,17 @@ typedef struct _ptron3_s *ptron3_t;
 #define  PTRON_OK	( 0)
 #define  PTRON_ERR	(-1)
 
+/* Network "adaptive parameters mode" coefficients */
+#define  INCREASE	0.02
+#define  DECREASE	0.1
+
 /* Net update modes */
 typedef enum {
 	std,	/* Standard */
 	mom,	/* Momentum */
-	adp,	/* Adaptive parameters */
+	adp,	/* Standard + adaptive parameters */
 	full	/* Momentum + adaptive parameters */
-} ptron_update;
+} ptron_dynamic;
 
 
 /** ### ### ### ~~~~~~~ SUPER-HARDCODED SECTION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -51,15 +55,17 @@ typedef enum {
 
 
 ptron3_t
-ptron_create (const unsigned int N[NLAYERS], double etha,
+ptron_create (const unsigned int N[NLAYERS], double etha, double alpha,
 	      double (*f) (double), double (*df) (double));
 
 /* Creates an instance of the ADT
  *
  * PARAMETERS:	N[i] --> # of neurons of the i-th layer.
- *			 N ranges from 0 (input layer) to NLAYERS (output layer)
+ *			 N ranges from 0 (input layer) to NLAYERS-1 (output l.)
  *		etha --> initial value for the proportionality constant
  *			 of the gradient descent learning heuristic
+ *		alpha -> importance of the previous update value,
+ *			 for the "momentum" update mode
  *		f -----> sinaptic update function
  *		df ----> function f derivative
  *
@@ -191,7 +197,7 @@ ptron_reset (ptron3_t net);
 
 
 
-/** ### ### ### ~~~~~~~~~ NETWORK DINAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ### ### ### ~~~~~~~~~ NETWORK DYNAMIC FUNCTIONS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
 int
@@ -213,11 +219,18 @@ ptron_fwd_prop (ptron3_t net, const double *XI, size_t len);
 
 
 int
-ptron_back_prop (ptron3_t net, double *NU);
+ptron_back_prop (ptron3_t net, double *NU, ptron_dynamic mode);
 
 /* Performs backwards propagation computations after a processed sample.
  * NU holds the expected output for the last forward propagation.
+ *
  * This can be done (successfully) only once after each forward propagation.
+ * The "mode" parameter is for choosing among the different update alternatives
+ * (ie: standard, with weight momentum, with adaptive parameter ETHA ...)
+ *
+ * NOTE: just as ptron_calc_err(), this funtion performs an internal error
+ *	 calculation. So calling ptron_back_prop() and then ptron_calc_err()
+ *	 is usually a mistake.
  *
  * NOTE: this function computes the next sinaptic weight updates and stores them
  *	 incrementally, but it DOES NOT PERFORM THE ACTUAL UPDATE
@@ -237,17 +250,16 @@ ptron_back_prop (ptron3_t net, double *NU);
 
 
 
-int
-ptron_do_updates (ptron3_t net, ptron_update mode);
+
+void
+ptron_do_updates (ptron3_t net);
 
 /* Applies the stored update values to the sinaptic weights,
  * according to the update mode specified.
  *
  * PRE: net != NULL
- * POS: result == PTRON_OK  &&  updates successfully applied
- *	or
- *	result == PTRON_ERR
-*/
+ * POS: network sinaptic weights updated
+ */
 
 
 #endif
