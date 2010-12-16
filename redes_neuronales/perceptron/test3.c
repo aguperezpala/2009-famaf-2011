@@ -16,6 +16,7 @@
 #define  LBOUND    0.15
 #define  UBOUND     0.3
 
+#define  N           10
 
 const unsigned int N[NUM_LAYERS] = {INPUT_SIZE, 4, OUTPUT_SIZE};
 
