@@ -20,7 +20,7 @@ help:
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"\
 	"\n\nElija una opción de compilación e ingrese \"make <opción>\"\n"\
 	"\rOpciones de compilación: p1\n\t\t\t p2\n\t\t\t p3\n\t\t\t "\
-	"test_basic\t\t\t test3\n"
+	"test_basic\n\t\t\t test_full\n"
 
 # dil: $(DIL)
 # $(DIL): mzran13.o ssv.o sdhn.o Hopfield_diluido.o
