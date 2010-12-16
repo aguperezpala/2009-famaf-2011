@@ -254,8 +254,7 @@ ptron_back_prop (ptron3_t net, double *NU, ptron_dynamic mode);
 void
 ptron_do_updates (ptron3_t net);
 
-/* Applies the stored update values to the sinaptic weights,
- * according to the update mode specified.
+/* Applies the stored update values to the sinaptic weights
  *
  * PRE: net != NULL
  * POS: network sinaptic weights updated
