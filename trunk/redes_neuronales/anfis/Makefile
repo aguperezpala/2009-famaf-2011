@@ -1,4 +1,5 @@
 TARGET=anfis
+TEST=test
 CC=gcc
 
 # For debugging include flag:	-D_DEBUG
