@@ -1,5 +1,5 @@
 /*
- * Neural Networks - Deterministic Hopfield Model
+ * Neural Networks - Deterministic & Stochastic Hopfield Models
  * Network dynamics' functions (NDFs)
  *
  * NOTE
