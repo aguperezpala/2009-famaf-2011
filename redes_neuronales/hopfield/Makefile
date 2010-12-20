@@ -15,7 +15,10 @@ CFLAGS = -Wall -ansi -pedantic -DNDEBUG \
 LIBRARIES = -lm
 INCLUDES=.depend
 
-all:help
+all:asd
+asd: mzran13.o sdhn.o test.o
+	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
+
 help:
 	echo "\n\nChoose a compiling option 'OP' and then type \"make OP\"\n"\
 		"\rCompiling options:\n\t\t   example\n\t\t   det\n\t\t   stoc"\

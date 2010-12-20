@@ -399,7 +399,7 @@ set_stoc_network (unsigned int untr, unsigned int tr)
  * This is done updating each neuron stored in 'S', and registering in 'm' all
  * the new overlaps between 'S' and each 'XI[mu]'
  *
- * It uses DETERMINISTIC logic
+ * It uses STOCHASTIC logic
  *
  * PRE: S != NULL
  *	S is an [n] dimensional vector
