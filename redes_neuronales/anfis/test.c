@@ -1,4 +1,7 @@
+#include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+#include <limits.h>
 
 #include "anfis.h"
 #include "mzran13.h"
@@ -19,7 +22,7 @@ static void init_MF (MF a[N*T])
 		a[i].k = i % MAX_FUNC;
 		for (j=0 ; j < MAX_PARAM ; j++) {
 			/* ... y parámetros cualesquiera */
-			a[i].p[j] = ((double) mzran13()) / ((double) mzran13());
+			a[i].p[j] = (double) i+j;
 		}
 	}
 	
@@ -28,16 +31,108 @@ static void init_MF (MF a[N*T])
 
 
 
+
+static void print_MF (MF a)
+{
+	char MF_kinds[MAX_FUNC][25] = {"triang", "trap", "gauss", "bell"};
+	
+	printf ("MF type: %s\nParameters: ", MF_kinds[a.k]);
+
+	switch (a.k) {
+	
+	case (triang):
+		printf ("a = %.4f, b = %.4f, c = %.4f\n", 
+			a.p[0],
+			a.p[1],
+			a.p[2] );
+		break;
+		
+	case (trap):
+		printf ("a = %.4f, b = %.4f, c = %.4f, d = %.4f\n", 
+			a.p[0],
+			a.p[1],
+			a.p[2],
+			a.p[3] );
+		break;
+		
+	case (gauss):
+		printf ("a = %.4f, σ = %.4f\n", 
+			a.p[0],
+			a.p[1] );
+		break;
+		
+	case (bell):
+		printf ("a = %.4f, b = %.4f, c = %.4f\n", 
+			a.p[0],
+			a.p[1],
+			a.p[2] );
+		break;
+		
+	default:
+		printf ("Error: unknown membership function\n");
+		break;
+	}
+}
+
+
+
+
 int main (void)
 {
 	anfis_t net = NULL;
 	MF a[N*T];
+	double *p = NULL;
+	int res = 0, i = 0;
+	
 	
 	init_MF (a);
 	
+	printf ("Creating sample ANFIS network\n\n");
 	net = anfis_create (N, T, (const MF *) a);
-	
 	anfis_print (net);
+	
+	
+	/* Getting a membership function */
+	printf ("Retrieving membership function...\n");
+	res = anfis_get_MF (net, T-1, N-1, &(a[0]));
+	assert (res == ANFIS_OK);
+	print_MF (a[0]);
+	printf ("Should be equal to the last MF in the network\n");
+	
+	
+	/* Setting a membership function */
+	printf ("\nCreating dummy MF...\n");
+	a[0].k = gauss;
+	a[0].p[0] = 1.01010101;
+	a[0].p[1] = 9.87654321;
+	print_MF (a[0]);
+	printf ("Setting MF as the network's first (ie: Branch # 0 / MF[0])");
+	res = anfis_set_MF (net, 0, 0, a[0]);
+	assert (res == ANFIS_OK);
+	anfis_print_branch (net, 0);
+	
+	
+	/* Getting consequent parameters */
+	printf ("Retrieving last consequent parameters...\n");
+	p = anfis_get_P (net, T-1);
+	assert (p != NULL);
+	printf ("p =");
+	for (i=0 ; i <= N ; i++)
+		printf ("  %.2f", p[i]);
+	
+	
+	/* Getting consequent parameters */
+	printf ("\n\nCreating dummy consequent parameters...\np =");
+	for (i=0 ; i <= N ; i++) {
+		p[i] = ((double) mzran13()) / ((double) ULONG_MAX) + ((double) N-i);
+		printf ("  %.2f", p[i]);
+	}
+	printf ("\nSetting p as the first consequent parameters (ie: Branch # 0)");
+	res = anfis_set_P (net, 0, p);
+	assert (res == ANFIS_OK);
+	anfis_print_branch (net, 0);
+	free (p);	p = NULL;
+	
 	
 	net = anfis_destroy (net);
 	

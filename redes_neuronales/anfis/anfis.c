@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <math.h>
 
@@ -35,6 +36,7 @@
 
 
 
+
 /**######################    STRUCTURES & STUFF   ############################*/
 
 
@@ -49,6 +51,13 @@ struct _anfis_s {
 	branch *b;	/* branches */
 };
 
+
+char MF_kinds[MAX_FUNC][MAX_NLEN] = {
+	"triang",
+	"trap",
+	"gauss",
+	"bell"
+};
 
 
 double triangular (double a, double b, double c, double x);
@@ -66,9 +75,11 @@ double gaussian (double a, double sigma, double x)
 { return exp (-1.0 * pow (((x-a)/sigma), 2.0)); }
 
 
-double bellian (double a, double b, double c, double x);
-double bellian (double a, double b, double c, double x)
+double belly (double a, double b, double c, double x);
+double belly (double a, double b, double c, double x)
 { return 1.0 / (1.0 + pow (fabs ((x-c)/a), 2.0*b)); }
+
+
 
 
 /**###############    CREATE / DESTROY FUNCTIONS    ##########################*/
@@ -150,71 +161,210 @@ anfis_destroy (anfis_t net)
 /** ### ### ### ~~~~~~~~~ NETWORK INITIALIZERS/OBSERVERS ~~~~~~~~~~~~~~~~~~~~ */
 
 
+
+
+/* Prints into STDOUT the internal state of the network's i-th branch
+ * PRE: net != NULL
+ *	i < network # of branches
+ */
+void
+anfis_print_branch (anfis_t net, unsigned int i)
+{
+	int j = 0;
+	
+	assert (net != NULL);
+	assert (i < (unsigned long) net->t);
+	
+	printf ("\nBranch # %d\n", i);
+	
+	for (j=0 ; j < net->n ; j++) {
+		
+		printf ("MF[%d] kind: %s\nParamaters: ",
+			j, MF_kinds[net->b[i].A[j].k]);
+	
+		switch (net->b[i].A[j].k) {
+		
+		case (triang):
+			printf ("a = %.4f, b = %.4f, c = %.4f\n", 
+				net->b[i].A[j].p[0],
+				net->b[i].A[j].p[1],
+				net->b[i].A[j].p[2] );
+			break;
+			
+		case (trap):
+			printf ("a = %.4f, b = %.4f, c = %.4f, d = %.4f\n", 
+				net->b[i].A[j].p[0],
+				net->b[i].A[j].p[1],
+				net->b[i].A[j].p[2],
+				net->b[i].A[j].p[3] );
+			break;
+			
+		case (gauss):
+			printf ("a = %.4f, σ = %.4f\n", 
+				net->b[i].A[j].p[0],
+				net->b[i].A[j].p[1] );
+			break;
+			
+		case (bell):
+			printf ("a = %.4f, b = %.4f, c = %.4f\n", 
+				net->b[i].A[j].p[0],
+				net->b[i].A[j].p[1],
+				net->b[i].A[j].p[2] );
+			break;
+			
+		default:
+			printf ("Error: unknown membership function\n");
+			break;
+		}
+	}
+	
+	printf ("Consequent parameters:\n");
+	for (j=0 ; j <= net->n ; j++) {
+		printf ("p[%d][%d] = %.2f\t", i, j, net->b[i].P[j]);
+	}
+}
+
+
+
+
 /* Prints in STDOUT the internal state of the network
  * PRE: net != NULL
  */
 void
 anfis_print (anfis_t net)
 {
-	int i = 0, j = 0;
-	char MF_kinds[MAX_FUNC][25] = {"triang", "trap", "gauss", "bell"};
+	int i = 0;
 	
 	assert (net != NULL);
 	
 	printf ("# of inputs:   N = %ld\n# of branches: T = %ld", net->n, net->t);
 	
 	for (i=0 ; i < net->t ; i++) {
-		
-		printf ("\n\nBranch # %d\n", i);
-		
-		for (j=0 ; j < net->n ; j++) {
-			
-			printf ("MF[%d] kind: %s\nParamaters: ",
-				j, MF_kinds[net->b[i].A[j].k]);
-		
-			switch (net->b[i].A[j].k) {
-			
-			case (triang):
-				printf ("a = %.4f, b = %.4f, c = %.4f\n", 
-					net->b[i].A[j].p[0],
-					net->b[i].A[j].p[1],
-					net->b[i].A[j].p[2] );
-				break;
-				
-			case (trap):
-				printf ("a = %.4f, b = %.4f, c = %.4f, d = %.4f\n", 
-					net->b[i].A[j].p[0],
-					net->b[i].A[j].p[1],
-					net->b[i].A[j].p[2],
-					net->b[i].A[j].p[3] );
-				break;
-				
-			case (gauss):
-				printf ("a = %.4f, σ = %.4f\n", 
-					net->b[i].A[j].p[0],
-					net->b[i].A[j].p[1] );
-				break;
-				
-			case (bell):
-				printf ("a = %.4f, b = %.4f, c = %.4f\n", 
-					net->b[i].A[j].p[0],
-					net->b[i].A[j].p[1],
-					net->b[i].A[j].p[2] );
-				break;
-				
-			default:
-				printf ("Error: unknown membership function\n");
-				break;
-			}
-		}
-		
-		printf ("Consequent parameters:\n");
-		for (j=0 ; j <= net->n ; j++) {
-			printf ("p[%d][%d] = %.2f\t", i, j, net->b[i].P[j]);
-		}
+		printf ("\n");
+		anfis_print_branch (net, i);
 	}
 	printf ("\n\n");
 	
 	return;
 }
 
+
+
+
+/* Copies into 'a' the network's i-th row membership function,
+ * which evaluates the j-th input component (aka: MF[i][j])
+ *
+ * PRE: net != NULL
+ *	a   != NULL
+ *	i < network # of branches
+ *	j < network input dimension
+ *
+ * POS: result == ANFIS_OK   &&   MF[i][j] data has been copied inside 'a'
+ *	or
+ *	result == ANFIS_ERR
+ */
+int
+anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF *a)
+{
+	int l = 0;
+	
+	assert (net != NULL);
+	assert (a   != NULL);
+	assert (i < (unsigned long) net->t);
+	assert (j < (unsigned long) net->n);
+	
+	a->k = net->b[i].A[j].k;
+	for (l=0 ; l < MAX_PARAM ; l++) {
+		a->p[l] = net->b[i].A[j].p[l];
+	}
+	
+	return ANFIS_OK;
+}
+
+
+
+
+/* Sets 'a' as the new network membership function in the i-th row,
+ * which evaluates the j-th input component (aka: MF[i][j])
+ *
+ * PRE:	net != NULL
+ *	i < network # of branches
+ *	j < network input dimension
+ *
+ * POS: result == ANFIS_OK   &&   MF[i][j] has been replaced with 'a'
+ *	or
+ *	result == ANFIS_ERR
+ */
+int
+anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF a)
+{
+	int l = 0;
+	
+	assert (net != NULL);
+	assert (i < (unsigned long) net->t);
+	assert (j < (unsigned long) net->n);
+	
+	net->b[i].A[j].k = a.k;
+	for (l=0 ; l < MAX_PARAM ; l++) {
+		net->b[i].A[j].p[l] = a.p[l];
+	}
+	
+	return ANFIS_OK;
+}
+
+
+
+
+/* Returns a copy of the network's i-th consequent parameters
+ * Caller owns the memory generated for the returned vector,
+ * which must be freed using glibc standard free() routine
+ *
+ * PRE:	net   != NULL
+ *	i < network # of branches
+ *	
+ * POS: result != NULL   &&   result contains the coefficients of p[i]
+ *	or
+ *	result == NULL
+ */
+double *
+anfis_get_P (anfis_t net, unsigned int i)
+{
+	double *p = NULL;
+	
+	assert (net != NULL);
+	assert (i < (unsigned long) net->t);
+	
+	p = (double *) malloc ((net->n+1) * sizeof (double));
+	if (p != NULL) {
+		p = memcpy (p, net->b[i].P, (net->n + 1) * sizeof (double));
+	}
+	
+	return p;
+}
+
+
+
+
+/* Sets 'new_p' as the new network i-th row consequent parameters (aka: p[i])
+ *
+ * PRE:	net   != NULL
+ *	new_p != NULL
+ *	length_of (new_p) == network input dimension + 1
+ *	i < network # of branches
+ *	
+ * POS: result == ANFIS_OK   &&   coefficients in p[i] have been replaced
+ *				  with those in 'new_p'
+ *	or
+ *	result == ANFIS_ERR
+ */
+int
+anfis_set_P (anfis_t net, unsigned int i, const double *new_p)
+{
+	assert (net   != NULL);
+	assert (new_p != NULL);
+	assert (i < (unsigned long) net->t);
+	
+	net->b[i].P = memcpy (net->b[i].P, new_p, (net->n+1) * sizeof (double));
+	
+	return ANFIS_OK;
+}
