@@ -20,12 +20,11 @@ typedef struct _anfis_s *anfis_t;
 #define  ANFIS_ERR	(-1)
 
 
-
 /* Quantity of possible membership functions (ie: length of MF_kind enum) */
 #define  MAX_FUNC	4
 /* Maximum # of parameters for any membership function */
 #define  MAX_PARAM	4
-/* Maximum length for any membership function */
+/* Maximum length for any membership function's name */
 #define  MAX_NLEN	25
 
 
@@ -41,7 +40,7 @@ typedef struct _anfis_s *anfis_t;
 /**/   typedef struct {                                                     /**/
 /**/                    MF_kind  k ;             /* MF's kind */            /**/
 /**/                    double   p [MAX_PARAM];  /* MF's parameters */      /**/
-/**/   } MF;                                                                /**/
+/**/   } MF_t;                                                              /**/
 /**/                                                                        /**/
 /******************************************************************************/
 
@@ -56,11 +55,12 @@ typedef struct _anfis_s *anfis_t;
 /******************************************************************************/
 
 
+
 /**###############    CREATE / DESTROY FUNCTIONS    ##########################*/
 
 
 anfis_t
-anfis_create (unsigned long n, unsigned long t, const MF *a);
+anfis_create (unsigned long n, unsigned long t, const MF_t *a);
 
 /* Creates an instance of the ADT
  *
@@ -108,17 +108,17 @@ anfis_print_branch (anfis_t net, unsigned int i);
 
 
 int
-anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF *a);
+anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF_t *mf);
 
-/* Copies into 'a' the network's i-th row membership function,
+/* Copies into 'mf' the network's i-th row membership function,
  * which evaluates the j-th input component (aka: MF[i][j])
  *
  * PRE: net != NULL
- *	a   != NULL
+ *	mf  != NULL
  *	i < network # of branches
  *	j < network input dimension
  *
- * POS: result == ANFIS_OK   &&   MF[i][j] data has been copied inside 'a'
+ * POS: result == ANFIS_OK   &&   MF[i][j] data has been copied inside 'mf'
  *	or
  *	result == ANFIS_ERR
  */
@@ -126,7 +126,7 @@ anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF *a);
 
 
 int
-anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF a);
+anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF_t a);
 
 /* Sets 'a' as the new network membership function in the i-th row,
  * which evaluates the j-th input component (aka: MF[i][j])
@@ -181,18 +181,20 @@ anfis_set_P (anfis_t net, unsigned int i, const double *new_p);
 
 
 int
-anfis_train (anfis_t net, unsigned int P, t_sample *sample);
+anfis_train (anfis_t net, unsigned int P, const t_sample *s);
 
 /* Trains the network using the 'P' training samples provided
  * Input of every sample element should have the correct dimension
+ * P should overcome the dimension of the input.
  *
  * NOTE: batch-like update mode is used
- * WARNING: this routine is EXTREMELY slow and CPU bound
+ * WARNING: this routine is EXTREMELY SLOW & CPU BOUND
  *
  * PRE: net != NULL
- *	sample != NULL
- *	length_of (sample) == P
- *	length_of (sample[k].in) == network input dimension
+ *	s   != NULL
+ *	length_of (s) == P
+ *	length_of (s[k].in) == network input dimension      k ∈ {1,..,P}
+ *	P > network input dimension
  *
  * POS:	result == ANFIS_OK   &&   net's parameters have been updated
  *	or
@@ -204,13 +206,14 @@ anfis_train (anfis_t net, unsigned int P, t_sample *sample);
 double
 anfis_eval (anfis_t net, double *input);
 
-/* Feeds the network with the given input. Returns the network final output
+/* Feeds the network with the given input. Returns the network produced output
  *
  * PRE: net != NULL
  *	length_of (input) == network input dimension
  *
  * POS: result == network output for the given input
  */
+
 
 
 #endif
