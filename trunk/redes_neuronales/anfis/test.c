@@ -6,9 +6,17 @@
 #include "anfis.h"
 #include "mzran13.h"
 
-#define  N  4
-#define  T  3
 
+#define  _byte_size	(1<<3)
+#define  MSB		((_byte_size * sizeof(size_t)) - 1)
+
+
+/* Dimensión de la entrada de la red */
+#define  N  4
+/* Número de ramas paralelas en la red */
+#define  T  3
+/* Número de ejemplos que tendrá un training set */
+#define  P  16
 
 
 
@@ -77,13 +85,55 @@ static void print_MF (MF_t mf)
 
 
 
+static void gen_sample (t_sample *s, unsigned int p)
+{
+	unsigned int i = 0;
+	
+	/* Creamos p muestras */
+	for (i=0 ; i < p ; i++) {
+		/* El vector de entrada debe tener
+		 * la misma dimensión que la entrada de la red */
+		s[i].in = gsl_vector_alloc (N);
+		
+		/* Inicializamos todos los lugares con i^2 */
+		gsl_vector_set_all (s[i].in, (double) i*i);
+		/* La salida será 2^(i%N) */
+		s[i].out = (double) ((size_t) 1 << ((i%N)%MSB));
+	}
+	
+	return;
+}
+
+
+
+
+static void print_t_sample (t_sample *s, unsigned int p)
+{
+	unsigned int i = 0, j = 0;
+	
+	for (i=0 ; i < p ; i++) {
+		printf ("Sample # %u\nInput:", i);
+		for (j=0 ; j < N ; j++) {
+			printf ("  %.3f", gsl_vector_get (s[i].in, j));
+		}
+		printf ("\nOutput: %f\n", s[i].out);
+	}
+	
+	return;
+}
+
+
+
+
+
+
 int main (void)
 {
 	anfis_t net = NULL;
 	MF_t mf[N*T];
 	double *p = NULL;
 	int res = 0, i = 0;
-	
+	t_sample sample[P];
 	
 	init_MF (mf);
 	
@@ -121,7 +171,7 @@ int main (void)
 		printf ("  %.2f", p[i]);
 	
 	
-	/* Getting consequent parameters */
+	/* Setting consequent parameters */
 	printf ("\n\nCreating dummy consequent parameters...\np =");
 	for (i=0 ; i <= N ; i++) {
 		p[i] = ((double) mzran13()) / ((double) ULONG_MAX) + ((double) N-i);
@@ -131,7 +181,18 @@ int main (void)
 	res = anfis_set_P (net, 0, p);
 	assert (res == ANFIS_OK);
 	anfis_print_branch (net, 0);
+	printf ("\n\n");
 	free (p);	p = NULL;
+	
+	
+	/* Testing the network training routine */
+	printf ("Generating trainig sample set:\n");
+	gen_sample (sample, P);
+	print_t_sample (sample, P);
+	printf ("\nTrainig network...\n");
+	res = anfis_train (net, sample, P);
+	printf ("Network state after training:\n");
+	anfis_print (net);
 	
 	
 	net = anfis_destroy (net);
