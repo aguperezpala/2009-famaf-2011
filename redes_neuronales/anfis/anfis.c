@@ -526,9 +526,15 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
  *	result == ANFIS_ERR
  */
 static int
-anfis_lse (anfis_t net, double *A, const t_sample s)
+anfis_lse (anfis_t net, double *A, const t_sample *s)
 {
+	assert (net != NULL);
+	assert (A   != NULL);
+	assert (s   != NULL);
 	
+	/** TODO: something about this emptyness */
+	
+	return ANFIS_OK;
 }
 
 
@@ -598,15 +604,14 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 		handle_error_1 (res);
 		
 		/* Filling A matrix k-th row */
-		#pragma omp parallel for default(shared) private(i)
+		#pragma omp parallel for default(shared) private(i,value)
 		for (i=0 ; i < M ; i++) {
-			value = gsl_matrix_get (b_tau, k, );
 			
+			value = gsl_matrix_get (b_tau, k, i/(n+1));
 			if (i % (n+1))
-				value *= gsl_vector_get (s[k].in, (i-1)%n);
+				value *= gsl_vector_get (s[k].in, (i%(n+1))-1);
 			
-			A [k*M + i] = net->b_tau [i/(n+1)];
-			A [k*M + i] *= (i % (n+1)) ? s[k].in[(i%(n+1))-1] : 1.0;
+			gsl_matrix_set (A, k, i, value);
 		}
 	}
 	

@@ -9,7 +9,7 @@ CFLAGS = -Wall -ansi -pedantic -D_DEBUG \
 	 -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes \
 	 -Wdeclaration-after-statement -Wno-unused-parameter -Werror
 
-LIBRARIES = -lm -lcblas
+LIBRARIES = -lgsl -lgslcblas -lm 
 INCLUDES = .depend
 
 all: help
