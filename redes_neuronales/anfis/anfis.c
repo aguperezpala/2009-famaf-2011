@@ -30,6 +30,7 @@
 #ifdef _DEBUG
   #define  handle_error_1(err)   if ((err) != ANFIS_OK) return err;
   #define  handle_error_2(arr)   if ((arr) == NULL) return ANFIS_ERR;
+  #define  handle_error_3(arr)   if ((arr) == NULL) return NULL;
   #define  debug(s,...)  fprintf(stderr, s, ##__VA_ARGS__)
   #define  dfor(s)	 for(s)
 #else
@@ -510,7 +511,11 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
 	}
 	#pragma omp parallel for default(shared) private(i)
 	for (i=0 ; i < t ; i++) {
-		gsl_matrix_set (b_tau, k, i, tau[i] / tau_sum);
+		if (tau_sum != 0.0) {
+			gsl_matrix_set (b_tau, k, i, tau[i] / tau_sum);
+		} else {
+			gsl_matrix_set (b_tau, k, i, 0.0);
+		}
 	}
 	
 	tau   = NULL;
@@ -524,15 +529,22 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
 /* Performs least square estimate (aka LSE) for the given sample (of size P)
  * to find best values for the network's consequent parameters
  *
+ * The network is updated internally, and a copy of this new values is returned
+ * as a vector of length (network # of branches) * (network input dimension + 1)
+ * to facilitate further calculations. Free result using gsl_vector_free()
+ *
  * PRE: net != NULL
  *	A   != NULL
  *	s   != NULL
  *
- * POS: result == ANFIS_OK   &&   consequent parameters computed and stored
+ * USE: new_params = anfis_lse
+ *
+ * POS: new_params != NULL   &&   consequent parameters were computed and saved
+ *				  in net. A copy of the new values was returned
  *	or
- *	result == ANFIS_ERR
+ *	new_params == NULL
  */
-static int
+static gsl_vector *
 anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 {
 	gsl_multifit_linear_workspace *work = NULL;
@@ -540,8 +552,9 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	gsl_vector *y = NULL,	/* Sample results (P in total) */
 		   *p = NULL;	/* Estimated parameters (M in total) */
 	size_t M = 0;
-	unsigned int i = 0;
+	unsigned int i = 0, j = 0;
 	double err = 0.0;
+	static size_t calls = 0;
 	
 	assert (net != NULL);
 	assert (A   != NULL);
@@ -551,21 +564,22 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	
 	/* Saving desired results in vector 'y' */
 	y = gsl_vector_alloc (P);
-	handle_error_2 (y);
+	handle_error_3 (y);
 	for (i=0 ; i < P ; i++) {
 		gsl_vector_set (y, i, s[i].out);
 	}
 	
 	/* Generating necessary workspace */
-	p = gsl_vector_alloc (M);
-	handle_error_2 (p);
-	cov = gsl_matrix_alloc (M, M);
-	handle_error_2 (cov);
+	p = gsl_vector_calloc (M);
+	handle_error_3 (p);
+	cov = gsl_matrix_calloc (M, M);
+	handle_error_3 (cov);
 	work = gsl_multifit_linear_alloc ((size_t) P, M);
-	handle_error_2 (work);
+	handle_error_3 (work);
 	
 	/* Performing LSE */
 	gsl_multifit_linear (A, y, p, cov, &err, work);
+	err = err;
 	
 	/* Hastly freeing the insulting amount of memory reserved */
 	gsl_multifit_linear_free (work);
@@ -576,6 +590,7 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	y = NULL;
 	
 	/* Saving estimated parameters inside the network */
+	debug ("LSE parameters estimation (call # %lu):\n", ++calls);
 	for (i=0 ; i < net->t ; i++) {
 		/* p_sub references the i-th branch consequent parameters
 		 * estimation, originally stored in vector p */
@@ -583,10 +598,47 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 		
 		p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
 		gsl_vector_memcpy (net->b[i].P, &p_sub.vector);
+		
+		dfor (j=0 ; j <= net->n ; j++) {
+			debug ("p[%u][%u] = %.4f\n", i, j,
+			       gsl_vector_get (p, i*(net->n+1) + j));
+		}
 	}
 	
-	gsl_vector_free (p);
-	p = NULL;
+	return p;
+}
+
+
+
+
+/* Performs the gradient descent technique to update premise parameters in net
+ *
+ * PARAMETERS:	MF -----> matrix containing the network's membership values
+ *			  for the last training sample processed
+ *		b_tau --> barred taus for the last training sample processed
+ *		cp -----> network's consequent parameters ordered according to
+ *			  the branch they belong to (from lower to upper)
+ *		P ------> # of samples in the last training sample processed
+ *
+ * PRE: net   != NULL
+ *	MF    != NULL
+ *	b_tau != NULL
+ *	cp    != NULL
+ *
+ * POS: result == ANFIS_OK   &&   premise parameters inside net were updated
+ *	or
+ *	result == ANFIS_ERR
+ */
+static int
+anfis_grad_desc (anfis_t net, gsl_matrix *MF, gsl_matrix *b_tau,
+		 gsl_vector *cp, unsigned int P)
+{
+	assert (net   != NULL);
+	assert (MF    != NULL);
+	assert (b_tau != NULL);
+	assert (cp    != NULL);
+	
+	/** TODO: fill'it up */
 	
 	return ANFIS_OK;
 }
@@ -605,30 +657,32 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
  *	s   != NULL
  *	length_of (s) == P
  *	length_of (s[k].in) == network input dimension      k ∈ {1,..,P}
- *	P > network input dimension
+ *	P > (network # of branches) * (network input dimension + 1)
  *
  * POS:	result == ANFIS_OK   &&   net's parameters have been updated
  *	or
  *	result == ANFIS_ERR
  */
 int
-anfis_train (anfis_t net, unsigned int P, const t_sample *s)
+anfis_train (anfis_t net, const t_sample *s, unsigned int P)
 {
 	int res = ANFIS_OK;
 	long k = 0, i = 0;
 	size_t n = 0, t = 0, M = 0;
-	gsl_matrix  *MF = NULL,		/* Membership values for input */
+	gsl_matrix  *MF    = NULL,	/* Membership values for input */
 		    *b_tau = NULL,	/* Barred taus for input */
-		    *A  = NULL;		/* Freaking monster */
+		    *A     = NULL;	/* Predictor variables for LSE */
+	gsl_vector  *ccp   = NULL;	/* Copy of new consequent parameters */
 	double value = 0.0;
 	
 	assert (net != NULL);
 	assert (s   != NULL);
-	assert (P > net->n);
 	
 	t = (size_t) net->t;
 	n = (size_t) net->n;
 	M = t * (n+1);
+	
+	assert (P > M);
 	
 	/* Membership values for all the P inputs */
 	MF = gsl_matrix_alloc (P, t*n);
@@ -669,9 +723,16 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 		}
 	}
 	
-	res = anfis_lse (net, A, s, P);
-	handle_error_1 (res);
+	/* Computing best consequent parameters with LSE */
+	ccp = anfis_lse (net, A, s, P);
+	handle_error_2 (ccp);
 	
+	gsl_matrix_free (A);
+	A = NULL;
+	
+	/* Updating premise parameters with gradient descent method */
+	res = anfis_grad_desc (net, MF, b_tau, ccp, P);
+	handle_error_1 (res);
 	/** TODO: gradient descent method to update MF[i][j] parameters **/
 	
 	return res;
