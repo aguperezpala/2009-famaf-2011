@@ -13,6 +13,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <gsl/gsl_multifit.h>
 
 #include "anfis.h"
 
@@ -45,8 +46,8 @@
 
 
 typedef struct {
-	MF_t	*MF;	/* membership functions    (n   in total) */
-	double	*P;	/* polynomial coefficients (n+1 in total) */
+	MF_t	   *MF;	/* membership functions    (n   in total) */
+	gsl_vector *P;	/* polynomial coefficients (n+1 in total) */
 } branch;
 
 struct _anfis_s {
@@ -54,7 +55,6 @@ struct _anfis_s {
 	long t;		/* # of branches */
 	branch *b;	/* branches */
 	double *tau;	/* auxiliary values for signal propagation */
-	double *b_tau;	/* auxiliary values for signal propagation */
 };
 
 
@@ -122,7 +122,7 @@ anfis_create (unsigned long n, unsigned long t, const MF_t *mf)
 		net->b[i].MF = (MF_t *) malloc (n * sizeof (MF_t));
 		assert (net->b[i].MF != NULL);
 		
-		net->b[i].P = (double *) calloc (n+1 , sizeof (double));
+		net->b[i].P = gsl_vector_alloc (n+1);
 		assert (net->b[i].P != NULL);
 	}
 	
@@ -136,8 +136,6 @@ anfis_create (unsigned long n, unsigned long t, const MF_t *mf)
 	
 	net->tau = (double *) malloc (net->t * sizeof (double));
 	assert (net->tau != NULL);
-	net->b_tau = (double *) malloc (net->t * sizeof (double));
-	assert (net->b_tau != NULL);
 	
 	return net;
 }
@@ -157,12 +155,13 @@ anfis_destroy (anfis_t net)
 	assert (net != NULL);
 	
 	for (i=0 ; i < net->t ; i++) {
-		free (net->b[i].MF);	net->b[i].MF = NULL;
-		free (net->b[i].P);	net->b[i].P  = NULL;
+		free (net->b[i].MF);
+		net->b[i].MF = NULL;
+		gsl_vector_free (net->b[i].P);
+		net->b[i].P  = NULL;
 	}
 	free (net->b);		net->b     = NULL;
 	free (net->tau);	net->tau   = NULL;
-	free (net->b_tau);	net->b_tau = NULL;
 	free (net);		net        = NULL;
 	
 	return net;
@@ -231,7 +230,8 @@ anfis_print_branch (anfis_t net, unsigned int i)
 	
 	printf ("Consequent parameters:\n");
 	for (j=0 ; j <= net->n ; j++) {
-		printf ("p[%d][%d] = %.2f\t", i, j, net->b[i].P[j]);
+		printf ("p[%d][%d] = %.2f\t", i, j,
+			gsl_vector_get (net->b[i].P, j));
 	}
 }
 
@@ -340,6 +340,7 @@ anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF_t mf)
 double *
 anfis_get_P (anfis_t net, unsigned int i)
 {
+	int j = 0;
 	double *p = NULL;
 	
 	assert (net != NULL);
@@ -347,7 +348,9 @@ anfis_get_P (anfis_t net, unsigned int i)
 	
 	p = (double *) malloc ((net->n+1) * sizeof (double));
 	if (p != NULL) {
-		p = memcpy (p, net->b[i].P, (net->n + 1) * sizeof (double));
+		for (j=0 ; j < net->n+1 ; j++) {
+			p[j] = gsl_vector_get (net->b[i].P, j);
+		}
 	}
 	
 	return p;
@@ -371,11 +374,15 @@ anfis_get_P (anfis_t net, unsigned int i)
 int
 anfis_set_P (anfis_t net, unsigned int i, const double *new_p)
 {
+	int j = 0;
+	
 	assert (net   != NULL);
 	assert (new_p != NULL);
 	assert (i < (unsigned long) net->t);
 	
-	net->b[i].P = memcpy (net->b[i].P, new_p, (net->n+1) * sizeof (double));
+	for (j=0 ; j < net->n+1 ; j++) {
+		gsl_vector_set (net->b[i].P, j, new_p[j]);
+	}
 	
 	return ANFIS_OK;
 }
@@ -477,7 +484,7 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
 			gsl_matrix *b_tau, int k)
 {
 	int i = 0, j = 0, t = 0, n = 0;
-	double *tau = NULL, *b_tau = NULL, tau_sum = 0.0;
+	double *tau = NULL, tau_sum = 0.0;
 	
 	assert (net   != NULL);
 	assert (input != NULL);
@@ -514,8 +521,8 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
 
 
 
-/* Performs least square estimate (aka LSE) to find best values
- * for the network's consequent parameters (according to given sample)
+/* Performs least square estimate (aka LSE) for the given sample (of size P)
+ * to find best values for the network's consequent parameters
  *
  * PRE: net != NULL
  *	A   != NULL
@@ -526,13 +533,60 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
  *	result == ANFIS_ERR
  */
 static int
-anfis_lse (anfis_t net, double *A, const t_sample *s)
+anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 {
+	gsl_multifit_linear_workspace *work = NULL;
+	gsl_matrix *cov = NULL;	/* Covariance matrix generated for LSE */
+	gsl_vector *y = NULL,	/* Sample results (P in total) */
+		   *p = NULL;	/* Estimated parameters (M in total) */
+	size_t M = 0;
+	unsigned int i = 0;
+	double err = 0.0;
+	
 	assert (net != NULL);
 	assert (A   != NULL);
 	assert (s   != NULL);
 	
-	/** TODO: something about this emptyness */
+	M = ((size_t) net->t) * ((size_t) net->n + 1);
+	
+	/* Saving desired results in vector 'y' */
+	y = gsl_vector_alloc (P);
+	handle_error_2 (y);
+	for (i=0 ; i < P ; i++) {
+		gsl_vector_set (y, i, s[i].out);
+	}
+	
+	/* Generating necessary workspace */
+	p = gsl_vector_alloc (M);
+	handle_error_2 (p);
+	cov = gsl_matrix_alloc (M, M);
+	handle_error_2 (cov);
+	work = gsl_multifit_linear_alloc ((size_t) P, M);
+	handle_error_2 (work);
+	
+	/* Performing LSE */
+	gsl_multifit_linear (A, y, p, cov, &err, work);
+	
+	/* Hastly freeing the insulting amount of memory reserved */
+	gsl_multifit_linear_free (work);
+	work = NULL;
+	gsl_matrix_free (cov);
+	cov = NULL;
+	gsl_vector_free (y);
+	y = NULL;
+	
+	/* Saving estimated parameters inside the network */
+	for (i=0 ; i < net->t ; i++) {
+		/* p_sub references the i-th branch consequent parameters
+		 * estimation, originally stored in vector p */
+		gsl_vector_view p_sub;
+		
+		p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
+		gsl_vector_memcpy (net->b[i].P, &p_sub.vector);
+	}
+	
+	gsl_vector_free (p);
+	p = NULL;
 	
 	return ANFIS_OK;
 }
@@ -600,7 +654,7 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 		handle_error_1 (res);
 		
 		/* Filling b_tau matrix k-th row */
-		res = anfis_partial_fwd_prop (net, s[k].in, MF, b_tau, k);&(MF[k*t*n]));
+		res = anfis_partial_fwd_prop (net, s[k].in, MF, b_tau, k);
 		handle_error_1 (res);
 		
 		/* Filling A matrix k-th row */
@@ -615,11 +669,10 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 		}
 	}
 	
-	res = anfis_lse (net, A, s);
+	res = anfis_lse (net, A, s, P);
 	handle_error_1 (res);
-	/** TODO: LSE method to find p[j] values
-	 **	  gradient descent metho to update MF[i][j] parameters
-	 **/
+	
+	/** TODO: gradient descent method to update MF[i][j] parameters **/
 	
 	return res;
 }

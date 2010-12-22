@@ -13,7 +13,8 @@
 
 
 /* Will use the GNU Scientific Library for algebraic computation */
-#include <gsl/gsl_math.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
 
 
 typedef struct _anfis_s *anfis_t;
@@ -192,7 +193,7 @@ anfis_train (anfis_t net, unsigned int P, const t_sample *s);
  * P should overcome the dimension of the input.
  *
  * NOTE: batch-like update mode is used
- * WARNING: this routine is EXTREMELY SLOW & CPU BOUND
+ * WARNING: this routine is EXTREMELY TIME, MEMORY AND CPU CONSUMING
  *
  * PRE: net != NULL
  *	s   != NULL
