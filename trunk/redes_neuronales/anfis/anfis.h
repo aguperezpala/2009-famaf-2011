@@ -12,6 +12,10 @@
 #define _ANFIS_H
 
 
+/* Will use the GNU Scientific Library for algebraic computation */
+#include <gsl/gsl_math.h>
+
+
 typedef struct _anfis_s *anfis_t;
 
 
@@ -48,7 +52,7 @@ typedef struct _anfis_s *anfis_t;
 /******   Training sample TAD   ***********************************************/
 /**/                                                                        /**/
 /**/   typedef struct {                                                     /**/
-/**/                    double *in;                                         /**/
+/**/                    gsl_vector *in;                                     /**/
 /**/                    double out;                                         /**/
 /**/   } t_sample;                                                          /**/
 /**/                                                                        /**/

@@ -419,22 +419,23 @@ eval_MF (MF_t mf, double x)
 
 
 /* Evaluates the network's membership functions in the given input
- * Obtained membership values are stored in MF matrix
+ * Obtained membership values are stored in the k-th row of MF matrix
  *
  * PRE: net   != NULL
  *	input != NULL
  *	MF    != NULL
  *	length_of (input) == network input dimension
- *	length_of (MF) == (network # of branches) * (network input dimension)
  *
  * POS: result == ANFIS_OK   &&   membership values stored in MF
  *	or
  *	result == ANFIS_ERR
  */
 static int
-anfis_compute_membership (const anfis_t net, const double *input, double *MF)
+anfis_compute_membership (const anfis_t net, gsl_vector *input,
+			  gsl_matrix *MF, int k)
 {
 	int i = 0, n = 0, t = 0;
+	double value = 0.0;
 	
 	assert (net   != NULL);
 	assert (input != NULL);
@@ -443,9 +444,11 @@ anfis_compute_membership (const anfis_t net, const double *input, double *MF)
 	t = net->t;
 	n = net->n;
 	
-	#pragma omp parallel for shared(MF, input)
+	#pragma omp parallel for shared(MF,input)
 	for (i=0 ; i < t*n ; i++) {
-		MF[i] = eval_MF (net->b[i/n].MF[i%n], input[i%n]);
+		value = eval_MF (net->b[i/n].MF[i%n],
+				 gsl_vector_get (input, i%n));
+		gsl_matrix_set (MF, k, i, value);
 	}
 	
 	return ANFIS_OK;
@@ -455,22 +458,23 @@ anfis_compute_membership (const anfis_t net, const double *input, double *MF)
 
 
 /* Performs a partial forward propagation of the given input to compute
- * the barred-taus, which are then stored inside network's b_tau vector
+ * the barred-taus, which are then stored in b_tau k-th row
  *
- * MF must contain the network's membership values for this input
+ * MF k-th row must contain the network's membership values for this input
  *
  * PRE: net   != NULL
  *	input != NULL
  *	MF    != NULL
+ *	b_tau != NULL
  *	length_of (input) == network input dimension
- *	length_of (MF)    == (network # of branches) * (network input dimension)
  *
  * POS: result == ANFIS_OK   &&   b_tau values in net were updated
  *	or
  *	result == ANFIS_ERR
  */
 static int
-anfis_partial_fwd_prop (anfis_t net, const double *input, double *MF)
+anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
+			gsl_matrix *b_tau, int k)
 {
 	int i = 0, j = 0, t = 0, n = 0;
 	double *tau = NULL, *b_tau = NULL, tau_sum = 0.0;
@@ -482,14 +486,13 @@ anfis_partial_fwd_prop (anfis_t net, const double *input, double *MF)
 	t     = net->t;
 	n     = net->n;
 	tau   = net->tau;
-	b_tau = net->b_tau;
 	
 	/* First taus are computed */
 	#pragma omp parallel for default(shared) private(i,j)
 	for (i=0 ; i < t ; i++) {
 		tau[i] = 1.0;
 		for (j=0 ; j < n ; j++) {
-			tau[i] *= MF[i*n+j];
+			tau[i] *= gsl_matrix_get (MF, k, i*n+j);
 		}
 	}
 	
@@ -500,13 +503,32 @@ anfis_partial_fwd_prop (anfis_t net, const double *input, double *MF)
 	}
 	#pragma omp parallel for default(shared) private(i)
 	for (i=0 ; i < t ; i++) {
-		b_tau[i] = tau[i] / tau_sum;
+		gsl_matrix_set (b_tau, k, i, tau[i] / tau_sum);
 	}
 	
 	tau   = NULL;
-	b_tau = NULL;
 	
 	return ANFIS_OK;
+}
+
+
+
+
+/* Performs least square estimate (aka LSE) to find best values
+ * for the network's consequent parameters (according to given sample)
+ *
+ * PRE: net != NULL
+ *	A   != NULL
+ *	s   != NULL
+ *
+ * POS: result == ANFIS_OK   &&   consequent parameters computed and stored
+ *	or
+ *	result == ANFIS_ERR
+ */
+static int
+anfis_lse (anfis_t net, double *A, const t_sample s)
+{
+	
 }
 
 
@@ -533,42 +555,63 @@ int
 anfis_train (anfis_t net, unsigned int P, const t_sample *s)
 {
 	int res = ANFIS_OK;
-	long k = 0, i = 0, M = 0;
-	double	*MF = NULL,	/* Membership values for input */
-		*A  = NULL;	/* Freaking monster */
+	long k = 0, i = 0;
+	size_t n = 0, t = 0, M = 0;
+	gsl_matrix  *MF = NULL,		/* Membership values for input */
+		    *b_tau = NULL,	/* Barred taus for input */
+		    *A  = NULL;		/* Freaking monster */
+	double value = 0.0;
 	
 	assert (net != NULL);
 	assert (s   != NULL);
 	assert (P > net->n);
 	
-	MF = (double *) malloc (net->t * net->n * sizeof (double));
+	t = (size_t) net->t;
+	n = (size_t) net->n;
+	M = t * (n+1);
+	
+	/* Membership values for all the P inputs */
+	MF = gsl_matrix_alloc (P, t*n);
 	handle_error_2 (MF);
 	
-	M = net->t * (net->n + 1);
-	A = (double *) malloc (P * M * sizeof (double));
-	handle_error_2 (A);
+	/* Barred taus for all the P inputs */
+	b_tau = gsl_matrix_alloc (P, t);
+	handle_error_2 (b_tau);
 /*
 A[1,1]=b_tau[1] | A[1,2]=b_tau[1]*input[1,1] | ... | A[1,M]=b_tau[t]*input[1,n]
 A[2,1]=b_tau[1] | A[2,2]=b_tau[1]*input[2,1] | ... | A[1,M]=b_tau[t]*input[2,n]
       ...       |            ...             | ... |            ...
 A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
-*/
+*/	A = gsl_matrix_alloc (P, M);
+	handle_error_2 (A);
+	
 	
 	/* Performing P partial propagations to compute A matrix */
 	for (k=0 ; k < P ; k++) {
-		res = anfis_compute_membership (net, s[k].in, MF);
+		
+		/* Filling MF matrix k-th row */
+		res = anfis_compute_membership (net, s[k].in, MF, k);
 		handle_error_1 (res);
 		
-		res = anfis_partial_fwd_prop (net, s[k].in, MF);
+		/* Filling b_tau matrix k-th row */
+		res = anfis_partial_fwd_prop (net, s[k].in, MF, b_tau, k);&(MF[k*t*n]));
 		handle_error_1 (res);
 		
+		/* Filling A matrix k-th row */
 		#pragma omp parallel for default(shared) private(i)
 		for (i=0 ; i < M ; i++) {
-			A [k*M + i] = net->b_tau [i/(net->n+1)];
-			A [k*M + i] *= (i % (net->n+1)) ? s[k].in[i-1] : 1.0;
+			value = gsl_matrix_get (b_tau, k, );
+			
+			if (i % (n+1))
+				value *= gsl_vector_get (s[k].in, (i-1)%n);
+			
+			A [k*M + i] = net->b_tau [i/(n+1)];
+			A [k*M + i] *= (i % (n+1)) ? s[k].in[(i%(n+1))-1] : 1.0;
 		}
 	}
 	
+	res = anfis_lse (net, A, s);
+	handle_error_1 (res);
 	/** TODO: LSE method to find p[j] values
 	 **	  gradient descent metho to update MF[i][j] parameters
 	 **/
