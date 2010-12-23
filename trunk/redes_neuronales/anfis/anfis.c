@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <math.h>
 #include <gsl/gsl_multifit.h>
+#include <gsl/gsl_cblas.h>
 
 #include "anfis.h"
 
@@ -46,11 +47,14 @@
 /**######################    STRUCTURES & STUFF   ############################*/
 
 
+/* A single network branch. That includes: ... */
 typedef struct {
-	MF_t	   *MF;	/* membership functions    (n   in total) */
-	gsl_vector *P;	/* polynomial coefficients (n+1 in total) */
+	MF_t	   *MF;	/* ... membership functions    (n   in total) */
+	gsl_vector *P;	/* ... consequent coefficients (n+1 in total) */
 } branch;
 
+
+/* Network internal structure */
 struct _anfis_s {
 	long n;		/* # of inputs */
 	long t;		/* # of branches */
@@ -59,12 +63,27 @@ struct _anfis_s {
 };
 
 
+/* Internal TAD for computing the premises parameters update
+ * (ie: MF internal parameters) using the gradient descent method
+ */
+typedef struct {
+	MT_t *mf_ij;	    /* MF whose parameters must be updated */
+	t_sample   *s;      /* samples training set for this epoch */
+	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
+	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
+	gsl_vector *p_sub;  /* consequent parameters (in MF's branch) */
+	gsl_vector *f_v;    /* network output values for the given sample */
+} mfu_t; 
+
+
+/* For pretty printing */
 char MF_kinds[MAX_FUNC][MAX_NLEN] = {
 	"triang",
 	"trap",
 	"gauss",
 	"bell"
 };
+
 
 
 double triangular (double a, double b, double c, double x);
@@ -611,16 +630,145 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 
 
 
+/* Updates the internal parameters of the given network's membership function
+ *
+ * PARAMETERS:  MF ------> membership function whose parameters must be updated
+ *		MF_i_j --> MF values for all P inputs in the given sample
+ *		b_tau ---> barred tau values for all P inputs (for this branch)
+ *		p_sub ---> consequent parameters (for this branch)
+ *		f_v -----> network output values for the given sample
+ *		s -------> samples training set
+ *		P -------> # of samples in the set
+ *		j -------> order # of the input element this MF processes
+ *		n -------> network input dimension
+ *
+ * PRE: MF != NULL
+ *	s  != NULL
+ *	All vectors != NULL
+ *	All vectors dimension == P
+ *	j < n
+ *
+ * POS: result == ANFIS_OK   &&   MF internal parameters were updated
+ *	or
+ *	result == ANFIS_ERR
+ */
+static int
+anfis_update_mf  (MF_t *MF, gsl_vector *MF_i_j, gsl_vector *b_tau,
+		      gsl_vector *p_sub,  gsl_vector *f_v, t_sample *s,
+		      unsigned int P, unsigned int j, unsigned int n)
+{
+	unsigned int k = 0;
+	double	mf_k = 0.0,	/* MF value for the k-th sample */
+		w    = 0.0,	/* mf_k * (1.0 - mf_k) */
+		d_ij = 0.0,	/**/
+		xj = 0.0,
+		aux = 0.0;
+	double  d_mf[MAX_PARAM],  /* derivatives of MF to its parameters */
+		db_ek[MAX_PARAM]; /* derivatives of the error function for the
+				   * k-th sample in 's', for all parameters */
+	
+	
+	assert (MF     != NULL);
+	assert (MF_i_j != NULL);
+	assert (b_tau  != NULL);
+	assert (p_sub  != NULL);
+	assert (f_v    != NULL);
+	assert (s      != NULL);
+	assert (j < n);
+	
+	
+	/** TODO: erase the following check and implement support for
+	 **	  every membership function defined in the header file
+	 **/
+	if (MF->k != bell) {
+		fprintf (stderr, "Membership function not implemented\n");
+		return ANFIS_ERR;
+	}
+	
+	/* Naughty, naughty boy */
+	for (int l = 0 ; l < MAX_PARAM ; l++) {
+		db_ek[l] = 0.0;
+	}
+	
+	
+	#pragma omp parallel for default(shared) \
+				 private(k, mf_k, w, d_mf, db_ep)
+	for (k=0 ; k < P ; k++) {
+		gsl_vector_view p_aux;
+		
+		/* mf_k = MF value for k-th sample */
+		mf_k = gsl_vector_get (MF_i_j, k);
+		w    = mf_k * (1.0 - mf_k);
+		
+		/* xj = j-th input element */
+		xj = gsl_vector_get (s[k].in, j);
+		
+		/* fk = network output for k-th sample */
+		fk = gsl_vector_get (f_v, k);
+		
+		/* pk = p[i][0] + p[i][1] * x[k][1] + ... + p[i][n-1] * x[k][n-1] */
+		p_aux = gsl_vector_subvector (p_sub, 1, n);
+		gsl_blas_ddot (&p_aux.vector, s[k].in, &pk);
+		pk += gsl_vector_get (p_sub, 0);
+		
+		/* tk = barred tau for k-th sample (of this branch) */
+		tk = gsl_vector_get (b_tau, k);
+		
+		#pragma omp sections
+		{
+			/* Update of first param ('a') */
+			#pragma omp section
+			{
+				d_mf [0] = (-2.0 * w * MF->p[1]) / MF->p[0];
+				db_ek[0] += -2.0 * (s[k].out - fk) * (pk - fk)
+						 * tk * (1.0/mf_k) * d_mf[0];
+			}
+			
+			/* Update of second param ('b') */
+			#pragma omp section
+			{
+				if (xj != MF->p[2]) {
+					aux = fabs ((xj - MF->p[2]) / MF->p[a]);
+					d_mf[1] = -2.0 * w * log (aux);
+					db_ek[1] += -2.0 * (s[k].out - fk) *
+							(pk - fk)  * tk *
+							(1.0/mf_k) * d_mf[1];
+				}
+				
+			}
+			
+			/* Update of third param ('c') */
+			#pragma omp section
+			{
+				if (xj != MF->p[2]) {
+					d_mf[2] = (-2.0 * w * MF->p[1]) / 
+						  (xj - MF->p[2]);
+					
+					db_ek[2] += -2.0 * (s[k].out - fk) *
+							(pk - fk)  * tk *
+							(1.0/mf_k) * d_mf[2];
+				}
+			}
+		}
+	}
+	
+	return ANFIS_OK;
+}
+
+
 /* Performs the gradient descent technique to update premise parameters in net
  *
- * PARAMETERS:	MF -----> matrix containing the network's membership values
+ * PARAMETERS:  A ------> predictor variables matrix used for LSE
+ *		s ------> training samples set
+ *		MF -----> matrix containing the network's membership values
  *			  for the last training sample processed
  *		b_tau --> barred taus for the last training sample processed
- *		cp -----> network's consequent parameters ordered according to
- *			  the branch they belong to (from lower to upper)
+ *		cp -----> network's consequent parameters in ascending order
+ *			  That is: p[0][0], p[0][1], ..., p[t][n]
  *		P ------> # of samples in the last training sample processed
  *
  * PRE: net   != NULL
+ *	A     != NULL
  *	MF    != NULL
  *	b_tau != NULL
  *	cp    != NULL
@@ -630,15 +778,73 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
  *	result == ANFIS_ERR
  */
 static int
-anfis_grad_desc (anfis_t net, gsl_matrix *MF, gsl_matrix *b_tau,
-		 gsl_vector *cp, unsigned int P)
+anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, const gsl_matrix *MF,
+		  const gsl_matrix *b_tau, const gsl_vector *cp, unsigned int P)
 {
+	gsl_vector f_v = NULL;
+	double _a = 1.0, _b = 1.0, p_i = 0.0;;
+	int i = 0, j = 0;
+	mfu_t mfu;
+	
 	assert (net   != NULL);
+	assert (A     != NULL);
 	assert (MF    != NULL);
 	assert (b_tau != NULL);
 	assert (cp    != NULL);
 	
+	f_v = gsl_vector_calloc (P);
+	handle_error_2 (f);
+	
+	/* Computing network outputs for the last training sample,
+	 * with the predictor variable matrix, since: outputs == A cp
+	 * This routine performs the computation: f_v = _a*A*cp + _b*f_v
+	 */
+	gsl_blas_dgemv (CblasNoTrans, _a, A, cp, _b, f_v);
+	
+	mfu.s   = s;
+	mfu.f_v = f_v;
+	typedef struct {
+		MT_t *MF;	    /* MF whose parameters must be updated */
+		t_sample   *s;      /* samples training set for this epoch */
+		gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
+		gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
+		gsl_vector *p_sub;  /* consequent parameters (in MF's branch) */
+		gsl_vector *f_v;    /* network output values for the given sample */
+	} mfu_t; 
+	
+/*	#pragma omp parallel for default(shared) \
+				 private(i, j, p_sub, b_tau_sub, MF_sub, res)
+*/	for (i=0 ; i < net->t ; i++) {
+		gsl_vector_view p_sub, b_tau_sub, MF_val;
+		
+		/* p_sub holds paramaters p[i][0], p[i][1], ..., p[i][n] */
+		p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
+		/* b_tau_sub holds b_tau values of i-th branch (all P inputs) */
+		b_tau_sub = gsl_matrix_column (b_tau, i);
+		/* MF_val holds MF[i][j] values for all P inputs */
+		MF_val = gsl_matrix_column (MF, i*n+j);
+		
+		mfu.p_sub  = p_sub;
+		mfu.b_tau  = b_tau_sub;
+		mfu.MF_val = MF_val;
+		
+		for (j=0 ; j < net->n ; j++) {
+			
+			mfu.mf_ij = &(net->b[i].MF[j]);
+			res = anfis_update_mf
+			res = anfis_update_params (&(net->b[i].MF[j]),
+						   &MF_sub.vector,
+						   &b_tau_sub.vector,
+						   &p_sub.vector,
+						   f_v,
+						   s,
+						   P, j, net->n);
+		}
+	}
 	/** TODO: fill'it up */
+	
+	gsl_vector_free (f_v);
+	f_v = NULL;
 	
 	return ANFIS_OK;
 }
@@ -727,11 +933,8 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 	ccp = anfis_lse (net, A, s, P);
 	handle_error_2 (ccp);
 	
-	gsl_matrix_free (A);
-	A = NULL;
-	
 	/* Updating premise parameters with gradient descent method */
-	res = anfis_grad_desc (net, MF, b_tau, ccp, P);
+	res = anfis_grad_desc (net, s, A, MF, b_tau, ccp, P);
 	handle_error_1 (res);
 	/** TODO: gradient descent method to update MF[i][j] parameters **/
 	
