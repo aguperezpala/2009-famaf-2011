@@ -1,4 +1,4 @@
-TARGET=anfis
+TARGET=mg
 TEST=test
 CC=gcc
 
@@ -16,12 +16,7 @@ all: help
 help:
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"\
 	"\n\nElija una opción de compilación e ingrese \"make <opción>\"\n"\
-	"\rOpciones de compilación: anfis\n\t\t\t test\n"
-
-# dil: $(DIL)
-# $(DIL): mzran13.o ssv.o sdhn.o Hopfield_diluido.o
-# 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
-# 	echo "\n\nPara ejecutar el programa ingrese \"./$(DIL)\"\n"
+	"\rOpciones de compilación: mg\n\t\t\t test\n"
 
 
 test: $(TEST)
@@ -30,10 +25,11 @@ $(TEST): mzran13.o anfis.o test.o
 	echo "\n\nPara ejecutar el programa ingrese \"./$(TEST)\"\n"
 
 
-anfis: $(TARGET)
+mg: $(TARGET)
 $(TARGET): mzran13.o anfis.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
-	echo "\n\nPara ejecutar el programa ingrese \"./$(TARGET)\"\n"
+	echo "\n\nPara ejecutar la simulación de Mackey-Glass " \
+ 		"ingrese \"./$(TARGET)\"\n"
 
 clean:
 	rm -f .depend $(TEST) $(TARGET) *.o *~
