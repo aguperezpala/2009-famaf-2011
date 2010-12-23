@@ -186,7 +186,7 @@ anfis_set_P (anfis_t net, unsigned int i, const double *new_p);
 
 
 int
-anfis_train (anfis_t net, const t_sample *s, unsigned int P);
+anfis_train (anfis_t net, t_sample *s, unsigned int P);
 
 /* Trains the network using the 'P' training samples provided
  * Input of every sample element should have the correct dimension
@@ -202,6 +202,7 @@ anfis_train (anfis_t net, const t_sample *s, unsigned int P);
  *	P > (network # of branches) * (network input dimension + 1)
  *
  * POS:	result == ANFIS_OK   &&   net's parameters have been updated
+ *				  sample was not modified
  *	or
  *	result == ANFIS_ERR
  */
@@ -209,11 +210,12 @@ anfis_train (anfis_t net, const t_sample *s, unsigned int P);
 
 
 double
-anfis_eval (anfis_t net, double *input);
+anfis_eval (anfis_t net, gsl_vector *input);
 
 /* Feeds the network with the given input. Returns the network produced output
  *
- * PRE: net != NULL
+ * PRE: net   != NULL
+ *	input != NULL
  *	length_of (input) == network input dimension
  *
  * POS: result == network output for the given input

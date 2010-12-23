@@ -14,10 +14,30 @@
 #include <assert.h>
 #include <math.h>
 #include <gsl/gsl_multifit.h>
-#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_blas.h>
+#include <omp.h>
 
 #include "anfis.h"
 
+
+/** NOTE <Heuristic for etha modification>
+ **	 a) if we have INC_H consecutive error minimizations --> etha increases
+ **	 b) if we have DEC_H succesions of 1 up, 1 down -------> etha decreases
+ **/
+
+
+/* Initial value for network's etha */
+#define  INIT_ETHA	0.1
+/* Etha's increase/decrease heuristic codes */
+#define  FIXED		-1		
+#define  DECREASE	0
+#define  INCREASE	1
+/* Etha's increase/decrease heuristic thresholds */
+#define  DEC_H		2
+#define  INC_H		4
+/* Etha's increase/decrease heuristic coefficients */
+#define  DEC_C		0.1
+#define  INC_C		0.1
 
 #define  MAX(x,y)	((x) > (y) ? (x) : (y))
 #define  MIN(x,y)	((x) < (y) ? (x) : (y))
@@ -59,18 +79,23 @@ struct _anfis_s {
 	long n;		/* # of inputs */
 	long t;		/* # of branches */
 	double etha;	/* update step size */
+	
 	branch *b;	/* branches */
 	double *tau;	/* auxiliary values for signal propagation */
+	
+	double old_err1;/* learning error from the previous epoch  */
+	double old_err2;/* learning error from two previous epochs */
+	int trend;	/* etha heuristic state: 0 = decrease ; 1 = increase  */
+	int trend_st;	/* trend state */
 };
 
-#define  INIT_ETHA  0.1
 
 
 /* Internal TAD for computing the premises parameters update
  * (ie: MF internal parameters) using the gradient descent method
  */
 typedef struct {
-	MT_t *mf_ij;	    /* MF whose parameters must be updated */
+	MF_t *mf_ij;	    /* MF whose parameters must be updated */
 	t_sample   *s;      /* samples training set for this epoch */
 	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
 	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
@@ -135,9 +160,13 @@ anfis_create (unsigned long n, unsigned long t, const MF_t *mf)
 	net = (anfis_t) malloc (sizeof (struct _anfis_s));
 	assert (net != NULL);
 	
-	net->n = int_val(n);
-	net->t = int_val(t);
+	net->n    = int_val(n);
+	net->t    = int_val(t);
 	net->etha = INIT_ETHA;
+	net->old_err1 = 0.0;
+	net->old_err2 = 0.0;
+	net->trend    = 0;
+	net->trend_st = 0;
 	
 	net->b = (branch *) malloc (t * sizeof (branch));
 	assert (net->b != NULL);
@@ -667,7 +696,7 @@ static double
 anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		  unsigned int P, unsigned int j, unsigned int n)
 {
-	unsigned int k = 0;
+	int k = 0;
 	MF_t *mf_ij = NULL;	/* MF whose parameters must be updated */
 	double	mf_k = 0.0,	/* MF value for the k-th sample */
 		w    = 0.0,	/* mf_k * (1.0 - mf_k) */
@@ -704,11 +733,11 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		db_e[l] = 0.0;
 	}
 	
-	
+	omp_set_nested (1);
 	/** WARNING Following loop works only for MF of kind 'bell' */
-	#pragma omp parallel for default(shared) \
-		private(k, mf_k, w, xj, fk, p_aux, pk, tk, yk, aux)
-	for (k=0 ; k < P ; k++) {
+/*	#pragma omp parallel for default(shared) \
+				 private(k, mf_k, w, xj, fk, pk, tk, yk, aux)
+*/	for (k=0 ; (unsigned int) k < P ; k++) {
 		gsl_vector_view p_aux;
 		
 		/* mf_k = MF value for k-th sample */
@@ -746,7 +775,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 			#pragma omp section
 			{
 				if (xj != mf_ij->p[2]) {
-					aux = (xj - mf_ij->p[2]) / mf_ij->p[a];
+					aux = (xj - mf_ij->p[2]) / mf_ij->p[0];
 					d_mf[1]  = -2.0 * w * log (fabs (aux));
 					db_e[1] += -2.0 * (yk - fk) * (pk - fk)
 							* tk * (1.0/mf_k) * d_mf[1];
@@ -765,6 +794,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 			}
 		}
 	}
+	omp_set_nested (0);
 	
 	aux = 0.0;
 	for (int l = 0 ; l < MAX_PARAM ; l++) {
@@ -777,23 +807,124 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 
 
 
-/* Applies the update to the parameters of the given MF
- * Etha is updated according to this epoch learning error
+/* Modifies network's etha (ie: the update step size) according to a certain
+ * heuristic described on top of this file.
  *
- * PRE: mf_ij != NULL
- *	etha  != NULL
+ * PRE: net != NULL
+ *	new_err >= 0.0
  *
+ * POS: etha state inside net has been updated
+ */
+static void
+update_etha (anfis_t net, double new_err)
+{
+	assert (net != NULL);
+	assert (new_err >= 0.0);
+	
+	/** Error descent */
+	if (new_err <= net -> old_err1) {
+		
+		/* If we were in an increasing state... */
+		if (net->trend == INCREASE) {
+			/* ...for the INC_H consecutive time... */
+			if (++(net->trend_st) == INC_H) {
+				/* ...increase etha */
+				net->etha += INC_C * net->etha;
+				net->trend = FIXED;
+				net->trend_st = 0;
+			} /* ...else just increment trend_st */
+		
+		/* If we were in a fixed state... */
+		} else if (net->trend == FIXED) {
+			/* ... now we are increasing */
+			net->trend = INCREASE;
+			net->trend_st = 1;
+		
+		/* If we were in a descending state... */
+		} else {
+			/* ...and had 1 up, 1 down DEC_H consecutive times... */
+			if ( (net->old_err1 > net->old_err2)  &&
+				(++(net->trend_st) == DEC_H) )
+			{	/* ...decrease etha */
+				net->etha -= DEC_C * net->etha;
+				net->trend = FIXED;
+				net->trend_st = 0;
+			/* ... else if up-down chain was broken... */
+			} else if (net->old_err1 <= net->old_err2) {
+				/* ...then tables have turned */
+				net->trend = INCREASE;
+				net->trend_st = 2;
+			} /* ...else just increment trend_st */
+		}
+	
+	/** Error augmnet */
+	} else {
+		/* If we were increasing or fixed ... */
+		if (net->trend == INCREASE || net->trend == FIXED) {
+			/* ...everything went to hell */
+			net->trend = DECREASE;
+			net->trend_st = 0;
+		
+		/* If we were decreasing... */
+		} else {
+			/* ...and beforehand the error had descended... */
+			if (net->old_err1 <= net->old_err2) {
+				/* ...we are one step closer to decrease etha */
+				net->trend_st++;
+			
+			/* ...else up-down chain was broken... */
+			} else {
+				/* ...and we switch to a fixed state */
+				net->trend = FIXED;
+				net->trend_st = 0;
+			}
+		}
+	}
+	
+	/* And finally we reflect the time change */
+	net->old_err2 = net->old_err1;
+	net->old_err1 = new_err;
+	
+	return;
+}
+
+
+
+/* Applies the update to the parameters of network's MF[i][j] function.
+ * Network's etha might be updated according to this epoch learning error.
+ *
+ * PRE: net != NULL
+ *	i < network # of branches
+ *	j < network input dimension
+ *	
  * POS: result == ANFIS_OK   &&   (parameters + etha) successfully updated
  *	or
  *	result == ANFIS_ERR
  */
 static int
-anfis_do_mf_up (const double db_e[MAX_PARAM], MF_t *mf_ij, double *etha)
+anfis_do_mf_up (anfis_t net, unsigned int i, unsigned int j,
+		const double db_e[MAX_PARAM])
 {
-	assert (mf_ij != NULL);
-	assert (etha  != NULL);
+	int l = 0;
+	double new_err = 0.0, step = 0.0;
 	
-	/** TODO: fill'it up */
+	assert (net != NULL);
+	assert (i < net->t);
+	assert (j < net->n);
+	
+	for (l=0 ; l < MAX_PARAM ; l++) {
+		new_err += db_e[l];
+	}
+	if (new_err < 0.0)
+		return ANFIS_ERR;
+	
+	/* NOTE: Heuristic for etha modification: see top of file */
+	update_etha (net, new_err);
+	step = net->etha / (fabs(new_err));
+	
+	for (l=0 ; l < MAX_PARAM ; l++) {
+		net->b[i].MF[j].p[l] -= step * db_e[l];
+	}
 	
 	return ANFIS_OK;
 }
@@ -824,15 +955,16 @@ anfis_do_mf_up (const double db_e[MAX_PARAM], MF_t *mf_ij, double *etha)
  *	result == ANFIS_ERR
  */
 static int
-anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, const gsl_matrix *MF,
-		  const gsl_matrix *b_tau, const gsl_vector *cp, unsigned int P)
+anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
+		  gsl_matrix *b_tau, gsl_vector *cp, unsigned int P)
 {
-	gsl_vector f_v = NULL;
+	gsl_vector *f_v = NULL;
 	double	_a  = 1.0,
 		_b  = 1.0,
 		err = 0.0,
 		db_e[MAX_PARAM];
 	int i = 0, j = 0;
+	int res = ANFIS_OK;
 	mfu_t mfu;
 	
 	assert (net   != NULL);
@@ -842,7 +974,7 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, const gsl_matrix
 	assert (cp    != NULL);
 	
 	f_v = gsl_vector_calloc (P);
-	handle_error_2 (f);
+	handle_error_2 (f_v);
 	
 	/* Computing network outputs for the last training sample,
 	 * with the predictor variable matrix, since: outputs == A cp
@@ -853,29 +985,32 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, const gsl_matrix
 	mfu.s   = s;
 	mfu.f_v = f_v;
 	
-	for (i=0 ; i < net->t ; i++) {
+/*	#pragma omp parallel for default(shared) private(i,j,mfu,err,res)
+*/	for (i=0 ; i < net->t ; i++) {
 		gsl_vector_view p_sub, b_tau_i, MF_val;
 		
 		/* p_sub holds paramaters p[i][0], p[i][1], ..., p[i][n] */
-		p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
+		p_sub = gsl_vector_subvector (cp, i*(net->n+1), net->n+1);
 		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
 		for (j=0 ; j < net->n ; j++) {
 			
 			/* MF_val holds MF[i][j] values for all P inputs */
-			MF_val = gsl_matrix_column (MF, i*n+j);
+			MF_val = gsl_matrix_column (MF, i*net->n + j);
 			
 			mfu.mf_ij  = &(net->b[i].MF[j]);
 			mfu.p_sub  = &p_sub.vector;
 			mfu.b_tau  = &b_tau_i.vector;
 			mfu.MF_val = &MF_val.vector;
 			
-			err = anfis_calc_mf_up (mfu, P, j, net->n, db_e);
+			/* Computing update values */
+			err = anfis_calc_mf_up (&mfu, db_e, P, j, net->n);
 			if (err < 0.0) {
-				return ANFIS_ERR;
+				res = ANFIS_ERR;
 			} else {
-				anfis_do_mf_up (db_e, mfu.mf_ij, &(net->etha));
+				/* Performing parameters update */
+				res = anfis_do_mf_up (net, i, j, db_e);
 			}
 		}
 	}
@@ -883,7 +1018,7 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, const gsl_matrix
 	gsl_vector_free (f_v);
 	f_v = NULL;
 	
-	return ANFIS_OK;
+	return res;
 }
 
 
@@ -903,11 +1038,12 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, const gsl_matrix
  *	P > (network # of branches) * (network input dimension + 1)
  *
  * POS:	result == ANFIS_OK   &&   net's parameters have been updated
+ *				  sample was not modified
  *	or
  *	result == ANFIS_ERR
  */
 int
-anfis_train (anfis_t net, const t_sample *s, unsigned int P)
+anfis_train (anfis_t net, t_sample *s, unsigned int P)
 {
 	int res = ANFIS_OK;
 	long k = 0, i = 0;
@@ -934,12 +1070,9 @@ anfis_train (anfis_t net, const t_sample *s, unsigned int P)
 	/* Barred taus for all the P inputs */
 	b_tau = gsl_matrix_alloc (P, t);
 	handle_error_2 (b_tau);
-/*
-A[1,1]=b_tau[1] | A[1,2]=b_tau[1]*input[1,1] | ... | A[1,M]=b_tau[t]*input[1,n]
-A[2,1]=b_tau[1] | A[2,2]=b_tau[1]*input[2,1] | ... | A[1,M]=b_tau[t]*input[2,n]
-      ...       |            ...             | ... |            ...
-A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
-*/	A = gsl_matrix_alloc (P, M);
+	
+	/* Predictor variables matrix for LSE. See below 'A' layout */
+	A = gsl_matrix_alloc (P, M);
 	handle_error_2 (A);
 	
 	
@@ -954,13 +1087,14 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 		res = anfis_partial_fwd_prop (net, s[k].in, MF, b_tau, k);
 		handle_error_1 (res);
 		
-		/* Filling A matrix k-th row */
+		/* Filling A matrix k-th row (see below) */
 		#pragma omp parallel for default(shared) private(i,value)
 		for (i=0 ; i < M ; i++) {
 			
 			value = gsl_matrix_get (b_tau, k, i/(n+1));
-			if (i % (n+1))
+			if (i % (n+1)) {
 				value *= gsl_vector_get (s[k].in, (i%(n+1))-1);
+			}
 			
 			gsl_matrix_set (A, k, i, value);
 		}
@@ -974,23 +1108,98 @@ A[P,1]=b_tau[1] | A[P,2]=b_tau[1]*input[P,1] | ... | A[1,M]=b_tau[t]*input[P,n]
 	res = anfis_grad_desc (net, s, A, MF, b_tau, ccp, P);
 	handle_error_1 (res);
 	
+	gsl_matrix_free (A);		A     = NULL;
+	gsl_matrix_free (MF);		MF    = NULL;
+	gsl_matrix_free (b_tau);	b_tau = NULL;
+	gsl_vector_free (ccp);		ccp   = NULL;
+
 	return res;
 }
-
+/* Matrix 'A' has the following layout:
+_________________________________________________________________________________
+| b_tau[0] | b_tau[0]*x[0,0]   | b_tau[0]*x[0,1]   | ... | b_tau[t-1]*x[0,n-1]  |
+| b_tau[0] | b_tau[0]*x[1,0]   | b_tau[0]*x[1,1]   | ... | b_tau[t-1]*x[1,n-1]  |
+|   ...    |       ...         |       ...         | ... |          ...         |
+| b_tau[0] | b_tau[0]*x[P-1,0] | b_tau[0]*x[P-1,1] | ... | b_tau[t-1]*x[P-1,n-1]|
+=================================================================================
+*/
 
 
 
 /* Feeds the network with the given input. Returns the network produced output
  *
- * PRE: net != NULL
+ * PRE: net   != NULL
+ *	input != NULL
  *	length_of (input) == network input dimension
  *
  * POS: result == network output for the given input
  */
 double
-anfis_eval (anfis_t net, double *input)
+anfis_eval (anfis_t net, gsl_vector *input)
 {
-	/** TODO: this function... */
-	return 0.0;
+	gsl_matrix  *MF    = NULL,	/* Membership values for input */
+		    *b_tau = NULL;	/* Barred taus for input */
+	double out = 0.0, partial = 0.0;
+	int i = 0, res = 0;
+	
+	assert (net   != NULL);
+	assert (input != NULL);
+	
+	/* Generating workspace */
+	MF = gsl_matrix_alloc (1, net->t * net->n);
+	if (MF == NULL) {
+		perror ("Not enough memory to perform computation\n");
+		goto exit_point;
+	}
+	b_tau = gsl_matrix_alloc (1, net->t);
+	if (MF == NULL) {
+		perror ("Not enough memory to perform computation\n");
+		goto exit_point;;
+	}
+	
+	
+	/* Filling MF matrix only row */
+	res = anfis_compute_membership (net, input, MF, 0);
+	if (res != ANFIS_OK) {
+		fprintf (stderr, "Unable to compute input membership values\n");
+		goto exit_point;
+	}
+		
+	/* Filling b_tau matrix only row */
+	res = anfis_partial_fwd_prop (net, input, MF, b_tau, 0);
+	if (res != ANFIS_OK) {
+		fprintf (stderr, "Unable to perform forward propagation\n");
+		goto exit_point;
+	}
+	
+	out = 0.0;
+	for (i=0 ; i < net->t ; i++) {
+		gsl_vector_view p_i;
+		
+		/* p_i = (p[i][1] , p[i][2] , ... , p[i][n]) */
+		p_i = gsl_vector_subvector (net->b[i].P, 1, net->n);;
+		
+		partial = 0.0;
+		/* partial = p_i*input = p[i][1]*x[1] + ... + p[i][n]*x[n] */
+		gsl_blas_ddot (&p_i.vector, input, &partial);
+		/* partial = partial + p[i][0] */
+		partial += gsl_vector_get (net->b[i].P, 0);
+		
+		out += partial * gsl_matrix_get (b_tau, 0, i);
+	}
+	
+	exit_point:
+	{
+		if (MF != NULL) {
+			gsl_matrix_free (MF);
+			MF    = NULL;
+		}
+		if (b_tau != NULL) {
+			gsl_matrix_free (b_tau);
+			b_tau = NULL;
+		}
+		
+		return out;
+	}
 }
 
