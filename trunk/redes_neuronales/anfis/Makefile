@@ -1,5 +1,9 @@
-TARGET=mg
-TEST=test
+TARGET = mg
+GTEST  = gen_test
+OTEST  = op_test
+SAMPLE = Mackey_Glass
+SOUT   = Mackey_Glass.dat
+SPLOT  = Mackey_Glass.gp
 CC=gcc
 
 # For debugging include flag:	-D_DEBUG
@@ -16,23 +20,39 @@ all: help
 help:
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"\
 	"\n\nElija una opción de compilación e ingrese \"make <opción>\"\n"\
-	"\rOpciones de compilación: mg\n\t\t\t test\n"
+	"\rOpciones de compilación: anfis_mg\n\t\t\t mg_sample\n\t\t\t"\
+	" gen_test   (test muy general, pruebas ligeras)\n\t\t\t"\
+ 	"op_test    (test pesado, prueba la dinámica de red)\n\n"
 
 
-test: $(TEST)
-$(TEST): mzran13.o anfis.o test.o
+gen_test: $(GTEST)
+$(GTEST): mzran13.o anfis.o test.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
-	echo "\n\nPara ejecutar el programa ingrese \"./$(TEST)\"\n"
+	echo "\n\nPara ejecutar el programa ingrese \"./$(GTEST)\"\n"
 
 
-mg: $(TARGET)
+op_test: $(OTEST)
+$(OTEST): mzran13.o anfis.o test.o
+	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
+	echo "\n\nPara ejecutar el programa ingrese \"./$(OTEST)\"\n"
+
+
+mg_sample: $(SAMPLE)
+$(SAMPLE): Mackey_Glass.o
+	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
+	./$(SAMPLE) > $(SOUT) ; gnuplot $(SPLOT) ; \
+	echo "\n\nDatos guardados en al archivo \"$(SOUT)\"\n"
+
+
+anfis_mg: $(TARGET)
 $(TARGET): mzran13.o anfis.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nPara ejecutar la simulación de Mackey-Glass " \
- 		"ingrese \"./$(TARGET)\"\n"
+		"ingrese \"./$(TARGET)\"\n"
+
 
 clean:
-	rm -f .depend $(TEST) $(TARGET) *.o *~
+	rm -f .depend $(GTEST) $(OTEST) $(SAMPLE) $(SOUT) $(TARGET) *.o *~
 
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend
