@@ -234,5 +234,5 @@ int main (void)
 	free_sample (sample, P);
 	net = anfis_destroy (net);
 	
-	return 0;
+	return EXIT_SUCCESS;
 }
