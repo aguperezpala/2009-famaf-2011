@@ -26,13 +26,13 @@ help:
 
 
 gen_test: $(GTEST)
-$(GTEST): mzran13.o anfis.o test.o
+$(GTEST): mzran13.o anfis.o gen_test.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nPara ejecutar el programa ingrese \"./$(GTEST)\"\n"
 
 
 op_test: $(OTEST)
-$(OTEST): mzran13.o anfis.o test.o
+$(OTEST): mzran13.o anfis.o op_test.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nPara ejecutar el programa ingrese \"./$(OTEST)\"\n"
 
