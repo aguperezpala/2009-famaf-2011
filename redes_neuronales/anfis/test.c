@@ -88,17 +88,24 @@ static void print_MF (MF_t mf)
 static void gen_sample (t_sample *s, unsigned int p)
 {
 	unsigned int i = 0;
+	static unsigned long initialized = 0;
+	double ran = 0.0;
 	
 	/* Creamos p muestras */
 	for (i=0 ; i < p ; i++) {
-		/* El vector de entrada debe tener
-		 * la misma dimensión que la entrada de la red */
-		s[i].in = gsl_vector_alloc (N);
 		
-		/* Inicializamos todos los lugares con i^2 */
-		gsl_vector_set_all (s[i].in, (double) i*i);
-		/* La salida será 2^(i%N) */
-		s[i].out = (double) ((size_t) 1 << ((i%N)%MSB));
+		if (!initialized) {
+			/* El vector de entrada debe tener
+			 * la misma dimensión que la entrada de la red */
+			s[i].in = gsl_vector_alloc (N);
+			initialized++;
+		}
+		
+		ran = ((double) mzran13()) / ((double) ULONG_MAX);
+		/* Inicializamos todos los lugares con un mismo # aleatorio */
+		gsl_vector_set_all (s[i].in, ran);
+		/* La salida será el cuadrado de ese # */
+		s[i].out = ran*ran;
 	}
 	
 	return;
@@ -122,6 +129,17 @@ static void print_t_sample (t_sample *s, unsigned int p)
 	return;
 }
 
+
+
+static void free_sample (t_sample *s, unsigned int p)
+{
+	unsigned int i = 0;
+	
+	for (i=0 ; i < p ; i++) {
+		gsl_vector_free (s[i].in);
+		s[i].in = NULL;
+	}
+}
 
 
 
@@ -185,7 +203,7 @@ int main (void)
 	free (p);	p = NULL;
 	
 	
-	/* Testing the network training routine */
+	/* Exercising the network training routine */
 	printf ("Generating trainig sample set:\n");
 	gen_sample (sample, P);
 	print_t_sample (sample, P);
@@ -195,6 +213,12 @@ int main (void)
 	anfis_print (net);
 	
 	
+	/* Exercising the network calculus routine */
+	printf ("\nGenerating trainig sample set:\n");
+	gen_sample (sample, P);
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAA\n");
+	
+	free_sample (sample, P);
 	net = anfis_destroy (net);
 	
 	return 0;
