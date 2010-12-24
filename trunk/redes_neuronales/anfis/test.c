@@ -98,7 +98,6 @@ static void gen_sample (t_sample *s, unsigned int p)
 			/* El vector de entrada debe tener
 			 * la misma dimensión que la entrada de la red */
 			s[i].in = gsl_vector_alloc (N);
-			initialized++;
 		}
 		
 		ran = ((double) mzran13()) / ((double) ULONG_MAX);
@@ -107,6 +106,8 @@ static void gen_sample (t_sample *s, unsigned int p)
 		/* La salida será el cuadrado de ese # */
 		s[i].out = ran*ran;
 	}
+	
+	initialized += initialized ? 0 : 1;
 	
 	return;
 }
@@ -149,7 +150,8 @@ int main (void)
 {
 	anfis_t net = NULL;
 	MF_t mf[N*T];
-	double *p = NULL;
+	double	out = 0.0,
+		*p = NULL;
 	int res = 0, i = 0;
 	t_sample sample[P];
 	
@@ -170,9 +172,10 @@ int main (void)
 	
 	/* Setting a membership function */
 	printf ("\nCreating dummy MF...\n");
-	mf[0].k = gauss;
+	mf[0].k = bell;
 	mf[0].p[0] = 1.01010101;
 	mf[0].p[1] = 9.87654321;
+	mf[0].p[2] = 666.0;
 	print_MF (mf[0]);
 	printf ("Setting MF as the network's first (ie: Branch # 0 / MF[0])");
 	res = anfis_set_MF (net, 0, 0, mf[0]);
@@ -216,8 +219,18 @@ int main (void)
 	/* Exercising the network calculus routine */
 	printf ("\nGenerating trainig sample set:\n");
 	gen_sample (sample, P);
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAA\n");
+	print_t_sample (sample, P);
+	printf ("\n");
+	for (i=0 ; i < P ; i++) {
+		printf ("Feeding input # %d\n", i);
+		out = anfis_eval (net, sample[i].in);
+		printf ("Generated output:\t%f\nExpected output:\t%f\n",
+			out, sample[i].out);
+	}
 	
+	
+	/* Shutting down */
+	printf ("\n\nEnd of tests\n\n");
 	free_sample (sample, P);
 	net = anfis_destroy (net);
 	

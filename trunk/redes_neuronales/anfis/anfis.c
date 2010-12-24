@@ -27,7 +27,7 @@
 
 
 /* Initial value for network's etha */
-#define  INIT_ETHA	0.1
+#define  INIT_ETHA	10.0
 /* Etha's increase/decrease heuristic codes */
 #define  FIXED		-1		
 #define  DECREASE	0
@@ -724,7 +724,9 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 	 **	  every membership function defined in the header file
 	 **/
 	if (mf_ij -> k != bell) {
-		fprintf (stderr, "Membership function not implemented\n");
+		fprintf (stderr, "anfis.c: anfis_calc_mf_up: "
+				 "Membership function not implemented  ~  "
+				 "ABORTING UPDATE !!!\n\n");
 		return -1.0;
 	}
 	
@@ -735,9 +737,9 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 	
 	omp_set_nested (1);
 	/** WARNING Following loop works only for MF of kind 'bell' */
-/*	#pragma omp parallel for default(shared) \
-				 private(k, mf_k, w, xj, fk, pk, tk, yk, aux)
-*/	for (k=0 ; (unsigned int) k < P ; k++) {
+	#pragma omp parallel for default(shared) \
+				 private(k, mf_k, w, xj, fk, pk, tk, yk, d_mf, aux)
+	for (k=0 ; (unsigned int) k < P ; k++) {
 		gsl_vector_view p_aux;
 		
 		/* mf_k = MF value for k-th sample */
@@ -750,6 +752,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		/* fk = network output for k-th sample */
 		fk = gsl_vector_get (mfu -> f_v, k);
 		
+		pk = 0.0;
 		/* pk = p[i][0] + p[i][1] * x[k][1] + ... + p[i][n-1] * x[k][n-1] */
 		p_aux = gsl_vector_subvector (mfu -> p_sub, 1, n);
 		gsl_blas_ddot (&p_aux.vector, (mfu -> s)[k].in, &pk);
@@ -761,36 +764,32 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		/* yk = correct output for k-th sample */
 		yk = (mfu -> s)[k].out;
 		
-		#pragma omp sections
-		{
+/*		#pragma omp sections
+*/		{
 			/* Update of first param ('a') */
-			#pragma omp section
-			{
-				d_mf[0] = (-2.0 * w * mf_ij->p[1]) / mf_ij->p[0];
-				db_e[0] += -2.0 * (yk - fk) * (pk - fk)
-						* tk * (1.0/mf_k) * d_mf[0];
+/*			#pragma omp section
+*/			{
+			d_mf[0] = (-2.0 * w * mf_ij->p[1]) / mf_ij->p[0];
+			db_e[0] += -2.0 * (yk - fk) * (pk - fk) * tk
+					* (1.0/mf_k) * d_mf[0];
 			}
 			
 			/* Update of second param ('b') */
-			#pragma omp section
-			{
-				if (xj != mf_ij->p[2]) {
-					aux = (xj - mf_ij->p[2]) / mf_ij->p[0];
-					d_mf[1]  = -2.0 * w * log (fabs (aux));
-					db_e[1] += -2.0 * (yk - fk) * (pk - fk)
-							* tk * (1.0/mf_k) * d_mf[1];
-				}
+/*			#pragma omp section
+*/			if (xj != mf_ij->p[2]) {
+				aux = (xj - mf_ij->p[2]) / mf_ij->p[0];
+				d_mf[1]  = -2.0 * w * log (fabs (aux));
+				db_e[1] += -2.0 * (yk - fk) * (pk - fk) * tk
+						* (1.0/mf_k) * d_mf[1];
 			}
 			
 			/* Update of third param ('c') */
-			#pragma omp section
-			{
-				if (xj != mf_ij->p[2]) {
-					d_mf[2] = (-2.0 * w * mf_ij->p[1]) /
-						  (xj - mf_ij->p[2]);
-					db_e[2] += -2.0 * (yk - fk) * (pk - fk)
-							* tk * (1.0/mf_k) * d_mf[2];
-				}
+/*			#pragma omp section
+*/			if (xj != mf_ij->p[2]) {
+				d_mf[2]  = (-2.0 * w * mf_ij->p[1]) /
+						(xj - mf_ij->p[2]);
+				db_e[2] += -2.0 * (yk - fk) * (pk - fk) * tk
+						* (1.0/mf_k) * d_mf[2];
 			}
 		}
 	}
@@ -816,7 +815,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
  * POS: etha state inside net has been updated
  */
 static void
-update_etha (anfis_t net, double new_err)
+anfis_update_etha (anfis_t net, double new_err)
 {
 	assert (net != NULL);
 	assert (new_err >= 0.0);
@@ -890,43 +889,40 @@ update_etha (anfis_t net, double new_err)
 
 
 
-/* Applies the update to the parameters of network's MF[i][j] function.
- * Network's etha might be updated according to this epoch learning error.
+/* Applies the updates stored in 'db_e' to all membership functions inside 'net'
+ * 'new_err' must be the total learning error, ie: sum all over db_e values
  *
- * PRE: net != NULL
- *	i < network # of branches
- *	j < network input dimension
+ * PRE: net  != NULL
+ *	db_e != NULL
+ *	new_err >= 0.0
  *	
- * POS: result == ANFIS_OK   &&   (parameters + etha) successfully updated
- *	or
- *	result == ANFIS_ERR
+ * POS: network parameters successfully updated
  */
-static int
-anfis_do_mf_up (anfis_t net, unsigned int i, unsigned int j,
-		const double db_e[MAX_PARAM])
+static void
+anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
 {
-	int l = 0;
-	double new_err = 0.0, step = 0.0;
+	int i = 0, l = 0;
+	double	etha = 0.0,
+		*db_e_ij = NULL;
 	
-	assert (net != NULL);
-	assert (i < net->t);
-	assert (j < net->n);
+	assert (net  != NULL);
+	assert (db_e != NULL);
+	assert (new_err >= 0.0);
 	
-	for (l=0 ; l < MAX_PARAM ; l++) {
-		new_err += db_e[l];
+	etha = net->etha / new_err;
+	
+	#pragma omp parallel for default(shared) private(i,l,db_e_ij)
+	for (i=0 ; i < net->t * net->n ; i++) {
+		
+		/* Error gradients for the parameters of M[i/n][i%n] */
+		db_e_ij = gsl_matrix_ptr (db_e, i, 0);
+		
+		for (l=0 ; l < MAX_PARAM ; l++) {
+			net-> b[i/net->n]. MF[i%net->n]. p[l] -= etha * db_e_ij[l];
+		}
 	}
-	if (new_err < 0.0)
-		return ANFIS_ERR;
 	
-	/* NOTE: Heuristic for etha modification: see top of file */
-	update_etha (net, new_err);
-	step = net->etha / (fabs(new_err));
-	
-	for (l=0 ; l < MAX_PARAM ; l++) {
-		net->b[i].MF[j].p[l] -= step * db_e[l];
-	}
-	
-	return ANFIS_OK;
+	return;
 }
 
 
@@ -958,11 +954,13 @@ static int
 anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 		  gsl_matrix *b_tau, gsl_vector *cp, unsigned int P)
 {
-	gsl_vector *f_v = NULL;
+	gsl_vector *f_v  = NULL;
+	gsl_matrix *db_e = NULL;
 	double	_a  = 1.0,
 		_b  = 1.0,
 		err = 0.0,
-		db_e[MAX_PARAM];
+		total_err = 0.0,
+		*db_e_ij = NULL;
 	int i = 0, j = 0;
 	int res = ANFIS_OK;
 	mfu_t mfu;
@@ -985,8 +983,18 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 	mfu.s   = s;
 	mfu.f_v = f_v;
 	
-/*	#pragma omp parallel for default(shared) private(i,j,mfu,err,res)
-*/	for (i=0 ; i < net->t ; i++) {
+	/* The k-th row of "db_e" will hold the error gradient corresponding
+	 * to the parameters update of the network membership function
+	 * located in branch # k/n, for input element k%n (ie: MF[k/n][k%n])
+	 */
+	db_e = gsl_matrix_alloc (net->t * net->n, MAX_PARAM);
+	handle_error_2 (db_e);
+	
+	total_err = 0.0;
+/*	#pragma omp parallel for default(shared) \
+				 private(i,j,mfu,db_e_ij,err,res) \
+				 reduction(+:total_err)
+*/	for (i=0 ; i < net->t && res == ANFIS_OK ; i++) {
 		gsl_vector_view p_sub, b_tau_i, MF_val;
 		
 		/* p_sub holds paramaters p[i][0], p[i][1], ..., p[i][n] */
@@ -994,29 +1002,45 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
-		for (j=0 ; j < net->n ; j++) {
+		for (j=0 ; j < net->n && res == ANFIS_OK ; j++) {
 			
 			/* MF_val holds MF[i][j] values for all P inputs */
-			MF_val = gsl_matrix_column (MF, i*net->n + j);
+			MF_val = gsl_matrix_column (MF, i * net->n + j);
 			
 			mfu.mf_ij  = &(net->b[i].MF[j]);
 			mfu.p_sub  = &p_sub.vector;
 			mfu.b_tau  = &b_tau_i.vector;
 			mfu.MF_val = &MF_val.vector;
 			
+			/* Error gradients for the parameters of M[i][j] */
+			db_e_ij = gsl_matrix_ptr (db_e, i * net->n + j, 0);
+			
 			/* Computing update values */
-			err = anfis_calc_mf_up (&mfu, db_e, P, j, net->n);
+			err = anfis_calc_mf_up (&mfu, db_e_ij, P, j, net->n);
 			if (err < 0.0) {
 				res = ANFIS_ERR;
 			} else {
-				/* Performing parameters update */
-				res = anfis_do_mf_up (net, i, j, db_e);
+				total_err += err;
 			}
 		}
 	}
 	
+	if (res == ANFIS_OK) {
+		/* NOTE: Heuristic for etha modification: see top of file */
+		anfis_update_etha (net, total_err);
+		/* Performing parameters update for the whole network */
+		anfis_do_mf_up (net, db_e, total_err);
+		
+	} else {
+		fprintf (stderr, "anfis.c: anfis_grad_desc: Error updating "
+				 "parameters  ~  ABORTING UPDATE !!!\n\n");
+	}
+	
+	/* Cleanup */
 	gsl_vector_free (f_v);
 	f_v = NULL;
+	gsl_matrix_free (db_e);
+	db_e = NULL;
 	
 	return res;
 }
@@ -1148,12 +1172,14 @@ anfis_eval (anfis_t net, gsl_vector *input)
 	/* Generating workspace */
 	MF = gsl_matrix_alloc (1, net->t * net->n);
 	if (MF == NULL) {
-		perror ("Not enough memory to perform computation\n");
+		perror ("anfis.c: anfis_eval: Not enough memory to perform "
+			"computation   ~   ABORTING PROPAGATION\n");
 		goto exit_point;
 	}
 	b_tau = gsl_matrix_alloc (1, net->t);
 	if (MF == NULL) {
-		perror ("Not enough memory to perform computation\n");
+		perror ("anfis.c: anfis_eval: Not enough memory to perform "
+			"computation   ~   ABORTING PROPAGATION\n");
 		goto exit_point;;
 	}
 	
@@ -1161,14 +1187,16 @@ anfis_eval (anfis_t net, gsl_vector *input)
 	/* Filling MF matrix only row */
 	res = anfis_compute_membership (net, input, MF, 0);
 	if (res != ANFIS_OK) {
-		fprintf (stderr, "Unable to compute input membership values\n");
+		fprintf (stderr, "anfis.c: anfis_eval: Unable to compute input "
+				 "membership values   ~   ABORTING PROPAGATION\n");
 		goto exit_point;
 	}
 		
 	/* Filling b_tau matrix only row */
 	res = anfis_partial_fwd_prop (net, input, MF, b_tau, 0);
 	if (res != ANFIS_OK) {
-		fprintf (stderr, "Unable to perform forward propagation\n");
+		fprintf (stderr, "anfis.c: anfis_eval: Unable to perform "
+				 "forward propagation   ~   ABORTING PROPAGATION\n");
 		goto exit_point;
 	}
 	
