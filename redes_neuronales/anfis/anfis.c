@@ -13,8 +13,11 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 #include <gsl/gsl_multifit.h>
+#include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_errno.h>
 #include <omp.h>
 
 #include "anfis.h"
@@ -100,7 +103,7 @@ typedef struct {
 	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
 	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
 	gsl_vector *p_sub;  /* consequent parameters (in MF's branch) */
-	gsl_vector *f_v;    /* network output values for the given sample */
+	gsl_vector *f_out;  /* network output values for the given sample */
 } mfu_t; 
 
 
@@ -131,7 +134,7 @@ double gaussian (double a, double sigma, double x)
 
 double belly (double a, double b, double c, double x);
 double belly (double a, double b, double c, double x)
-{ return 1.0 / (1.0 + pow (fabs ((x-c)/a), 2.0*b)); }
+{ return (1.0 / (1.0 + pow (((x-c)/a) * ((x-c)/a), b))); }
 
 
 
@@ -469,7 +472,7 @@ eval_MF (MF_t mf, double x)
 		break;
 		
 	default:
-		fprintf (stderr, "Error: unknown membership function\n");
+		fprintf (stderr, "anfis.c: eval_MF: ERROR: unknown MF\n");
 		return 0.0;
 		break;
 	}
@@ -479,11 +482,11 @@ eval_MF (MF_t mf, double x)
 
 
 /* Evaluates the network's membership functions in the given input
- * Obtained membership values are stored in the k-th row of MF matrix
+ * Obtained membership values are stored in vector MF_k
  *
  * PRE: net   != NULL
  *	input != NULL
- *	MF    != NULL
+ *	MF_k  != NULL
  *	length_of (input) == network input dimension
  *
  * POS: result == ANFIS_OK   &&   membership values stored in MF
@@ -491,24 +494,24 @@ eval_MF (MF_t mf, double x)
  *	result == ANFIS_ERR
  */
 static int
-anfis_compute_membership (const anfis_t net, gsl_vector *input,
-			  gsl_matrix *MF, int k)
+anfis_compute_membership (const anfis_t net, gsl_vector *input, gsl_vector *MF_k)
 {
 	int i = 0, n = 0, t = 0;
 	double value = 0.0;
 	
 	assert (net   != NULL);
 	assert (input != NULL);
-	assert (MF    != NULL);
+	assert (MF_k  != NULL);
 	
 	t = net->t;
 	n = net->n;
 	
-	#pragma omp parallel for shared(MF,input)
+	#pragma omp parallel for shared(MF_k,input) private(value)
 	for (i=0 ; i < t*n ; i++) {
 		value = eval_MF (net->b[i/n].MF[i%n],
 				 gsl_vector_get (input, i%n));
-		gsl_matrix_set (MF, k, i, value);
+		assert (value >= 0.0);
+		gsl_vector_set (MF_k, i, value);
 	}
 	
 	return ANFIS_OK;
@@ -518,59 +521,61 @@ anfis_compute_membership (const anfis_t net, gsl_vector *input,
 
 
 /* Performs a partial forward propagation of the given input to compute
- * the barred-taus, which are then stored in b_tau k-th row
+ * the barred-taus, which are then stored in b_tau_k
  *
- * MF k-th row must contain the network's membership values for this input
+ * MF_k must contain the network's membership values for this input
  *
- * PRE: net   != NULL
- *	input != NULL
- *	MF    != NULL
- *	b_tau != NULL
+ * PRE: net     != NULL
+ *	input   != NULL
+ *	MF_k    != NULL
+ *	b_tau_k != NULL
  *	length_of (input) == network input dimension
  *
- * POS: result == ANFIS_OK   &&   b_tau values in net were updated
+ * POS: result == ANFIS_OK   &&   b_tau_k values in net were updated
  *	or
  *	result == ANFIS_ERR
  */
 static int
-anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
-			gsl_matrix *b_tau, int k)
+anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_vector *MF_k,
+			gsl_vector *b_tau_k)
 {
 	int i = 0, j = 0, t = 0, n = 0;
 	double *tau = NULL, tau_sum = 0.0;
 	
-	assert (net   != NULL);
-	assert (input != NULL);
-	assert (MF    != NULL);
+	assert (net     != NULL);
+	assert (input   != NULL);
+	assert (MF_k    != NULL);
+	assert (b_tau_k != NULL);
 	
-	t     = net->t;
-	n     = net->n;
-	tau   = net->tau;
+	t   = net->t;
+	n   = net->n;
+	tau = net->tau;
 	
 	/* First taus are computed */
 	#pragma omp parallel for default(shared) private(i,j)
 	for (i=0 ; i < t ; i++) {
 		tau[i] = 1.0;
 		for (j=0 ; j < n ; j++) {
-			tau[i] *= gsl_matrix_get (MF, k, i*n+j);
+			tau[i] *= gsl_vector_get (MF_k, i*n+j);
 		}
+		assert (tau[i] >= 0.0);
 	}
 	
 	/* Now we calculate b_taus */
-	#pragma omp parallel for default(shared) private(i) reduction(+:tau_sum)
+	#pragma omp parallel for shared(tau) reduction(+:tau_sum)
 	for (i=0 ; i < t ; i++) {
 		tau_sum += tau[i];
 	}
 	#pragma omp parallel for default(shared) private(i)
 	for (i=0 ; i < t ; i++) {
 		if (tau_sum != 0.0) {
-			gsl_matrix_set (b_tau, k, i, tau[i] / tau_sum);
+			gsl_vector_set (b_tau_k, i, tau[i] / tau_sum);
 		} else {
-			gsl_matrix_set (b_tau, k, i, 0.0);
+			gsl_vector_set (b_tau_k, i, 0.0);
 		}
 	}
 	
-	tau   = NULL;
+	tau = NULL;
 	
 	return ANFIS_OK;
 }
@@ -599,13 +604,17 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_matrix *MF,
 static gsl_vector *
 anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 {
+	gsl_error_handler_t *old_handler = NULL;
 	gsl_multifit_linear_workspace *work = NULL;
-	gsl_matrix *cov = NULL;	/* Covariance matrix generated for LSE */
-	gsl_vector *y = NULL,	/* Sample results (P in total) */
+	gsl_matrix *cov = NULL;	 /* Covariance matrix generated for LSE */
+	gsl_vector *y = NULL,	/* Sample results       (P in total) */
 		   *p = NULL;	/* Estimated parameters (M in total) */
-	size_t M = 0;
-	unsigned int i = 0, j = 0;
-	double err = 0.0;
+/**	gsl_matrix *AA = NULL;
+	gsl_vector *tau = NULL,
+		   *residual = NULL;
+*/	size_t M = 0;
+	unsigned int i = 0, j = 0, error = 0;
+	double chisq = 0.0;
 	static size_t calls = 0;
 	
 	assert (net != NULL);
@@ -629,9 +638,25 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	work = gsl_multifit_linear_alloc ((size_t) P, M);
 	handle_error_3 (work);
 	
+	/* We cannot afford to abort the whole programm
+	 * just because of a convergence failure.
+	 * If that happens, the obtained partial results for 'p' will do
+	 */
+	old_handler = gsl_set_error_handler_off ();
+	
 	/* Performing LSE */
-	gsl_multifit_linear (A, y, p, cov, &err, work);
-	err = err;
+	error = gsl_multifit_linear (A, y, p, cov, &chisq, work);
+	
+	if (error || !finite (chisq)) {
+		printf ("Error while performing LSE: %s\nχ² value for last LSE "
+			"computation: %f\nLSE failed to converge. Choose another"
+			" training sample\n", gsl_strerror (error), chisq);
+		free (p);
+		p = NULL;
+	}
+	
+	/* Restoring default gsl error handler */
+	gsl_set_error_handler (old_handler);
 	
 	/* Hastly freeing the insulting amount of memory reserved */
 	gsl_multifit_linear_free (work);
@@ -641,20 +666,48 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	gsl_vector_free (y);
 	y = NULL;
 	
-	/* Saving estimated parameters inside the network */
-	debug ("LSE parameters estimation (call # %lu):\n", ++calls);
-	for (i=0 ; i < net->t ; i++) {
-		/* p_sub references the i-th branch consequent parameters
-		 * estimation, originally stored in vector p */
-		gsl_vector_view p_sub;
-		
-		p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
-		gsl_vector_memcpy (net->b[i].P, &p_sub.vector);
-		
-		dfor (j=0 ; j <= net->n ; j++) {
-			debug ("p[%u][%u] = %.4f\n", i, j,
-			       gsl_vector_get (p, i*(net->n+1) + j));
+/**	NOTE: alternative QR decomposition method
+
+	 Generating necessary workspace
+	tau = gsl_vector_alloc (MIN (P, M));
+	handle_error_3 (tau);
+	residual = gsl_vector_alloc (P);
+	handle_error_3 (residual);
+	AA = gsl_matrix_alloc (P, M);
+	handle_error_3 (AA);
+	gsl_matrix_memcpy (AA, A);
+	
+	 Performing LSE
+	error = gsl_linalg_QR_decomp (AA, tau);
+	error = gsl_linalg_QR_lssolve (AA, tau, y, p, residual);
+	printf ("Error while performing LSE: %s\n", gsl_strerror (error));
+	
+	gsl_vector_free (residual);
+	residual = NULL;
+	gsl_vector_free (tau);
+	tau = NULL;
+	gsl_matrix_free (AA);
+	AA = NULL;
+*/	
+	calls=calls;j=j;
+	
+	if (p != NULL) {
+		/* Saving estimated parameters inside the network */
+		debug ("LSE parameters estimation (call # %lu):\n", ++calls);
+		for (i=0 ; i < net->t ; i++) {
+			/* p_sub references the i-th branch consequent param.
+			 * estimation, originally stored in vector p */
+			gsl_vector_view p_sub;
+			
+			p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
+			gsl_vector_memcpy (net->b[i].P, &(p_sub.vector));
+			
+			dfor (j=0 ; j <= net->n ; j++) {
+				debug ("p[%u][%u] = %.4f\n", i, j,
+				gsl_vector_get (p, i*(net->n+1) + j));
+			}
 		}
+		debug ("Sum of residual squares: χ² = %f\n\n", chisq);
 	}
 	
 	return p;
@@ -668,7 +721,7 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
  * The whole learning error is the returned value.
  *
  * PARAMETERS:  mfu ---> MF update TAD
- *		db_e --> error gradient in this epoch (for each parameter)
+ *		db_e --> error gradient for each parameter of this MF
  *		P -----> # of samples in the set
  *		j -----> order # of the input element this MF processes
  *		n -----> network input dimension
@@ -679,7 +732,7 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
  *		MF_val --> MF values for all P inputs in the given sample
  *		b_tau ---> barred tau values for all P inputs (for this branch)
  *		p_sub ---> consequent parameters (for this branch)
- *		f_v -----> network output values for the given sample
+ *		f_out ---> network output values for the given sample
  *		
  * PRE: mfu != NULL
  *	All values inside mfu != NULL
@@ -715,7 +768,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 	assert (mfu->MF_val != NULL);
 	assert (mfu->b_tau  != NULL);
 	assert (mfu->p_sub  != NULL);
-	assert (mfu->f_v    != NULL);
+	assert (mfu->f_out  != NULL);
 	assert (j < n);
 	
 	mf_ij = mfu -> mf_ij;
@@ -737,10 +790,10 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 	
 	omp_set_nested (1);
 	/** WARNING Following loop works only for MF of kind 'bell' */
-	#pragma omp parallel for default(shared) \
+/*	#pragma omp parallel for default(shared) \
 				 private(k, mf_k, w, xj, fk, pk, tk, yk, d_mf, aux)
-	for (k=0 ; (unsigned int) k < P ; k++) {
-		gsl_vector_view p_aux;
+*/	for (k=0 ; (unsigned int) k < P ; k++) {
+		gsl_vector_view  p_aux;
 		
 		/* mf_k = MF value for k-th sample */
 		mf_k = gsl_vector_get (mfu -> MF_val, k);
@@ -750,12 +803,12 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		xj = gsl_vector_get ((mfu -> s)[k].in, j);
 		
 		/* fk = network output for k-th sample */
-		fk = gsl_vector_get (mfu -> f_v, k);
+		fk = gsl_vector_get (mfu -> f_out, k);
 		
 		pk = 0.0;
 		/* pk = p[i][0] + p[i][1] * x[k][1] + ... + p[i][n-1] * x[k][n-1] */
 		p_aux = gsl_vector_subvector (mfu -> p_sub, 1, n);
-		gsl_blas_ddot (&p_aux.vector, (mfu -> s)[k].in, &pk);
+		gsl_blas_ddot (&(p_aux.vector), (mfu -> s)[k].in, &pk);
 		pk += gsl_vector_get (mfu -> p_sub, 0);
 		
 		/* tk = barred tau for k-th sample (of this branch) */
@@ -764,19 +817,19 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		/* yk = correct output for k-th sample */
 		yk = (mfu -> s)[k].out;
 		
-/*		#pragma omp sections
-*/		{
+		#pragma omp sections
+		{
 			/* Update of first param ('a') */
-/*			#pragma omp section
-*/			{
+			#pragma omp section
+			{
 			d_mf[0] = (-2.0 * w * mf_ij->p[1]) / mf_ij->p[0];
 			db_e[0] += -2.0 * (yk - fk) * (pk - fk) * tk
 					* (1.0/mf_k) * d_mf[0];
 			}
 			
 			/* Update of second param ('b') */
-/*			#pragma omp section
-*/			if (xj != mf_ij->p[2]) {
+			#pragma omp section
+			if (xj != mf_ij->p[2]) {
 				aux = (xj - mf_ij->p[2]) / mf_ij->p[0];
 				d_mf[1]  = -2.0 * w * log (fabs (aux));
 				db_e[1] += -2.0 * (yk - fk) * (pk - fk) * tk
@@ -784,8 +837,8 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 			}
 			
 			/* Update of third param ('c') */
-/*			#pragma omp section
-*/			if (xj != mf_ij->p[2]) {
+			#pragma omp section
+			if (xj != mf_ij->p[2]) {
 				d_mf[2]  = (-2.0 * w * mf_ij->p[1]) /
 						(xj - mf_ij->p[2]);
 				db_e[2] += -2.0 * (yk - fk) * (pk - fk) * tk
@@ -954,13 +1007,13 @@ static int
 anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 		  gsl_matrix *b_tau, gsl_vector *cp, unsigned int P)
 {
-	gsl_vector *f_v  = NULL;
-	gsl_matrix *db_e = NULL;
+	gsl_vector *f_out = NULL;
+	gsl_matrix *db_e  = NULL;
 	double	_a  = 1.0,
-		_b  = 1.0,
-		err = 0.0,
+		_b  = 0.0,
+		err_grad  = 0.0,
 		total_err = 0.0,
-		*db_e_ij = NULL;
+		*db_e_ij  = NULL;
 	int i = 0, j = 0;
 	int res = ANFIS_OK;
 	mfu_t mfu;
@@ -971,18 +1024,21 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 	assert (b_tau != NULL);
 	assert (cp    != NULL);
 	
-	f_v = gsl_vector_calloc (P);
-	handle_error_2 (f_v);
+	f_out = gsl_vector_calloc (P);
+	handle_error_2 (f_out);
 	
 	/* Computing network outputs for the last training sample,
-	 * with the predictor variable matrix, since: outputs == A cp
-	 * This routine performs the computation: f_v = _a*A*cp + _b*f_v
+	 * with the predictor variable matrix, since: f_outputs == A*cp
+	 * This routine performs the computation: f_out = _a*A*cp + _b*f_out
 	 */
-	gsl_blas_dgemv (CblasNoTrans, _a, A, cp, _b, f_v);
+	gsl_blas_dgemv (CblasNoTrans, _a, A, cp, _b, f_out);
 	
-	mfu.s   = s;
-	mfu.f_v = f_v;
-	
+/*	debug ("%s\n","Network output for this sample:");
+	dfor (i=0 ; i<P ; i++) {
+		debug ("f_out[%d] = %f\n", i, gsl_vector_get (f_out, i));
+	}
+	debug ("%s","\n");
+*/	
 	/* The k-th row of "db_e" will hold the error gradient corresponding
 	 * to the parameters update of the network membership function
 	 * located in branch # k/n, for input element k%n (ie: MF[k/n][k%n])
@@ -991,45 +1047,44 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 	handle_error_2 (db_e);
 	
 	total_err = 0.0;
-/*	#pragma omp parallel for default(shared) \
-				 private(i,j,mfu,db_e_ij,err,res) \
-				 reduction(+:total_err)
-*/	for (i=0 ; i < net->t && res == ANFIS_OK ; i++) {
+	for (i=0 ; i < net->t && res == ANFIS_OK; i++) {
 		gsl_vector_view p_sub, b_tau_i, MF_val;
-		
+			
 		/* p_sub holds paramaters p[i][0], p[i][1], ..., p[i][n] */
 		p_sub = gsl_vector_subvector (cp, i*(net->n+1), net->n+1);
 		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
-		for (j=0 ; j < net->n && res == ANFIS_OK ; j++) {
-			
+		#pragma omp parallel for default(shared) \
+					 private(j, mfu, db_e_ij, err_grad) \
+					 reduction(+:total_err)
+		for (j=0 ; j < net->n ; j++) {
+		
 			/* MF_val holds MF[i][j] values for all P inputs */
 			MF_val = gsl_matrix_column (MF, i * net->n + j);
 			
+			mfu.s      = s;
 			mfu.mf_ij  = &(net->b[i].MF[j]);
-			mfu.p_sub  = &p_sub.vector;
-			mfu.b_tau  = &b_tau_i.vector;
-			mfu.MF_val = &MF_val.vector;
+			mfu.p_sub  = &(p_sub.vector);
+			mfu.b_tau  = &(b_tau_i.vector);
+			mfu.MF_val = &(MF_val.vector);
+			mfu.f_out  = f_out;
 			
 			/* Error gradients for the parameters of M[i][j] */
 			db_e_ij = gsl_matrix_ptr (db_e, i * net->n + j, 0);
 			
 			/* Computing update values */
-			err = anfis_calc_mf_up (&mfu, db_e_ij, P, j, net->n);
-			if (err < 0.0) {
-				res = ANFIS_ERR;
-			} else {
-				total_err += err;
-			}
+			err_grad = anfis_calc_mf_up (&mfu, db_e_ij, P, j, net->n);
+			
+			total_err += err_grad * err_grad;
 		}
 	}
-	
+	debug ("New_err = %f\n", total_err);
 	if (res == ANFIS_OK) {
 		/* NOTE: Heuristic for etha modification: see top of file */
-		anfis_update_etha (net, total_err);
+		anfis_update_etha (net, sqrt (total_err));
 		/* Performing parameters update for the whole network */
-		anfis_do_mf_up (net, db_e, total_err);
+		anfis_do_mf_up (net, db_e, sqrt (total_err));
 		
 	} else {
 		fprintf (stderr, "anfis.c: anfis_grad_desc: Error updating "
@@ -1037,8 +1092,8 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 	}
 	
 	/* Cleanup */
-	gsl_vector_free (f_v);
-	f_v = NULL;
+	gsl_vector_free (f_out);
+	f_out = NULL;
 	gsl_matrix_free (db_e);
 	db_e = NULL;
 	
@@ -1102,13 +1157,16 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 	
 	/* Performing P partial propagations to compute A matrix */
 	for (k=0 ; k < P ; k++) {
+		gsl_vector_view  MF_k    = gsl_matrix_row (MF,    k),
+				 b_tau_k = gsl_matrix_row (b_tau, k);
 		
 		/* Filling MF matrix k-th row */
-		res = anfis_compute_membership (net, s[k].in, MF, k);
+		res = anfis_compute_membership (net, s[k].in, &(MF_k.vector));
 		handle_error_1 (res);
 		
 		/* Filling b_tau matrix k-th row */
-		res = anfis_partial_fwd_prop (net, s[k].in, MF, b_tau, k);
+		res = anfis_partial_fwd_prop (net, s[k].in, &(MF_k.vector),
+					      &(b_tau_k.vector));
 		handle_error_1 (res);
 		
 		/* Filling A matrix k-th row (see below) */
@@ -1127,10 +1185,13 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 	/* Computing best consequent parameters with LSE */
 	ccp = anfis_lse (net, A, s, P);
 	handle_error_2 (ccp);
-	
-	/* Updating premise parameters with gradient descent method */
-	res = anfis_grad_desc (net, s, A, MF, b_tau, ccp, P);
-	handle_error_1 (res);
+	if (ccp == NULL) {
+		res = ANFIS_ERR;
+	} else {
+		/* Updating premise parameters with gradient descent method */
+		res = anfis_grad_desc (net, s, A, MF, b_tau, ccp, P);
+		handle_error_1 (res);
+	}
 	
 	gsl_matrix_free (A);		A     = NULL;
 	gsl_matrix_free (MF);		MF    = NULL;
@@ -1161,7 +1222,7 @@ ________________________________________________________________________________
 double
 anfis_eval (anfis_t net, gsl_vector *input)
 {
-	gsl_matrix  *MF    = NULL,	/* Membership values for input */
+	gsl_vector  *MF    = NULL,	/* Membership values for input */
 		    *b_tau = NULL;	/* Barred taus for input */
 	double out = 0.0, partial = 0.0;
 	int i = 0, res = 0;
@@ -1170,13 +1231,13 @@ anfis_eval (anfis_t net, gsl_vector *input)
 	assert (input != NULL);
 	
 	/* Generating workspace */
-	MF = gsl_matrix_alloc (1, net->t * net->n);
+	MF = gsl_vector_alloc (net->t * net->n);
 	if (MF == NULL) {
 		perror ("anfis.c: anfis_eval: Not enough memory to perform "
 			"computation   ~   ABORTING PROPAGATION\n");
 		goto exit_point;
 	}
-	b_tau = gsl_matrix_alloc (1, net->t);
+	b_tau = gsl_vector_alloc (net->t);
 	if (MF == NULL) {
 		perror ("anfis.c: anfis_eval: Not enough memory to perform "
 			"computation   ~   ABORTING PROPAGATION\n");
@@ -1184,16 +1245,16 @@ anfis_eval (anfis_t net, gsl_vector *input)
 	}
 	
 	
-	/* Filling MF matrix only row */
-	res = anfis_compute_membership (net, input, MF, 0);
+	/* Filling MF vector */
+	res = anfis_compute_membership (net, input, MF);
 	if (res != ANFIS_OK) {
 		fprintf (stderr, "anfis.c: anfis_eval: Unable to compute input "
 				 "membership values   ~   ABORTING PROPAGATION\n");
 		goto exit_point;
 	}
 		
-	/* Filling b_tau matrix only row */
-	res = anfis_partial_fwd_prop (net, input, MF, b_tau, 0);
+	/* Filling b_tau vector */
+	res = anfis_partial_fwd_prop (net, input, MF, b_tau);
 	if (res != ANFIS_OK) {
 		fprintf (stderr, "anfis.c: anfis_eval: Unable to perform "
 				 "forward propagation   ~   ABORTING PROPAGATION\n");
@@ -1209,21 +1270,21 @@ anfis_eval (anfis_t net, gsl_vector *input)
 		
 		partial = 0.0;
 		/* partial = p_i*input = p[i][1]*x[1] + ... + p[i][n]*x[n] */
-		gsl_blas_ddot (&p_i.vector, input, &partial);
+		gsl_blas_ddot (&(p_i.vector), input, &partial);
 		/* partial = partial + p[i][0] */
 		partial += gsl_vector_get (net->b[i].P, 0);
 		
-		out += partial * gsl_matrix_get (b_tau, 0, i);
+		out += partial * gsl_vector_get (b_tau, i);
 	}
 	
 	exit_point:
 	{
 		if (MF != NULL) {
-			gsl_matrix_free (MF);
+			gsl_vector_free (MF);
 			MF    = NULL;
 		}
 		if (b_tau != NULL) {
-			gsl_matrix_free (b_tau);
+			gsl_vector_free (b_tau);
 			b_tau = NULL;
 		}
 		

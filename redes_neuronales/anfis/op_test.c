@@ -33,7 +33,7 @@
 
 
 /* Rango de valores para las entradas */
-#define  LBOUND		(-2.0)
+#define  LBOUND		(0.0)
 #define  UBOUND		(2.0)
 
 
@@ -58,7 +58,8 @@ init_MF (size_t n, size_t t)
 		mf[i].k = MF_KIND;
 		
 		/* ... y parámetros cualesquiera */
-		mf[i].p[0] = ran() * (UBOUND - LBOUND) * 0.25;
+		mf[i].p[0] = ran() * (UBOUND - LBOUND) +
+			     0.25  * (UBOUND - LBOUND);
 		mf[i].p[1] = ran();
 		mf[i].p[2] = ran() * (UBOUND - LBOUND) + LBOUND;
 		
@@ -161,13 +162,13 @@ exercise_network (anfis_t net, size_t n, size_t times)
 
 int main (void)
 {
-	unsigned long n = 0, t = 0, e = 0;
+	unsigned long n = 0, t = 0, e = 0, p = 0;
 	int res = ANFIS_ERR;
 	MF_t *mf = NULL;
 	t_sample *s = NULL;
 	anfis_t net = NULL;
 	
-	printf ("Inicio del test operacional\n\n");
+	printf ("\nInicio del test operacional\n\n");
 	
 	printf ("Aspecto de una red:\n");
 	mf  = init_MF (N_HOP, T_HOP);
@@ -183,26 +184,28 @@ int main (void)
 		/* Para cada dimensión de entrada especificada */
 		for (n = N_HOP ; n < N_MAX ; n += N_HOP) {
 			
-			printf ("\nEjercitando red con:"
-				"\t%lu ramas\t%lu entradas\n", t, n);
+			printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+				"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+				"\nEjercitando red con:"
+				"\t%lu ramas \t%lu entradas\n\n", t, n);
 			
 			/* Creamos espacio de trabajo */
+			p   = (3*n*t) / 2;
 			mf  = init_MF (n, t);
-			s   = sample_alloc (n, P);
+			s   = sample_alloc (n, p);
 			net = anfis_create (n, t, mf);
 			
 			/* Entrenamos la red "NEPOCHS" veces */
 			for (e=0 ; e < NEPOCHS ; e++) {
-				sample_gen (s, n, P);
-				res = anfis_train (net, s, P);
-				assert (res == ANFIS_OK);
+				sample_gen (s, n, p);
+				res = anfis_train (net, s, p);
 			}
 			
 			/* Ejercitamos la red otras "NEPOCHS" veces */
 			exercise_network (net, n, NEPOCHS);
 			
 			net = anfis_destroy (net);
-			s   = sample_free (s, P);
+			s   = sample_free (s, p);
 			free (mf);	mf = NULL;
 			
 			printf ("\n");
