@@ -19,9 +19,9 @@
 
 
 /* Máxima cantidad de ramas paralelas en la red */
-#define  T_MAX		4
+#define  T_MAX		6
 /* Tamaño del salto en el # de ramas */
-#define  T_HOP		1
+#define  T_HOP		2
 
 
 /* # de ejemplos que tendrá un training set */

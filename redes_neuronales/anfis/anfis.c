@@ -34,7 +34,7 @@
 /* Initial value for network's etha */
 #define  INIT_ETHA	10.0
 /* Etha's increase/decrease heuristic codes */
-#define  FIXED		-1		
+#define  FIXED		-1
 #define  DECREASE	0
 #define  INCREASE	1
 /* Etha's increase/decrease heuristic thresholds */
@@ -136,7 +136,7 @@ double gaussian (double a, double sigma, double x)
 
 double belly (double a, double b, double c, double x);
 double belly (double a, double b, double c, double x)
-{ return (1.0 / (1.0 + pow (((x-c)/a) * ((x-c)/a), b))); }
+{ return (1.0 / (1.0 + pow (fabs ((x-c)/a), 2.0*b))); }
 
 
 
@@ -170,7 +170,7 @@ anfis_create (unsigned long n, unsigned long t, const MF_t *mf)
 	net->etha = INIT_ETHA;
 	net->old_err1 = 0.0;
 	net->old_err2 = 0.0;
-	net->trend    = 0;
+	net->trend    = FIXED;
 	net->trend_st = 0;
 	
 	net->b = (branch *) malloc (t * sizeof (branch));
@@ -742,24 +742,12 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 		   *X = NULL;	 /* Estimated parameters (M in total) */
 	unsigned int i = 0, j = 0;
 	static size_t calls = 0;
-/**	* Auxiliary data for GSL LSE with multifit linear method *
-	gsl_error_handler_t *old_handler = NULL;
-	gsl_multifit_linear_workspace *work = NULL;
-	gsl_matrix *cov = NULL;
-	double chisq = 0.0;
-	unsigned int error = 0;
-*//**	* Auxiliary data for GSL LSE with QR decomposition *
-	gsl_matrix *AA = NULL;
-	gsl_vector *tau = NULL,
-		   *residual = NULL;
-*/
 	
 	assert (net != NULL);
 	assert (A   != NULL);
 	assert (s   != NULL);
 	
 	M = ((size_t) net->t) * ((size_t) net->n + 1);
-	j=j;calls=calls;
 	
 	/* Saving desired results in vector 'y' */
 	y = gsl_vector_alloc (P);
@@ -769,68 +757,6 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	}
 	
 	X = anfis_fit_linear (A, y, P, M);
-	
-/**	NOTE: alternative GSL LSE with multifit linear method
-
-	* Generating necessary workspace *
-	p = gsl_vector_calloc (M);
-	handle_error_3 (p);
-	cov = gsl_matrix_calloc (M, M);
-	handle_error_3 (cov);
-	work = gsl_multifit_linear_alloc ((size_t) P, M);
-	handle_error_3 (work);
-	
-	* We cannot afford to abort the whole programm
-	 * just because of a convergence failure.
-	 * If that happens, the obtained partial results for 'p' will do
-	 *
-	old_handler = gsl_set_error_handler_off ();
-	
-	* Performing LSE *
-	error = gsl_multifit_linear (A, y, p, cov, &chisq, work);
-	
-	if (error || !finite (chisq)) {
-		printf ("\nError while performing LSE: %s\nχ² value for last "
-			"LSE computation: %f\nLSE failed to converge. Choose "
-			"another training sample\n", gsl_strerror (error), chisq);
-		free (p);
-		p = NULL;
-	}
-	
-	* Restoring default gsl error handler *
-	gsl_set_error_handler (old_handler);
-	
-	* Hastly freeing the insulting amount of memory reserved *
-	gsl_multifit_linear_free (work);
-	work = NULL;
-	gsl_matrix_free (cov);
-	cov = NULL;
-	gsl_vector_free (y);
-	y = NULL;
-*/	
-/**	NOTE: alternative GSL LSE with QR decomposition method
-
-	 Generating necessary workspace
-	tau = gsl_vector_alloc (MIN (P, M));
-	handle_error_3 (tau);
-	residual = gsl_vector_alloc (P);
-	handle_error_3 (residual);
-	AA = gsl_matrix_alloc (P, M);
-	handle_error_3 (AA);
-	gsl_matrix_memcpy (AA, A);
-	
-	 Performing LSE
-	error = gsl_linalg_QR_decomp (AA, tau);
-	error = gsl_linalg_QR_lssolve (AA, tau, y, p, residual);
-	printf ("Error while performing LSE: %s\n", gsl_strerror (error));
-	
-	gsl_vector_free (residual);
-	residual = NULL;
-	gsl_vector_free (tau);
-	tau = NULL;
-	gsl_matrix_free (AA);
-	AA = NULL;
-*/	
 	
 	if (X != NULL) {
 		/* Saving estimated parameters inside the network */
@@ -849,7 +775,8 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 			}
 */		}
 /*		debug ("Sum of residual squares: χ² = %f\n\n", chisq);
-*/	}
+*/		j=j;calls=calls;
+	}
 	
 	return X;
 }
@@ -1022,6 +949,7 @@ anfis_update_etha (anfis_t net, double new_err)
 			/* ...for the INC_H consecutive time... */
 			if (++(net->trend_st) == INC_H) {
 				/* ...increase etha */
+				debug ("\n%s\n","η++");
 				net->etha += INC_C * net->etha;
 				net->trend = FIXED;
 				net->trend_st = 0;
@@ -1039,6 +967,7 @@ anfis_update_etha (anfis_t net, double new_err)
 			if ( (net->old_err1 > net->old_err2)  &&
 				(++(net->trend_st) == DEC_H) )
 			{	/* ...decrease etha */
+				debug ("\n%s\n","η--");
 				net->etha -= DEC_C * net->etha;
 				net->trend = FIXED;
 				net->trend_st = 0;
@@ -1112,7 +1041,11 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
 		db_e_ij = gsl_matrix_ptr (db_e, i, 0);
 		
 		for (l=0 ; l < MAX_PARAM ; l++) {
+			assert (finite (db_e_ij[l]));
+			
 			net-> b[i/net->n]. MF[i%net->n]. p[l] -= etha * db_e_ij[l];
+			
+			assert (finite (net-> b[i/net->n]. MF[i%net->n]. p[l]));
 		}
 	}
 	
