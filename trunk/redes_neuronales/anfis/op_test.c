@@ -13,15 +13,15 @@
 
 
 /* Dimensión máxima de entrada de la red */
-#define  N_MAX		64
+#define  N_MAX		16
 /* Tamaño del salto de dimensión de entrada */
-#define  N_HOP		16
+#define  N_HOP		4
 
 
 /* Máxima cantidad de ramas paralelas en la red */
-#define  T_MAX		16
+#define  T_MAX		4
 /* Tamaño del salto en el # de ramas */
-#define  T_HOP		4
+#define  T_HOP		1
 
 
 /* # de ejemplos que tendrá un training set */
@@ -150,7 +150,7 @@ exercise_network (anfis_t net, size_t n, size_t times)
 		out = anfis_eval (net, s[0].in);
 		err += fabs (out - s[0].out);
 	}
-	printf ("Error promedio de generalización: %f\n", err / (double) times);
+	printf ("\nError promedio de generalización: %f\n", err / (double) times);
 	
 	s = sample_free (s, 1);
 	
@@ -198,6 +198,8 @@ int main (void)
 			/* Entrenamos la red "NEPOCHS" veces */
 			for (e=0 ; e < NEPOCHS ; e++) {
 				sample_gen (s, n, p);
+				printf ("\rTraining sample # %lu", e);
+				fflush (stdout);
 				res = anfis_train (net, s, p);
 			}
 			

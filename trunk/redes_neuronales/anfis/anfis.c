@@ -29,6 +29,8 @@
  **/
 
 
+#define  _gamma		(1<<8)
+
 /* Initial value for network's etha */
 #define  INIT_ETHA	10.0
 /* Etha's increase/decrease heuristic codes */
@@ -562,6 +564,7 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_vector *MF_k,
 	}
 	
 	/* Now we calculate b_taus */
+	tau_sum = 0.0;
 	#pragma omp parallel for shared(tau) reduction(+:tau_sum)
 	for (i=0 ; i < t ; i++) {
 		tau_sum += tau[i];
@@ -578,6 +581,136 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_vector *MF_k,
 	tau = NULL;
 	
 	return ANFIS_OK;
+}
+
+
+
+
+/* Snew = S * A_i * At_i * S */
+static void
+calc_num (const gsl_matrix *S, const gsl_vector *A_i, gsl_matrix *Snew,
+	  gsl_matrix *m_aux, gsl_vector *v_aux, size_t M)
+{
+	unsigned int i = 0;
+	double value = 0.0;
+	
+	/* v_aux = S * A_i */
+	gsl_blas_dgemv (CblasNoTrans, 1.0, S, A_i, 0.0, v_aux);
+	
+	/* m_aux = v_aux * At_i */
+	#pragma omp parallel for default(shared) private(i,value)
+	for (i=0 ; i < M*M ; i++) {
+		value = gsl_vector_get (v_aux, i/M) * gsl_vector_get (A_i, i%M);
+		gsl_matrix_set (m_aux, i/M, i%M, value);
+	}
+	
+	/* Snew = m_aux * S */
+	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, m_aux, S, 0.0, Snew);
+	
+	return;
+}
+
+
+
+
+/* Returns the value: At_i * S * A_i */
+static double
+calc_den (const gsl_matrix *S, const gsl_vector *A_i, gsl_vector *v_aux)
+{
+	double res = 0.0;
+	
+	/* v_aux = S * A_i */
+	gsl_blas_dgemv (CblasNoTrans, 1.0, S, A_i, 0.0, v_aux);
+	
+	/* res = At_i * v_aux */
+	gsl_blas_ddot (A_i, v_aux, &res);
+	
+	return res;
+}
+
+
+
+
+/* Performs LSE of consequent parameters for all branches in the network
+ *
+ * PARAMETERS:	A ---> predictor variables matrix
+ *		y ---> expected results for this sample set  (P in total)
+ *
+ * PRE: A != NULL
+ *	y != NULL
+ *
+ * POS: result != NULL   &&   best fit consequent parameters vector returned
+ *	or
+ *	result == NULL
+ */
+static gsl_vector *
+anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
+{
+	gsl_matrix  *S =    NULL,	/* Covariance matrix */
+		    *Snew = NULL,
+		    *Saux = NULL;
+	gsl_vector  *X = NULL,		/* Future best fit parameters */
+		    *Xnew = NULL;
+	unsigned int i = 0;
+	double den = 0.0, factor = 0.0;
+	
+	assert (A != NULL);
+	assert (y != NULL);
+	
+	/* Generating necessary workspace */
+	S = gsl_matrix_calloc (M,M);
+	if (S == NULL)
+		goto exit_point;
+	Snew = gsl_matrix_calloc (M,M);
+	if (Snew == NULL)
+		goto exit_point;
+	Saux = gsl_matrix_calloc (M,M);
+	if (Saux == NULL)
+		goto exit_point;
+	Xnew = gsl_vector_alloc (M);
+	if (Xnew == NULL)
+		goto exit_point;
+	X = gsl_vector_alloc (M);
+	if (X == NULL)
+		goto exit_point;
+	
+	/* S = γ*Id , where γ is a large number */
+	gsl_matrix_set_identity  (S);
+	gsl_matrix_scale (S, _gamma);
+	
+	/* Performing Least Square Estimation */
+	for (i=0 ; i < P ; i++) {
+		/* Matrix A i-th row (row At_i+1 in Jang's paper) */
+		gsl_vector_const_view A_i = gsl_matrix_const_row (A, i);
+		
+		/* Snew = S(i) * A_i+1 * At_i+1 * S(i) */
+		calc_num (S, &(A_i.vector), Snew, Saux, Xnew, M);
+		/* scale = At_i+1 * S(i) * A_i+1 */
+		den = calc_den (S, &(A_i.vector), Xnew);
+		/* Snew = Snew / (1+scale) */
+		gsl_matrix_scale (Snew, 1.0 / (1.0+den));
+		/* S(i+1) = S(i) - Snew */
+		gsl_matrix_sub (S, Snew);
+		
+		/* factor = At_i+1 * X(i) */
+		gsl_blas_ddot (&(A_i.vector), X, &factor);
+		/* factor = yt_i+1 - factor */
+		factor = gsl_vector_get (y, i) - factor;
+		/* Xnew = S(i+1) * A_i+1 */
+		gsl_blas_dgemv (CblasNoTrans, 1.0, S, &(A_i.vector), 0.0, Xnew);
+		/* Xnew = Xnew * factor */
+		gsl_vector_scale (Xnew, factor);
+		/* X(i+1) = X(i) + Xnew */
+		gsl_vector_add (X, Xnew);
+	}
+	
+	exit_point:
+		if (S != NULL)    { gsl_matrix_free (S);    S    = NULL;}
+		if (Snew != NULL) { gsl_matrix_free (Snew); Snew = NULL;}
+		if (Saux != NULL) { gsl_matrix_free (Saux); Saux = NULL;}
+		if (Xnew != NULL) { gsl_vector_free (Xnew); Xnew = NULL;}
+		
+		return X;
 }
 
 
@@ -604,24 +737,29 @@ anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_vector *MF_k,
 static gsl_vector *
 anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 {
+	size_t M = 0;
+	gsl_vector *y = NULL,	 /* Sample results       (P in total) */
+		   *X = NULL;	 /* Estimated parameters (M in total) */
+	unsigned int i = 0, j = 0;
+	static size_t calls = 0;
+/**	* Auxiliary data for GSL LSE with multifit linear method *
 	gsl_error_handler_t *old_handler = NULL;
 	gsl_multifit_linear_workspace *work = NULL;
-	gsl_matrix *cov = NULL;	 /* Covariance matrix generated for LSE */
-	gsl_vector *y = NULL,	/* Sample results       (P in total) */
-		   *p = NULL;	/* Estimated parameters (M in total) */
-/**	gsl_matrix *AA = NULL;
+	gsl_matrix *cov = NULL;
+	double chisq = 0.0;
+	unsigned int error = 0;
+*//**	* Auxiliary data for GSL LSE with QR decomposition *
+	gsl_matrix *AA = NULL;
 	gsl_vector *tau = NULL,
 		   *residual = NULL;
-*/	size_t M = 0;
-	unsigned int i = 0, j = 0, error = 0;
-	double chisq = 0.0;
-	static size_t calls = 0;
+*/
 	
 	assert (net != NULL);
 	assert (A   != NULL);
 	assert (s   != NULL);
 	
 	M = ((size_t) net->t) * ((size_t) net->n + 1);
+	j=j;calls=calls;
 	
 	/* Saving desired results in vector 'y' */
 	y = gsl_vector_alloc (P);
@@ -630,7 +768,11 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 		gsl_vector_set (y, i, s[i].out);
 	}
 	
-	/* Generating necessary workspace */
+	X = anfis_fit_linear (A, y, P, M);
+	
+/**	NOTE: alternative GSL LSE with multifit linear method
+
+	* Generating necessary workspace *
 	p = gsl_vector_calloc (M);
 	handle_error_3 (p);
 	cov = gsl_matrix_calloc (M, M);
@@ -638,35 +780,35 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	work = gsl_multifit_linear_alloc ((size_t) P, M);
 	handle_error_3 (work);
 	
-	/* We cannot afford to abort the whole programm
+	* We cannot afford to abort the whole programm
 	 * just because of a convergence failure.
 	 * If that happens, the obtained partial results for 'p' will do
-	 */
+	 *
 	old_handler = gsl_set_error_handler_off ();
 	
-	/* Performing LSE */
+	* Performing LSE *
 	error = gsl_multifit_linear (A, y, p, cov, &chisq, work);
 	
 	if (error || !finite (chisq)) {
-		printf ("Error while performing LSE: %s\nχ² value for last LSE "
-			"computation: %f\nLSE failed to converge. Choose another"
-			" training sample\n", gsl_strerror (error), chisq);
+		printf ("\nError while performing LSE: %s\nχ² value for last "
+			"LSE computation: %f\nLSE failed to converge. Choose "
+			"another training sample\n", gsl_strerror (error), chisq);
 		free (p);
 		p = NULL;
 	}
 	
-	/* Restoring default gsl error handler */
+	* Restoring default gsl error handler *
 	gsl_set_error_handler (old_handler);
 	
-	/* Hastly freeing the insulting amount of memory reserved */
+	* Hastly freeing the insulting amount of memory reserved *
 	gsl_multifit_linear_free (work);
 	work = NULL;
 	gsl_matrix_free (cov);
 	cov = NULL;
 	gsl_vector_free (y);
 	y = NULL;
-	
-/**	NOTE: alternative QR decomposition method
+*/	
+/**	NOTE: alternative GSL LSE with QR decomposition method
 
 	 Generating necessary workspace
 	tau = gsl_vector_alloc (MIN (P, M));
@@ -689,28 +831,27 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	gsl_matrix_free (AA);
 	AA = NULL;
 */	
-	calls=calls;j=j;
 	
-	if (p != NULL) {
+	if (X != NULL) {
 		/* Saving estimated parameters inside the network */
-		debug ("LSE parameters estimation (call # %lu):\n", ++calls);
-		for (i=0 ; i < net->t ; i++) {
+/*		debug ("LSE parameters estimation (call # %lu):\n", ++calls);
+*/		for (i=0 ; i < net->t ; i++) {
 			/* p_sub references the i-th branch consequent param.
-			 * estimation, originally stored in vector p */
+			 * estimation, originally stored in vector X */
 			gsl_vector_view p_sub;
 			
-			p_sub = gsl_vector_subvector (p, i*(net->n+1), net->n+1);
+			p_sub = gsl_vector_subvector (X, i*(net->n+1), net->n+1);
 			gsl_vector_memcpy (net->b[i].P, &(p_sub.vector));
 			
-			dfor (j=0 ; j <= net->n ; j++) {
+/*			dfor (j=0 ; j <= net->n ; j++) {
 				debug ("p[%u][%u] = %.4f\n", i, j,
-				gsl_vector_get (p, i*(net->n+1) + j));
+				gsl_vector_get (X, i*(net->n+1) + j));
 			}
-		}
-		debug ("Sum of residual squares: χ² = %f\n\n", chisq);
-	}
+*/		}
+/*		debug ("Sum of residual squares: χ² = %f\n\n", chisq);
+*/	}
 	
-	return p;
+	return X;
 }
 
 
@@ -1079,7 +1220,7 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 			total_err += err_grad * err_grad;
 		}
 	}
-	debug ("New_err = %f\n", total_err);
+	
 	if (res == ANFIS_OK) {
 		/* NOTE: Heuristic for etha modification: see top of file */
 		anfis_update_etha (net, sqrt (total_err));
