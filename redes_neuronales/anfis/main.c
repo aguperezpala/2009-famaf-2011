@@ -8,7 +8,7 @@
 
 
 /* # de ramas de la red */
-#define  T	2
+#define  T	1
 
 /* Dimensión de entrada de la red
  * Es decir, con cuantos puntos previos se tratará de adivinar el "siguiente" */
@@ -39,47 +39,47 @@ double  LB = 0.0, /* Límite inferior */
  *
  * El valor de retorno es la longitud de 'y'
  */
-static size_t
-get_sample_values (char **argv, double *y)
+static double *
+get_sample_values (char **argv, size_t *nlines)
 {
 	int matched = 0;
 	unsigned int i = 0;
 	double	t = 0.0,
-		f_t = 0.0;
+		f_t = 0.0,
+		*y = NULL;
 	char *nomfile = NULL,
 	     *err = NULL;
-	size_t nlines = 0;
 	FILE *file = NULL;
 	
 	/* Obteniendo argumentos */
 	nomfile = argv[1];
-	nlines = (size_t) strtol (argv[2], &err, 10);
+	*nlines = (size_t) strtol (argv[2], &err, 10);
 	if (err[0] != '\0') {
 		fprintf (stderr, "El segundo argumento debe ser el # de líneas "
-				 "que tiene el archivo con la muestra\n", err);
+				 "que tiene el archivo con la muestra\n");
 		exit (EXIT_FAILURE);
 	}
 	
 	/* Accediendo a los datos */
 	file = fopen (nomfile,"r");
 	if (file == NULL) {
-		fprintf ("Imposible acceder al archivo especificado: %s\n",
-			 nomfile);
+		fprintf (stderr, "Imposible acceder al archivo especificado: "
+				 "%s\n", nomfile);
 		exit (EXIT_FAILURE);
 	} else {
-		y = (double *) malloc (nlines * sizeof (double));
+		y = (double *) malloc (*nlines * sizeof (double));
 		assert (y != NULL);
 	}
 	
 	/* Almacenando los datos en el arreglo */
-	for (i=0 ; i < nlines ; i++) {
+	for (i=0 ; i < *nlines ; i++) {
 		
-		matched = fscanf (file, "%f %f\n", &t, &f_t);
+		matched = fscanf (file, "%lf %lf\n", &t, &f_t);
 		
 		if (matched == EOF) {
 			fprintf (stderr, "El archivo tenía una cantidad de "
-					 "líneas menor a la especificada: %z\n",
-					 nlines);
+					 "líneas menor a la especificada: %lu\n",
+					 *nlines);
 			exit (EXIT_FAILURE);
 		
 		} else if (matched != 2) {
@@ -101,7 +101,7 @@ get_sample_values (char **argv, double *y)
 	
 	fclose (file);
 	
-	return nlines;
+	return y;
 }
 
 
@@ -122,15 +122,14 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 	mf = (MF_t *) malloc (t * sizeof (MF_t));
 	assert (mf != NULL);
 	
-	#pragma omp parallel for default(shared) private(j,i,c)
 	for (j=0 ; j < n ; j++) {
 		c = ((double) UB / (double) n) * ((double) j) + a;
 		for (i=0 ; i < t ; i++) {
 			/* Todas las MF serán campanas */
-			MF[i*n+j].k = bell;
-			MF[i*n+j].p[0] = a;
-			MF[i*n+j].p[1] = b;
-			MF[i*n+j].p[2] = c;
+			mf[i*n+j].k = bell;
+			mf[i*n+j].p[0] = a;
+			mf[i*n+j].p[1] = b;
+			mf[i*n+j].p[2] = c;
 		}
 	}
 	
@@ -164,8 +163,8 @@ gen_sample (double *y, size_t p, size_t n, size_t jump)
 	s = (t_sample *) malloc (p * sizeof (t_sample));
 	assert (s != NULL);
 	
-	#pragma omp parallel for default(shared) private(i,j)
-	for (i=0 ; i < p ; i++) {
+/*	#pragma omp parallel for default(shared) private(i,j)
+*/	for (i=0 ; i < p ; i++) {
 		s[i].in = gsl_vector_alloc (n);
 		assert (s[i].in != NULL);
 		
@@ -175,7 +174,7 @@ gen_sample (double *y, size_t p, size_t n, size_t jump)
 		s[i].out = y[i+n*jump];
 	}
 	
-	return sample;
+	return s;
 }
 
 
@@ -209,14 +208,14 @@ sample_free (t_sample *s, size_t p)
  * Los errores de aprendizaje son impresos secuencialmente en el archivo 'fout'
  */
 static void
-exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout);
+exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout)
 {
 	unsigned long t = 0;
 	double out = 0.0;
 	
 	for (t=0 ; t < p ; t++) {
-		out = anfis_eval (net, s[0].in);
-		fprintf (fout, "%f\n", out - s[0].out);
+		out = anfis_eval (net, sample[0].in);
+		fprintf (fout, "%f\n", out - sample[0].out);
 	}
 	
 	return;
@@ -227,12 +226,13 @@ exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout);
 
 int main (int argc, char **argv)
 {
-	int i = 0, error = 0;
+	int error = 0;
 	size_t nlines = 0;
 	FILE *fout = NULL;
 	double *y = NULL;
 	t_sample *sample = NULL;
 	MF_t *mfs = NULL;
+	anfis_t net = NULL;
 	
 	
 	if (argc != 4) {
@@ -240,17 +240,17 @@ int main (int argc, char **argv)
 				 "\n\t1) Nombre del archivo que contiene los "
 				 "datos muestrales\n\t2) # de líneas del mismo"
 				 "\n\t3) Nombre del archivo de salida del error"
-				 " de aprendizaje obtenido por la red\n\n");
+				 " de aprendizaje de la red\n\n");
 		exit (EXIT_FAILURE);
 		
 	} else {
-		nlines = get_sample_values (argv, y);
+		y = get_sample_values (argv, &nlines);
 		/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
 		 * Además actualizó los valores de LB y UB */
 		
 		fout = fopen (argv[3], "w");
 		if (fout == NULL) {
-			fprintf ("No se pudo crear archivo de salida\n");
+			fprintf (stderr, "No se pudo crear archivo de salida\n");
 			exit (EXIT_FAILURE);
 		}
 	}
