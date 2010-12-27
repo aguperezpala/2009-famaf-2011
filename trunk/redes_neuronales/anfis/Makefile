@@ -1,9 +1,7 @@
 TARGET = anfis_mg
+SAMPLE = Mackey_Glass
 GTEST  = gen_test
 OTEST  = op_test
-SAMPLE = Mackey_Glass
-SOUT   = Mackey_Glass.dat
-SPLOT  = Mackey_Glass.gp
 CC=gcc
 
 # For debugging include flag:	-D_DEBUG
@@ -51,7 +49,7 @@ $(TARGET): mzran13.o anfis.o main.o
 
 
 clean:
-	rm -f .depend $(GTEST) $(OTEST) $(SAMPLE) $(SOUT) $(TARGET) *.o *~
+	rm -f .depend $(GTEST) $(OTEST) $(SAMPLE) $(TARGET) *.o *~
 
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend

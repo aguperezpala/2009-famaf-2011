@@ -1,16 +1,20 @@
 LOG=anfis.log
-EXE=./anfis_mg
+
+# Generación de muestra
 GEN_MG=./Mackey_Glass
 PLOT_MG=Mackey_Glass.gp
 MG_DATA=Mackey_Glass.dat
 MG_PLOT=Mackey_Glass.png
 
-# ____________________________________________________________________________ #
-############################## EJERCICIO 1 #####################################
+# Aprendizaje ANFIS
+MAIN=./anfis_mg
+LERR_PLOT=anfis.png
+LERR_DATA=anfis.dat
+PLOT_LERR=learn_error.gp
 
 echo "________________________________________________________________________________"
-echo "\tRedes ANFIS para predicción temporal de series caóticas\n"
-echo "\tAnálisis del aprendizaje para la equación diferencial de Mackey-Glass"
+echo -e "\n\tRedes ANFIS para predicción temporal de series caóticas\n"
+echo -e "    Análisis del aprendizaje para la equación diferencial de Mackey-Glass\n"
 
 a=118
 b=1118
@@ -19,22 +23,37 @@ h=0.1
 tau=17
 yinit=1.2
 
-echo "\nGenerando valores muestrales de la serie"
+echo -e "\nGenerando valores muestrales de la serie"
 make clean &> $LOG
 make mg_sample >> $LOG 2>&1
 $GEN_MG $a $b $h $tau $yinit > $MG_DATA
 
-echo "Imprimiendo gráfico con los valores generados"
+echo -e "Graficando los valores generados"
 export XLOW=`expr $a + $margin`
 export XHIGH=`expr $b + $margin`
 export SAMPLE=$MG_DATA
 export PLOT=$MG_PLOT
 gnuplot $PLOT_MG
+eog $MG_PLOT &
+echo -e "Datos en $MG_DATA\tGráfico en $MG_PLOT"
 
+echo -e "\nCompilando programa principal"
+make anfis_mg >> $LOG 2>&1
+nlines=`wc -l $MG_DATA | tr -c -d [0-9]`
+echo "Ejecutando programa principal"
+$MAIN $MG_DATA $nlines $LERR_DATA
 
+echo "Graficando errores de aprendizaje obtenidos"
+export SAMPLE=$LERR_DATA
+export PLOT=$LERR_PLOT
+gnuplot $PLOT_LERR
+eog $LERR_PLOT &
+echo -e "Datos en $LERR_DATA\tGráfico en $LERR_PLOT"
 
+echo "Limpieza final"
+make clean >> $LOG 2>&1
 
-
+exit
 
 
 

@@ -949,8 +949,8 @@ anfis_update_etha (anfis_t net, double new_err)
 			/* ...for the INC_H consecutive time... */
 			if (++(net->trend_st) == INC_H) {
 				/* ...increase etha */
-/*				debug ("\n%s\n","η++");
-*/				net->etha += INC_C * net->etha;
+				debug ("\n%s\n","η++");
+				net->etha += INC_C * net->etha;
 				net->trend = FIXED;
 				net->trend_st = 0;
 			} /* ...else just increment trend_st */
@@ -967,8 +967,8 @@ anfis_update_etha (anfis_t net, double new_err)
 			if ( (net->old_err1 > net->old_err2)  &&
 				(++(net->trend_st) == DEC_H) )
 			{	/* ...decrease etha */
-/*				debug ("\n%s\n","η--");
-*/				net->etha -= DEC_C * net->etha;
+				debug ("\n%s\n","η--");
+				net->etha -= DEC_C * net->etha;
 				net->trend = FIXED;
 				net->trend_st = 0;
 			/* ... else if up-down chain was broken... */
