@@ -8,7 +8,7 @@
 
 
 /* # de ramas de la red */
-#define  T	1
+#define  T	2
 
 /* Dimensión de entrada de la red
  * Es decir, con cuantos puntos previos se tratará de adivinar el "siguiente" */
@@ -119,9 +119,10 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 		b = slope,
 		c = 0.0;
 	
-	mf = (MF_t *) malloc (t * sizeof (MF_t));
+	mf = (MF_t *) malloc (t * n * sizeof (MF_t));
 	assert (mf != NULL);
 	
+	#pragma omp parallel for default(shared) private(j,i,c)
 	for (j=0 ; j < n ; j++) {
 		c = ((double) UB / (double) n) * ((double) j) + a;
 		for (i=0 ; i < t ; i++) {
@@ -226,7 +227,7 @@ exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout)
 
 int main (int argc, char **argv)
 {
-	int error = 0;
+	int i = 0, error = 0;
 	size_t nlines = 0;
 	FILE *fout = NULL;
 	double *y = NULL;
@@ -262,6 +263,11 @@ int main (int argc, char **argv)
 	sample = gen_sample (y, nlines/2, N, JUMP);
 	
 	mfs = gen_mfs (N, T, LB, UB);
+	for (i=0 ; i < T*N ; i++) {
+		printf ("MF[%d][%d] = %d\n", i/N, i%N, mfs[i].k);
+	}
+	
+	
 	net = anfis_create (N, T, mfs);
 	error  = anfis_train (net, sample, nlines/2);
 	assert (error == ANFIS_OK);
