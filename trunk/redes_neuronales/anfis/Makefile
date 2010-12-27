@@ -1,4 +1,4 @@
-TARGET = mg
+TARGET = anfis_mg
 GTEST  = gen_test
 OTEST  = op_test
 SAMPLE = Mackey_Glass
@@ -40,8 +40,7 @@ $(OTEST): mzran13.o anfis.o op_test.o
 mg_sample: $(SAMPLE)
 $(SAMPLE): Mackey_Glass.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
-	./$(SAMPLE) > $(SOUT) ; gnuplot $(SPLOT) ; \
-	echo "\n\nDatos guardados en al archivo \"$(SOUT)\"\n"
+	echo "\n\nPara ejecutar el programa ingrese \"./$(SAMPLE)\"\n"
 
 
 anfis_mg: $(TARGET)
