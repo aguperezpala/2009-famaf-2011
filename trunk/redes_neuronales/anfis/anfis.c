@@ -32,7 +32,7 @@
 #define  _gamma		(1<<8)
 
 /* Initial value for network's etha */
-#define  INIT_ETHA	10.0
+#define  INIT_ETHA	1.0
 /* Etha's increase/decrease heuristic codes */
 #define  FIXED		-1
 #define  DECREASE	0
@@ -809,9 +809,9 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
  *
  * USE: err = anfis_update_mf (&mfu, db_e, P, j, n)
  *
- * POS: err >= 0   &&   gradients stored in db_e   &&   learning error returned
+ * POS: !isnan(err)   &&   gradients stored in db_e   &&   learning error returned
  *	or
- *	err <  0   &&   an internal misfunction has ocurred
+ *	isnan(err)  &&   an internal misfunction has ocurred
  */
 static double
 anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
@@ -848,7 +848,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		fprintf (stderr, "anfis.c: anfis_calc_mf_up: "
 				 "Membership function not implemented  ~  "
 				 "ABORTING UPDATE !!!\n\n");
-		return -1.0;
+		return NAN;
 	}
 	
 	/* Initializing errors vector */
@@ -949,8 +949,8 @@ anfis_update_etha (anfis_t net, double new_err)
 			/* ...for the INC_H consecutive time... */
 			if (++(net->trend_st) == INC_H) {
 				/* ...increase etha */
-				debug ("\n%s\n","η++");
-				net->etha += INC_C * net->etha;
+/*				debug ("\n%s\n","η++");
+*/				net->etha += INC_C * net->etha;
 				net->trend = FIXED;
 				net->trend_st = 0;
 			} /* ...else just increment trend_st */
@@ -967,8 +967,8 @@ anfis_update_etha (anfis_t net, double new_err)
 			if ( (net->old_err1 > net->old_err2)  &&
 				(++(net->trend_st) == DEC_H) )
 			{	/* ...decrease etha */
-				debug ("\n%s\n","η--");
-				net->etha -= DEC_C * net->etha;
+/*				debug ("\n%s\n","η--");
+*/				net->etha -= DEC_C * net->etha;
 				net->trend = FIXED;
 				net->trend_st = 0;
 			/* ... else if up-down chain was broken... */
@@ -1032,7 +1032,7 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
 	assert (db_e != NULL);
 	assert (new_err >= 0.0);
 	
-	etha = net->etha / new_err;
+	etha = net->etha / ((new_err !=0) ? new_err : 2.0);
 	
 	#pragma omp parallel for default(shared) private(i,l,db_e_ij)
 	for (i=0 ; i < net->t * net->n ; i++) {
@@ -1041,11 +1041,7 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
 		db_e_ij = gsl_matrix_ptr (db_e, i, 0);
 		
 		for (l=0 ; l < MAX_PARAM ; l++) {
-			assert (finite (db_e_ij[l]));
-			
 			net-> b[i/net->n]. MF[i%net->n]. p[l] -= etha * db_e_ij[l];
-			
-			assert (finite (net-> b[i/net->n]. MF[i%net->n]. p[l]));
 		}
 	}
 	
@@ -1120,29 +1116,34 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 	db_e = gsl_matrix_alloc (net->t * net->n, MAX_PARAM);
 	handle_error_2 (db_e);
 	
-	total_err = 0.0;
+	mfu.s      = s;
+	mfu.f_out  = f_out;
+	total_err  = 0.0;
 	for (i=0 ; i < net->t && res == ANFIS_OK; i++) {
 		gsl_vector_view p_sub, b_tau_i, MF_val;
-			
+		
 		/* p_sub holds paramaters p[i][0], p[i][1], ..., p[i][n] */
 		p_sub = gsl_vector_subvector (cp, i*(net->n+1), net->n+1);
 		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
 		#pragma omp parallel for default(shared) \
-					 private(j, mfu, db_e_ij, err_grad) \
-					 reduction(+:total_err)
+					 private(j, db_e_ij, err_grad) \
+					 firstprivate(mfu) \
+					 reduction(+:total_err) \
+					 if(res==ANFIS_OK)
 		for (j=0 ; j < net->n ; j++) {
-		
+			
+			if (res != ANFIS_OK)
+				continue;
+			
 			/* MF_val holds MF[i][j] values for all P inputs */
 			MF_val = gsl_matrix_column (MF, i * net->n + j);
 			
-			mfu.s      = s;
 			mfu.mf_ij  = &(net->b[i].MF[j]);
 			mfu.p_sub  = &(p_sub.vector);
 			mfu.b_tau  = &(b_tau_i.vector);
 			mfu.MF_val = &(MF_val.vector);
-			mfu.f_out  = f_out;
 			
 			/* Error gradients for the parameters of M[i][j] */
 			db_e_ij = gsl_matrix_ptr (db_e, i * net->n + j, 0);
@@ -1150,7 +1151,13 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 			/* Computing update values */
 			err_grad = anfis_calc_mf_up (&mfu, db_e_ij, P, j, net->n);
 			
-			total_err += err_grad * err_grad;
+			if (isnan(err_grad)) {
+				/* An error ocurred */
+				#pragma omp atomic
+				res += ANFIS_ERR;
+			} else {
+				total_err += err_grad * err_grad;
+			}
 		}
 	}
 	

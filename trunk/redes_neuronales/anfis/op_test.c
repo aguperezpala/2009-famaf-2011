@@ -19,7 +19,7 @@
 
 
 /* Máxima cantidad de ramas paralelas en la red */
-#define  T_MAX		6
+#define  T_MAX		8
 /* Tamaño del salto en el # de ramas */
 #define  T_HOP		2
 
@@ -179,15 +179,15 @@ int main (void)
 	printf ("\n");
 	
 	/* Para cada # de ramas especificado */
-	for (t = T_HOP ; t < T_MAX ; t += T_HOP) {
+	for (t = T_HOP ; t <= T_MAX ; t += T_HOP) {
 		
 		/* Para cada dimensión de entrada especificada */
-		for (n = N_HOP ; n < N_MAX ; n += N_HOP) {
+		for (n = N_HOP ; n <= N_MAX ; n += N_HOP) {
 			
-			printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-				"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-				"\nEjercitando red con:"
-				"\t%lu ramas \t%lu entradas\n\n", t, n);
+			printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+				"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nEjercitand"
+				"o red con:  [%lu rama%s]\t[%lu entrada%s]\n",
+				t, (t>1)?"s":"", n, (n>1)?"s":"");
 			
 			/* Creamos espacio de trabajo */
 			p   = (3*n*t) / 2;
@@ -198,7 +198,7 @@ int main (void)
 			/* Entrenamos la red "NEPOCHS" veces */
 			for (e=0 ; e < NEPOCHS ; e++) {
 				sample_gen (s, n, p);
-				printf ("\rTraining sample # %lu", e);
+				printf ("\rAlimentando ejemplo # %lu", e);
 				fflush (stdout);
 				res = anfis_train (net, s, p);
 			}
@@ -213,6 +213,10 @@ int main (void)
 			printf ("\n");
 		}
 	}
+	
+	printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+		"~~~~~~~~~~~~~~~~~~\n\nFin de los tests\n\n");
+	
 	
 	return EXIT_SUCCESS;
 }
