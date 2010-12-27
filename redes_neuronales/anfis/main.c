@@ -7,6 +7,10 @@
 #include "anfis.h"
 
 
+
+/* # de veces que se presentará la muestra a la red para aprendizaje */
+#define  NITER  30
+
 /* # de ramas de la red */
 #define  T	2
 
@@ -27,6 +31,7 @@
 /* Rango de los valores de entrada */
 double  LB = 0.0, /* Límite inferior */
 	UB = 0.0; /* Límite superior */
+
 
 
 
@@ -164,8 +169,8 @@ gen_sample (double *y, size_t p, size_t n, size_t jump)
 	s = (t_sample *) malloc (p * sizeof (t_sample));
 	assert (s != NULL);
 	
-/*	#pragma omp parallel for default(shared) private(i,j)
-*/	for (i=0 ; i < p ; i++) {
+	#pragma omp parallel for default(shared) private(i,j)
+	for (i=0 ; i < p ; i++) {
 		s[i].in = gsl_vector_alloc (n);
 		assert (s[i].in != NULL);
 		
@@ -215,8 +220,8 @@ exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout)
 	double out = 0.0;
 	
 	for (t=0 ; t < p ; t++) {
-		out = anfis_eval (net, sample[0].in);
-		fprintf (fout, "%f\n", out - sample[0].out);
+		out = anfis_eval (net, sample[t].in);
+		fprintf (fout, "%f\n", out - sample[t].out);
 	}
 	
 	return;
@@ -259,23 +264,19 @@ int main (int argc, char **argv)
 	
 	
 	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
-	* y entrenamos la red con él */
-	sample = gen_sample (y, nlines/2, N, JUMP);
-	
+	 * y entrenamos la red con él */
 	mfs = gen_mfs (N, T, LB, UB);
-	for (i=0 ; i < T*N ; i++) {
-		printf ("MF[%d][%d] = %d\n", i/N, i%N, mfs[i].k);
-	}
-	
-	
 	net = anfis_create (N, T, mfs);
-	error  = anfis_train (net, sample, nlines/2);
-	assert (error == ANFIS_OK);
 	
+	for (i=0 ; i < nlines/10 ; i++) {
+		sample = gen_sample (&(y[i]), nlines/2, N, JUMP);
+		error  = anfis_train (net, sample, nlines/2);
+		assert (error == ANFIS_OK);
+		sample = sample_free (sample, nlines/2);
+	}
 	
 	/* Alimentamos la otra mitad de los datos a la red para analizar
 	 * qué tan bueno fue su aprendizaje */
-	sample = sample_free (sample, nlines/2);
 	sample = gen_sample (&(y[nlines/2]), nlines/2, N, JUMP);
 	exercise_network (net, sample, nlines/2, fout);
 	
