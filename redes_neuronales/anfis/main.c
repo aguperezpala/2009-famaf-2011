@@ -2,14 +2,16 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <limits.h>
 #include <gsl/gsl_vector.h>
 
 #include "anfis.h"
+#include "mzran13.h"
 
 
 
 /* # de veces que se presentará la muestra a la red para aprendizaje */
-#define  NITER  30
+#define  NITER  1
 
 /* # de ramas de la red */
 #define  T	2
@@ -32,6 +34,7 @@
 double  LB = 0.0, /* Límite inferior */
 	UB = 0.0; /* Límite superior */
 
+#define  ran()  (((double) mzran13()) / ((double) ULONG_MAX))
 
 
 
@@ -118,9 +121,9 @@ get_sample_values (char **argv, size_t *nlines)
 static MF_t *
 gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 {
-	unsigned int i = 0, j = 0;
+	int i = 0, j = 0;
 	MF_t *mf = NULL;
-	double	a = ((double)(UB-LB)) / ((double)2.0*n),
+	double	a = (UB-LB) / (2.0*n),
 		b = slope,
 		c = 0.0;
 	
@@ -129,7 +132,7 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 	
 	#pragma omp parallel for default(shared) private(j,i,c)
 	for (j=0 ; j < n ; j++) {
-		c = ((double) UB / (double) n) * ((double) j) + a;
+		c = LB + (1.0 + 2.0 * j) * a;
 		for (i=0 ; i < t ; i++) {
 			/* Todas las MF serán campanas */
 			mf[i*n+j].k = bell;
@@ -140,6 +143,27 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 	}
 	
 	return mf;
+}
+
+
+
+
+/* Crea 'p' muestras con entradas de dimensión n */
+static t_sample *
+sample_alloc (size_t n, size_t p)
+{
+	t_sample *s = NULL;
+	unsigned long i = 0;
+	
+	s = (t_sample *) malloc (p * sizeof (t_sample));
+	assert (s != NULL);
+	
+	for (i=0 ; i < p ; i++) {
+		s[i].in = gsl_vector_alloc (n);
+		assert (s[i].in != NULL);
+	}
+	
+	return s;
 }
 
 
@@ -158,30 +182,48 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
  *
  * Ej: p = 1, n = 2 , jump = 4 , y = [0,5,10,15,20,25,30,35,40,45]
  *
- *     Entonces el resultado devuelto será: { ((0,20) , 40) }
+ *     Entonces la muestra generada será: { ((0,20) , 40) }
  */
-static t_sample *
-gen_sample (double *y, size_t p, size_t n, size_t jump)
+static void
+sample_gen (t_sample *s, size_t n, size_t p, size_t jump, double *y)
 {
-	unsigned int i = 0, j = 0;
-	t_sample *s = NULL;
+	long i = 0, j = 0, k = 0;
+	long *loi = NULL;	/* Lista de índices para acceder 
+				 * aleatoriamente a los valores de y */
 	
-	s = (t_sample *) malloc (p * sizeof (t_sample));
 	assert (s != NULL);
 	
+	/* Primero creamos la lista de índices aleatorios */
+	loi = (long *) malloc (p * sizeof (long));
+	assert (loi != NULL);
+	#pragma omp parallel for if(p>200)
+	for (k=0 ; k < p ; k++) {
+		loi[k] = k;
+	}
+	k = p-1;
+	while (k-- > 0) {
+		i = floor (ran()*p);
+		loi[k] += loi[i];
+		loi[i]  = loi[k] - loi[i];
+		loi[k] -= loi[i];
+	}
+	
+	/* Ahora escogemos aleatoriamente las 'p' muestras */
 	#pragma omp parallel for default(shared) private(i,j)
-	for (i=0 ; i < p ; i++) {
-		s[i].in = gsl_vector_alloc (n);
-		assert (s[i].in != NULL);
-		
+	for (k=0 ; k < p ; k++) {
+		i = loi[k];
 		for (j=0 ; j < n ; j++) {
-			gsl_vector_set (s[i].in, j, y[i+j*jump]);
+			gsl_vector_set (s[k].in, j, y[i+j*jump]);
 		}
 		s[i].out = y[i+n*jump];
 	}
 	
-	return s;
+	free (loi);
+	loi = NULL;
+	
+	return;
 }
+
 
 
 
@@ -232,7 +274,7 @@ exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout)
 
 int main (int argc, char **argv)
 {
-	int i = 0, error = 0;
+	int i = 0, error = 0, p = 0;
 	size_t nlines = 0;
 	FILE *fout = NULL;
 	double *y = NULL;
@@ -261,23 +303,24 @@ int main (int argc, char **argv)
 		}
 	}
 	
-	
-	
-	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
-	 * y entrenamos la red con él */
+	/* Creamos la red */
 	mfs = gen_mfs (N, T, LB, UB);
 	net = anfis_create (N, T, mfs);
 	
-	for (i=0 ; i < nlines/10 ; i++) {
-		sample = gen_sample (&(y[i]), nlines/2, N, JUMP);
+	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
+	 * y entrenamos la red con él */
+	p = nlines/2;
+	sample = sample_alloc (N, p);
+	
+	for (i=0 ; i < NITER ; i++) {
+		sample_gen (sample, N, p, JUMP, y);
 		error  = anfis_train (net, sample, nlines/2);
 		assert (error == ANFIS_OK);
-		sample = sample_free (sample, nlines/2);
 	}
 	
 	/* Alimentamos la otra mitad de los datos a la red para analizar
 	 * qué tan bueno fue su aprendizaje */
-	sample = gen_sample (&(y[nlines/2]), nlines/2, N, JUMP);
+	sample_gen (sample, N, p, JUMP, &(y[nlines/2]));
 	exercise_network (net, sample, nlines/2, fout);
 	
 	

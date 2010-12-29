@@ -591,7 +591,7 @@ static void
 calc_num (const gsl_matrix *S, const gsl_vector *A_i, gsl_matrix *Snew,
 	  gsl_matrix *m_aux, gsl_vector *v_aux, size_t M)
 {
-	unsigned int i = 0;
+	int i = 0;
 	double value = 0.0;
 	
 	/* v_aux = S * A_i */
