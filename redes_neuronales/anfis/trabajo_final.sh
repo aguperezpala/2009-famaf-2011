@@ -1,3 +1,5 @@
+#!/bin/bash
+
 LOG=anfis.log
 
 # Generación de muestra
@@ -39,6 +41,7 @@ echo -e "Datos en $MG_DATA\nGráfico en $MG_PLOT"
 
 echo -e "\nCompilando programa principal"
 make anfis_mg >> $LOG 2>&1
+# Lo siguiente guarda en $nlines el # de líneas del archivo MG_DATA
 nlines=`wc -l $MG_DATA | tr -c -d [0-9]`
 echo "Ejecutando programa principal"
 $MAIN $MG_DATA $nlines $LERR_DATA
@@ -51,6 +54,6 @@ eog $LERR_PLOT &
 echo -e "Datos en $LERR_DATA\nGráfico en $LERR_PLOT"
 
 make clean >> $LOG 2>&1
-echo -e "\nRegistro de las actividades en $LOG\nPráctico 2 finalizado\n"
+echo -e "\nRegistro de las actividades en $LOG\nFin del programa\n"
 
 exit
