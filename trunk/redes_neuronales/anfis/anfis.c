@@ -29,7 +29,7 @@
  **/
 
 
-#define  _gamma		(1<<8)
+#define  _gamma		(1<<15)
 
 /* Initial value for network's etha */
 #define  INIT_ETHA	1.0
@@ -101,7 +101,7 @@ struct _anfis_s {
  */
 typedef struct {
 	MF_t *mf_ij;	    /* MF whose parameters must be updated */
-	t_sample   *s;      /* samples training set for this epoch */
+	const t_sample *s;  /* samples training set for this epoch */
 	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
 	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
 	gsl_vector *p_sub;  /* consequent parameters (in MF's branch) */
@@ -496,7 +496,8 @@ eval_MF (MF_t mf, double x)
  *	result == ANFIS_ERR
  */
 static int
-anfis_compute_membership (const anfis_t net, gsl_vector *input, gsl_vector *MF_k)
+anfis_compute_membership (const anfis_t net, const gsl_vector *input,
+			  gsl_vector *MF_k)
 {
 	int i = 0, n = 0, t = 0;
 	double value = 0.0;
@@ -538,8 +539,8 @@ anfis_compute_membership (const anfis_t net, gsl_vector *input, gsl_vector *MF_k
  *	result == ANFIS_ERR
  */
 static int
-anfis_partial_fwd_prop (anfis_t net, gsl_vector *input, const gsl_vector *MF_k,
-			gsl_vector *b_tau_k)
+anfis_partial_fwd_prop (const anfis_t net, const gsl_vector *input,
+			const gsl_vector *MF_k,  gsl_vector *b_tau_k)
 {
 	int i = 0, j = 0, t = 0, n = 0;
 	double *tau = NULL, tau_sum = 0.0;
@@ -658,7 +659,7 @@ anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
 	assert (y != NULL);
 	
 	/* Generating necessary workspace */
-	S = gsl_matrix_calloc (M,M);
+	S = gsl_matrix_alloc (M,M);
 	if (S == NULL)
 		goto exit_point;
 	Snew = gsl_matrix_calloc (M,M);
@@ -670,7 +671,7 @@ anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
 	Xnew = gsl_vector_alloc (M);
 	if (Xnew == NULL)
 		goto exit_point;
-	X = gsl_vector_alloc (M);
+	X = gsl_vector_calloc (M);
 	if (X == NULL)
 		goto exit_point;
 	
@@ -719,7 +720,7 @@ anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
 /* Performs least square estimate (aka LSE) for the given sample (of size P)
  * to find best values for the network's consequent parameters
  *
- * The network is updated internally, and a copy of this new values is returned
+ * The network is updated internally, and a copy of these new values is returned
  * as a vector of length (network # of branches) * (network input dimension + 1)
  * to facilitate further calculations. Free result using gsl_vector_free()
  *
@@ -774,9 +775,11 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 				gsl_vector_get (X, i*(net->n+1) + j));
 			}
 */		}
-/*		debug ("Sum of residual squares: χ² = %f\n\n", chisq);
-*/		j=j;calls=calls;
+		j=j;calls=calls;
 	}
+	
+	gsl_vector_free (y);
+	y = NULL;
 	
 	return X;
 }
@@ -1074,14 +1077,12 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
  *	result == ANFIS_ERR
  */
 static int
-anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
-		  gsl_matrix *b_tau, gsl_vector *cp, unsigned int P)
+anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
+		 gsl_matrix *MF, gsl_matrix *b_tau, gsl_vector *cp, unsigned int P)
 {
 	gsl_vector *f_out = NULL;
 	gsl_matrix *db_e  = NULL;
-	double	_a  = 1.0,
-		_b  = 0.0,
-		err_grad  = 0.0,
+	double	err_grad  = 0.0,
 		total_err = 0.0,
 		*db_e_ij  = NULL;
 	int i = 0, j = 0;
@@ -1098,10 +1099,10 @@ anfis_grad_desc (anfis_t net, t_sample *s, const gsl_matrix *A, gsl_matrix *MF,
 	handle_error_2 (f_out);
 	
 	/* Computing network outputs for the last training sample,
-	 * with the predictor variable matrix, since: f_outputs == A*cp
-	 * This routine performs the computation: f_out = _a*A*cp + _b*f_out
+	 * with the predictor variable matrix, since: net_outputs == A*cp
+	 * This routine performs the computation: f_out = 1.0*A*cp + 0.0*f_out
 	 */
-	gsl_blas_dgemv (CblasNoTrans, _a, A, cp, _b, f_out);
+	gsl_blas_dgemv (CblasNoTrans, 1.0, A, cp, 0.0, f_out);
 	
 /*	debug ("%s\n","Network output for this sample:");
 	dfor (i=0 ; i<P ; i++) {
@@ -1265,7 +1266,6 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 	
 	/* Computing best consequent parameters with LSE */
 	ccp = anfis_lse (net, A, s, P);
-	handle_error_2 (ccp);
 	if (ccp == NULL) {
 		res = ANFIS_ERR;
 	} else {
