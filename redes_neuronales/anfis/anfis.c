@@ -62,6 +62,7 @@
 #else
   #define  handle_error_1(err)
   #define  handle_error_2(arr)
+  #define  handle_error_3(arr)
   #define  debug(s,...)
   #define  dfor(s)
 #endif
@@ -100,8 +101,9 @@ struct _anfis_s {
  * (ie: MF internal parameters) using the gradient descent method
  */
 typedef struct {
-	MF_t *mf_ij;	    /* MF whose parameters must be updated */
 	const t_sample *s;  /* samples training set for this epoch */
+	MF_t *mf_ij;	    /* MF whose parameters must be updated */
+	gsl_vector *db_e_ij;/* error gradient for each parameter of this MF */
 	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
 	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
 	gsl_vector *p_sub;  /* consequent parameters (in MF's branch) */
@@ -788,40 +790,41 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 
 
 /* Computes error gradient for all parameters of the given membership function.
- * Each parameter's err.grad. is stored in vector db_e.
+ * Each parameter's err.grad. is stored in vector db_e_ij.
  * The whole learning error is the returned value.
  *
- * PARAMETERS:  mfu ---> MF update TAD
- *		db_e --> error gradient for each parameter of this MF
- *		P -----> # of samples in the set
- *		j -----> order # of the input element this MF processes
- *		n -----> network input dimension
+ * PARAMETERS:  mfu --> MF update TAD
+ *		P ----> # of samples in the set
+ *		j ----> order # of the input element this MF processes
+ *		n ----> network input dimension
  *
  * PARAMETERS INSIDE mfu:
- *		mf_ij ---> membership function whose parameters must be updated
- *		s -------> samples training set
- *		MF_val --> MF values for all P inputs in the given sample
- *		b_tau ---> barred tau values for all P inputs (for this branch)
- *		p_sub ---> consequent parameters (for this branch)
- *		f_out ---> network output values for the given sample
+ *		s --------> samples training set
+ *		mf_ij ----> membership function whose parameters must be updated
+ *		db_e_ij --> error gradient for each parameter of this MF
+ *		MF_val ---> MF values for all P inputs in the given sample
+ *		b_tau ----> barred tau values for all P inputs (for this branch)
+ *		p_sub ----> consequent parameters (for this branch)
+ *		f_out ----> network output values for the given sample
  *		
  * PRE: mfu != NULL
  *	All values inside mfu != NULL
- *	All vectors dimension == P
+ *	All vectors dimension (inside mfu) == P
  *	j < n
  *
- * USE: err = anfis_update_mf (&mfu, db_e, P, j, n)
+ * USE: err = anfis_update_mf (&mfu, db_e_ij, j, P, n)
  *
- * POS: !isnan(err)   &&   gradients stored in db_e   &&   learning error returned
+ * POS: !isnan(err)   &&   gradients stored in db_e_ij
+ *		      &&   learning error returned
  *	or
- *	isnan(err)  &&   an internal misfunction has ocurred
+ *	isnan(err)   &&   an internal misfunction has ocurred
  */
 static double
-anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
-		  unsigned int P, unsigned int j, unsigned int n)
+anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 {
 	int k = 0;
 	MF_t *mf_ij = NULL;	/* MF whose parameters must be updated */
+	gsl_vector *db_e_ij = NULL;	/* error gradient for MF's parameters */
 	double	mf_k = 0.0,	/* MF value for the k-th sample */
 		w    = 0.0,	/* mf_k * (1.0 - mf_k) */
 		xj   = 0.0,	/* j-th input element for k-th sample */
@@ -842,7 +845,8 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 	assert (mfu->f_out  != NULL);
 	assert (j < n);
 	
-	mf_ij = mfu -> mf_ij;
+	mf_ij   = mfu -> mf_ij;
+	db_e_ij = mfu -> db_e_ij;
 	
 	/** TODO: erase the following check and implement support for
 	 **	  every membership function defined in the header file
@@ -854,11 +858,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		return NAN;
 	}
 	
-	/* Initializing errors vector */
-	for (int l = 0 ; l < MAX_PARAM ; l++) {
-		db_e[l] = 0.0;
-	}
-	
+	gsl_vector_set_zero (db_e_ij);
 	omp_set_nested (1);
 	/** WARNING Following loop works only for MF of kind 'bell' */
 /*	#pragma omp parallel for default(shared) \
@@ -870,7 +870,7 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		mf_k = gsl_vector_get (mfu -> MF_val, k);
 		w    = mf_k * (1.0 - mf_k);
 		
-		/* xj = j-th input element */
+		/* xj = j-th input element (of k-th input) */
 		xj = gsl_vector_get ((mfu -> s)[k].in, j);
 		
 		/* fk = network output for k-th sample */
@@ -888,14 +888,16 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 		/* yk = correct output for k-th sample */
 		yk = (mfu -> s)[k].out;
 		
-		#pragma omp sections
+		#pragma omp sections private(aux)
 		{
 			/* Update of first param ('a') */
 			#pragma omp section
 			{
-			d_mf[0] = (-2.0 * w * mf_ij->p[1]) / mf_ij->p[0];
-			db_e[0] += -2.0 * (yk - fk) * (pk - fk) * tk
-					* (1.0/mf_k) * d_mf[0];
+				d_mf[0] = (-2.0 * w * mf_ij->p[1]) / mf_ij->p[0];
+				aux = gsl_vector_get (db_e_ij, 0);
+				aux += -2.0 * (yk - fk) * (pk - fk) * tk
+					    * (1.0/mf_k) * d_mf[0];
+				gsl_vector_set (db_e_ij, 0, aux);
 			}
 			
 			/* Update of second param ('b') */
@@ -903,8 +905,10 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 			if (xj != mf_ij->p[2]) {
 				aux = (xj - mf_ij->p[2]) / mf_ij->p[0];
 				d_mf[1]  = -2.0 * w * log (fabs (aux));
-				db_e[1] += -2.0 * (yk - fk) * (pk - fk) * tk
-						* (1.0/mf_k) * d_mf[1];
+				aux = gsl_vector_get (db_e_ij, 1);
+				aux += -2.0 * (yk - fk) * (pk - fk) * tk
+					    * (1.0/mf_k) * d_mf[1];
+				gsl_vector_set (db_e_ij, 1, aux);
 			}
 			
 			/* Update of third param ('c') */
@@ -912,8 +916,10 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 			if (xj != mf_ij->p[2]) {
 				d_mf[2]  = (-2.0 * w * mf_ij->p[1]) /
 						(xj - mf_ij->p[2]);
-				db_e[2] += -2.0 * (yk - fk) * (pk - fk) * tk
-						* (1.0/mf_k) * d_mf[2];
+				aux = gsl_vector_get (db_e_ij, 2);
+				aux += -2.0 * (yk - fk) * (pk - fk) * tk
+					    * (1.0/mf_k) * d_mf[2];
+				gsl_vector_set (db_e_ij, 2, aux);
 			}
 		}
 	}
@@ -921,8 +927,11 @@ anfis_calc_mf_up (mfu_t *mfu, double db_e[MAX_PARAM],
 	
 	aux = 0.0;
 	for (int l = 0 ; l < MAX_PARAM ; l++) {
-		aux += db_e[l];
+		aux += gsl_vector_get (db_e_ij, l);
 	}
+	
+	mf_ij = NULL;
+	db_e_ij = NULL;
 	
 	return aux;
 }
@@ -1083,8 +1092,7 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 	gsl_vector *f_out = NULL;
 	gsl_matrix *db_e  = NULL;
 	double	err_grad  = 0.0,
-		total_err = 0.0,
-		*db_e_ij  = NULL;
+		total_err = 0.0;
 	int i = 0, j = 0;
 	int res = ANFIS_OK;
 	mfu_t mfu;
@@ -1098,8 +1106,8 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 	f_out = gsl_vector_calloc (P);
 	handle_error_2 (f_out);
 	
-	/* Computing network outputs for the last training sample,
-	 * with the predictor variable matrix, since: net_outputs == A*cp
+	/* Computing network outputs for the last training sample
+	 * using the predictor variable matrix, since: net_outputs == A*cp
 	 * This routine performs the computation: f_out = 1.0*A*cp + 0.0*f_out
 	 */
 	gsl_blas_dgemv (CblasNoTrans, 1.0, A, cp, 0.0, f_out);
@@ -1129,28 +1137,29 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
 		#pragma omp parallel for default(shared) \
-					 private(j, db_e_ij, err_grad) \
+					 private(j, err_grad, MF_val) \
 					 firstprivate(mfu) \
 					 reduction(+:total_err) \
 					 if(res==ANFIS_OK)
 		for (j=0 ; j < net->n ; j++) {
+			gsl_vector_view db_e_ij;
 			
 			if (res != ANFIS_OK)
 				continue;
 			
 			/* MF_val holds MF[i][j] values for all P inputs */
 			MF_val = gsl_matrix_column (MF, i * net->n + j);
-			
-			mfu.mf_ij  = &(net->b[i].MF[j]);
-			mfu.p_sub  = &(p_sub.vector);
-			mfu.b_tau  = &(b_tau_i.vector);
-			mfu.MF_val = &(MF_val.vector);
-			
 			/* Error gradients for the parameters of M[i][j] */
-			db_e_ij = gsl_matrix_ptr (db_e, i * net->n + j, 0);
+			db_e_ij = gsl_matrix_row (db_e, i * net->n + j);
+			
+			mfu.mf_ij   = &(net->b[i].MF[j]);
+			mfu.p_sub   = &(p_sub.vector);
+			mfu.b_tau   = &(b_tau_i.vector);
+			mfu.MF_val  = &(MF_val.vector);
+			mfu.db_e_ij = &(db_e_ij.vector);
 			
 			/* Computing update values */
-			err_grad = anfis_calc_mf_up (&mfu, db_e_ij, P, j, net->n);
+			err_grad = anfis_calc_mf_up (&mfu, j, P, net->n);
 			
 			if (isnan(err_grad)) {
 				/* An error ocurred */
