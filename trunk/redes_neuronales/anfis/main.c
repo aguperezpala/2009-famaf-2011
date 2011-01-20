@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <err.h>
 #include <math.h>
 #include <limits.h>
 #include <gsl/gsl_vector.h>
@@ -9,9 +10,6 @@
 #include "mzran13.h"
 
 
-
-/* # de veces que se presentará la muestra a la red para aprendizaje */
-#define  NITER  1
 
 /* # de ramas de la red */
 #define  T	2
@@ -22,7 +20,7 @@
 
 /* Salto entre puntos de entrada de la red
  * ie: 1 indica que los valores tomados serán uno, el siguiente, el siguiente
- *     2 indica que se toma uno, se saltea otro, se toma el siguiente...
+ *     M indica que se toma uno, se saltean M-1, se toma el M+1-ésimo...
  *     etc.
  */
 #define  JUMP	6
@@ -34,21 +32,31 @@
 double  LB = 0.0, /* Límite inferior */
 	UB = 0.0; /* Límite superior */
 
+
+
+/* # de veces que se presentará la muestra a la red para aprendizaje */
+#define  NITER   1
+
+/* # de ejemplos de entre los datos muestrales que se usarán para aprendizaje */
+#define  NTRAIN  500
+
+
+
 #define  ran()  (((double) mzran13()) / ((double) ULONG_MAX))
 
 
 
 
-/* Rellena el arreglo 'y' con los valores muestrales extraídos del archivo
+/* Genera un arreglo con los valores muestrales extraídos del archivo
  * especificado en los argumentos recibidos.
  *
  * La memoria alocada para 'y' le pertenece al usuario, quien deberá liberarla
  * usando la rutina standard de glibc: free()
  *
- * El valor de retorno es la longitud de 'y'
+ * El valor de retorno es el arreglo generado, que tiene longitud 'nlines'
  */
 static double *
-get_sample_values (char **argv, size_t *nlines)
+get_sample_values (int argc, char **argv, size_t *nlines)
 {
 	int matched = 0;
 	unsigned int i = 0;
@@ -56,24 +64,22 @@ get_sample_values (char **argv, size_t *nlines)
 		f_t = 0.0,
 		*y = NULL;
 	char *nomfile = NULL,
-	     *err = NULL;
+	     *error = NULL;
 	FILE *file = NULL;
 	
 	/* Obteniendo argumentos */
 	nomfile = argv[1];
-	*nlines = (size_t) strtol (argv[2], &err, 10);
-	if (err[0] != '\0') {
-		fprintf (stderr, "El segundo argumento debe ser el # de líneas "
-				 "que tiene el archivo con la muestra\n");
+	*nlines = (size_t) strtol (argv[2], &error, 10);
+	if (error[0] != '\0') {
+		fprintf (stderr, "\aEl segundo argumento debe ser el # de líneas"
+				 " que tiene el archivo con la muestra\n");
 		exit (EXIT_FAILURE);
 	}
 	
 	/* Accediendo a los datos */
 	file = fopen (nomfile,"r");
 	if (file == NULL) {
-		fprintf (stderr, "Imposible acceder al archivo especificado: "
-				 "%s\n", nomfile);
-		exit (EXIT_FAILURE);
+		err (1, "\aArchivo de datos corrupto: '%s'\n", nomfile);
 	} else {
 		y = (double *) malloc (*nlines * sizeof (double));
 		assert (y != NULL);
@@ -84,7 +90,7 @@ get_sample_values (char **argv, size_t *nlines)
 		
 		matched = fscanf (file, "%lf %lf\n", &t, &f_t);
 		
-		if (matched == EOF) {
+		if (feof (file) && matched != 2) {
 			fprintf (stderr, "El archivo tenía una cantidad de "
 					 "líneas menor a la especificada: %lu\n",
 					 *nlines);
@@ -112,6 +118,53 @@ get_sample_values (char **argv, size_t *nlines)
 	return y;
 }
 
+
+
+
+/* Parsea la entrada. En caso de ser correcta:
+ *
+ *  · devuelve un array con espacio suficiente para los datos muestrales (y)
+ *  · calcula la cantidad de datos muestrales (nlines)
+ *  · genera el archivo de salida de las estimaciones de la red (fout)
+ *  · y opcionalmente genera el archivo de salida para los errores
+ *    de aprendizaje de la misma (ferr)
+ */
+static void
+parse_input (int argc, char **argv, double **y, size_t *nlines,
+	      FILE **fout, FILE **ferr)
+{
+	if (4 > argc || argc > 5) {
+		fprintf (stderr, "Debe invocar al programa con los argumentos:"
+				"\n\t1) Nombre del archivo que contiene los "
+				"datos muestrales\n\t2) # de líneas del mismo"
+				"\n\t3) Nombre del archivo de salida para los "
+				"valores estimados por la red\n\t4) Nombre del "
+				"archivo de salida para el error de aprendizaje"
+				" (OPCIONAL)\n\n");
+		exit (EXIT_FAILURE);
+		
+	} else {
+		*y = get_sample_values (argc, argv, nlines);
+		/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
+		 * Además actualizó los valores de LB y UB */
+		
+		*fout = fopen (argv[3], "w");
+		if (*fout == NULL) {
+			err (1, "No se pudo crear archivo de salida\n");
+		}
+		
+		if (argc == 5) {
+			*ferr = fopen (argv[4], "w");
+			if (*ferr == NULL) {
+				warn ("Archivo de errores de aprendizaje "
+					"corrupto: '%s'\nNo se guardará registro"
+					" del nivel de error\n", argv[4]);
+			}
+		}
+	}
+	
+	return;
+}
 
 
 
@@ -213,8 +266,11 @@ sample_gen (t_sample *s, size_t n, size_t p, size_t jump, double *y)
 	for (k=0 ; k < p ; k++) {
 		i = loi[k];
 		for (j=0 ; j < n ; j++) {
-			gsl_vector_set (s[k].in, j, y[i+j*jump]);
-		}
+			/* Presentación secuencial de ejemplos: */
+			gsl_vector_set (s[k].in, j, y[k+j*jump]);
+			/* Presentación aleatoria de ejemplos: */
+/*			gsl_vector_set (s[k].in, j, y[i+j*jump]);
+*/		}
 		s[i].out = y[i+n*jump];
 	}
 	
@@ -253,17 +309,24 @@ sample_free (t_sample *s, size_t p)
  * Para ello alimenta cada entrada s[i].in a la red y compara el valor devuelto
  * con el resultado verdadero (s[i].out)
  *
- * Los errores de aprendizaje son impresos secuencialmente en el archivo 'fout'
+ * Los valores de salida de la red son impresos secuencialmente en el archivo
+ * 'fout' Si se especificó archivo para los errores de aprendizaje ('ferr')
+ * éstos también serán registrados
  */
 static void
-exercise_network (anfis_t net, t_sample *sample, size_t p, FILE *fout)
+exercise_network (anfis_t net, t_sample *sample, size_t p, double offset,
+		   FILE *fout, FILE *ferr)
 {
 	unsigned long t = 0;
 	double out = 0.0;
 	
 	for (t=0 ; t < p ; t++) {
 		out = anfis_eval (net, sample[t].in);
-		fprintf (fout, "%f\n", out - sample[t].out);
+		fprintf (fout, "%f\t%f\n", t + offset, out);
+		if (ferr != NULL) {
+			fprintf (ferr, "%f.1\t%f\n",
+				 t + offset, sample[t].out - out);
+		}
 	}
 	
 	return;
@@ -276,32 +339,15 @@ int main (int argc, char **argv)
 {
 	int i = 0, error = 0, p = 0;
 	size_t nlines = 0;
-	FILE *fout = NULL;
+	FILE *fout = NULL,
+	     *ferr = NULL;
 	double *y = NULL;
 	t_sample *sample = NULL;
 	MF_t *mfs = NULL;
 	anfis_t net = NULL;
 	
-	
-	if (argc != 4) {
-		fprintf (stderr, "Debe invocar al programa con los argumentos:"
-				 "\n\t1) Nombre del archivo que contiene los "
-				 "datos muestrales\n\t2) # de líneas del mismo"
-				 "\n\t3) Nombre del archivo de salida del error"
-				 " de aprendizaje de la red\n\n");
-		exit (EXIT_FAILURE);
-		
-	} else {
-		y = get_sample_values (argv, &nlines);
-		/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
-		 * Además actualizó los valores de LB y UB */
-		
-		fout = fopen (argv[3], "w");
-		if (fout == NULL) {
-			fprintf (stderr, "No se pudo crear archivo de salida\n");
-			exit (EXIT_FAILURE);
-		}
-	}
+	/* Obtenemos los datos */
+	parse_input (argc, argv, &y, &nlines, &fout, &ferr);
 	
 	/* Creamos la red */
 	mfs = gen_mfs (N, T, LB, UB);
@@ -314,22 +360,26 @@ int main (int argc, char **argv)
 	
 	for (i=0 ; i < NITER ; i++) {
 		sample_gen (sample, N, p, JUMP, y);
-		error  = anfis_train (net, sample, nlines/2);
+		error  = anfis_train (net, sample, p);
 		assert (error == ANFIS_OK);
 	}
 	
 	/* Alimentamos la otra mitad de los datos a la red para analizar
 	 * qué tan bueno fue su aprendizaje */
-	sample_gen (sample, N, p, JUMP, &(y[nlines/2]));
-	exercise_network (net, sample, nlines/2, fout);
+	sample_gen (sample, N, p, JUMP, &(y[p-(N+1)*JUMP]));
+	exercise_network (net, sample, p, p, fout, ferr);
 	
 	
 	/* Limpiando memoria */
 	net = anfis_destroy (net);
 	free (mfs);	mfs = NULL;
-	sample = sample_free (sample, nlines/2);
+	sample = sample_free (sample, p);
 	free (y);	y = NULL;
-	fclose (fout);
+	fclose (fout);	fout = NULL;
+	if (ferr != NULL) {
+		fclose (ferr); ferr = NULL;
+	}
+	
 	
 	return EXIT_SUCCESS;
 }
