@@ -15,27 +15,40 @@ PLOT_LERR=learn_error.gp
 LERR_DATA=anfis_err.dat
 LERR_PLOT=anfis_err.png
 
+# Funciones de membresía tras el aprendizaje
+PLOT_MF=final_mf.gp
+MF_DATA=anfis_mf.dat
+MF_PLOT=anfis_mf
+
+
 echo "________________________________________________________________________________"
 echo -e "\n\tRedes ANFIS para predicción temporal de series caóticas\n"
 echo -e "    Análisis del aprendizaje para la equación diferencial de Mackey-Glass\n"
 
+# Parámetros para la construcción de la ecuac. dif. de Mackey-Glass
 a=118
-b=1118
+b=1618
 h=0.1
 tau=17
 yinit=1.2
+# Parámetros para la red ANFIS
+T=2
+N=4
+
 
 echo -e "\nGenerando valores muestrales de la serie Mackey-Glass"
 make clean &> $LOG
 make mg_sample >> $LOG 2>&1
 $GEN_MG $a $b $h $tau $yinit > $MG_DATA
 
+
 echo -e "\nCompilando programa principal"
 make anfis_mg >> $LOG 2>&1
 # Lo siguiente guarda en $nlines el # de líneas del archivo MG_DATA
 nlines=`wc -l $MG_DATA | tr -c -d [0-9]`
 echo "Ejecutando programa principal"
-$MAIN $MG_DATA $nlines $MG_ANFIS $LERR_DATA
+$MAIN $T $N $MG_DATA $nlines $MG_ANFIS $LERR_DATA $MF_DATA >> $LOG 2>&1
+
 
 echo -e "Graficando los valores generados vs. la serie original"
 export XLOW=`expr $nlines / 2`
@@ -48,6 +61,7 @@ eog $MG_PLOT &
 echo -e "\nDatos originales de la serie de Mackey-Glass en $MG_DATA"
 echo -e "Datos del aprendizaje de la red en $MG_ANFIS\nGráfico en $MG_PLOT"
 
+
 echo -e "\nGraficando errores de aprendizaje obtenidos"
 export SAMPLE=$LERR_DATA
 export PLOT=$LERR_PLOT
@@ -55,7 +69,44 @@ gnuplot $PLOT_LERR
 eog $LERR_PLOT &
 echo -e "Datos en $LERR_DATA\nGráfico en $LERR_PLOT"
 
+
+
+# TODO	Terminar el ciclo siguiente, donde se deben leer del archivo $MF_DATA
+#	los parámetros de cada función de membresía (luego del aprendizaje),
+#	para luego graficar las funciones usando gnuplot.
+#
+#	Idealmente se graficarán superpuestas las MF de una misma rama,
+#	para evidenciar si/como cubren todo el espacio de entrada
+
+echo -e "\nGraficando las funciones membresía resultantes del aprendizaje"
+# El separador del ciclo será el fin de línea
+# BAKIFS=$IFS
+# IFS=$(echo -en "\n\b")
+# exec 3<&0
+# exec 0<"$MF_DATA"
+# 
+# i=0
+# while [ "$i" -lt "$T" ]
+# do
+# 	j=0
+# 	while [ "$j" -lt "$N" ]
+# 	do
+# 		"A$i"
+# 		let j=j+1
+# 	done
+# 	let i=i+1
+# done
+# 
+# while read -r line
+# do
+# 	# use $line variable to process line in processLine() function
+# 	processLine $line
+# done
+# exec 0<&3
+
+
+
 make clean >> $LOG 2>&1
 echo -e "\nRegistro de las actividades en $LOG\nFin del programa\n"
 
-exit
+exit 0
