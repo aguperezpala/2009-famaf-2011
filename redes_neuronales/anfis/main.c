@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <assert.h>
 #include <err.h>
 #include <math.h>
@@ -12,11 +13,11 @@
 
 
 /* # de ramas de la red */
-#define  T	2
+size_t  T = 0;
 
 /* Dimensión de entrada de la red
  * Es decir, con cuantos puntos previos se tratará de adivinar el "siguiente" */
-#define  N	4
+size_t  N = 0;
 
 /* Salto entre puntos de entrada de la red
  * ie: 1 indica que los valores tomados serán uno, el siguiente, el siguiente
@@ -26,7 +27,7 @@
 #define  JUMP	6
 
 /* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  slope	3
+#define  slope	2.0
 
 /* Rango de los valores de entrada */
 double  LB = 0.0, /* Límite inferior */
@@ -68,8 +69,8 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 	FILE *file = NULL;
 	
 	/* Obteniendo argumentos */
-	nomfile = argv[1];
-	*nlines = (size_t) strtol (argv[2], &error, 10);
+	nomfile = argv[3];
+	*nlines = (size_t) strtol (argv[4], &error, 10);
 	if (error[0] != '\0') {
 		fprintf (stderr, "\aEl segundo argumento debe ser el # de líneas"
 				 " que tiene el archivo con la muestra\n");
@@ -123,46 +124,83 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 
 /* Parsea la entrada. En caso de ser correcta:
  *
+ *  · setea al # de ramas y la dimensión de entrada de la red
  *  · devuelve un array con espacio suficiente para los datos muestrales (y)
  *  · calcula la cantidad de datos muestrales (nlines)
  *  · genera el archivo de salida de las estimaciones de la red (fout)
- *  · y opcionalmente genera el archivo de salida para los errores
- *    de aprendizaje de la misma (ferr)
+ *  · (OP) genera el archivo de salida para los errores de aprendizaje (ferr)
+ *  · (OP) genera el archivo de salida para las funciones membresía (f_mf)
  */
 static void
 parse_input (int argc, char **argv, double **y, size_t *nlines,
-	      FILE **fout, FILE **ferr)
+	      FILE **fout, FILE **ferr, FILE **f_mf)
 {
-	if (4 > argc || argc > 5) {
+	char *error = NULL;
+	
+	printf ("argc = %d\n", argc);
+	if (6 > argc || argc > 8) {
 		fprintf (stderr, "Debe invocar al programa con los argumentos:"
-				"\n\t1) Nombre del archivo que contiene los "
-				"datos muestrales\n\t2) # de líneas del mismo"
-				"\n\t3) Nombre del archivo de salida para los "
-				"valores estimados por la red\n\t4) Nombre del "
-				"archivo de salida para el error de aprendizaje"
-				" (OPCIONAL)\n\n");
+				"\n\t1) # de ramas de la red"
+				"\n\t2) Dimensión de la entrada"
+				"\n\t3) Nombre del archivo que contiene los "
+					"datos muestrales"
+				"\n\t4) # de líneas del mismo"
+				"\n\t5) Nombre del archivo de salida para los "
+					"valores estimados por la red"
+				"\n\t6) Nombre del archivo de salida para el "
+					"error de aprendizaje (OPCIONAL)"
+				"\n\t7) Nombre del archivo con las funciones "
+					"membresía finales (OPCIONAL)\n\n");
 		exit (EXIT_FAILURE);
-		
-	} else {
-		*y = get_sample_values (argc, argv, nlines);
-		/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
-		 * Además actualizó los valores de LB y UB */
-		
-		*fout = fopen (argv[3], "w");
-		if (*fout == NULL) {
-			err (1, "No se pudo crear archivo de salida\n");
-		}
-		
-		if (argc == 5) {
-			*ferr = fopen (argv[4], "w");
-			if (*ferr == NULL) {
-				warn ("Archivo de errores de aprendizaje "
-					"corrupto: '%s'\nNo se guardará registro"
-					" del nivel de error\n", argv[4]);
-			}
+	}
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	T = (size_t) strtol (argv[1], &error, 10);
+	if (error[0] != '\0') {
+		fprintf (stderr, "\aEl primer argumento debe ser "
+				 " el # de ramas de la red\n");
+		exit (EXIT_FAILURE);
+	}
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	
+	N = (size_t) strtol (argv[2], &error, 10);
+	if (error[0] != '\0') {
+		fprintf (stderr, "\aEl segundo argumento debe ser "
+				 " la dimensión de entrada de la red\n");
+		exit (EXIT_FAILURE);
+	}
+	
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	*y = get_sample_values (argc, argv, nlines);
+	/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
+		* Además actualizó los valores de LB y UB */
+	
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	*fout = fopen (argv[5], "w");
+	if (*fout == NULL) {
+		err (1, "No se pudo crear archivo de salida\n");
+	}
+	
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	if (argc >= 7) {
+		*ferr = fopen (argv[6], "w");
+		if (*ferr == NULL) {
+			warn ("Archivo de errores de aprendizaje "
+				"corrupto: '%s'\nNo se guardará registro"
+				" del nivel de error\n", argv[4]);
 		}
 	}
 	
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	if (argc >= 8) {
+		*f_mf = fopen (argv[7], "w");
+		if (*ferr == NULL) {
+			warn ("'%s': imposible abrir archivo.\nNo se "
+			"graficarán las funciones membresía resultantes"
+			" tras el aprendizaje\n", argv[5]);
+		}
+	}
+	
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	return;
 }
 
@@ -183,19 +221,45 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 	mf = (MF_t *) malloc (t * n * sizeof (MF_t));
 	assert (mf != NULL);
 	
-	#pragma omp parallel for default(shared) private(j,i,c)
 	for (j=0 ; j < n ; j++) {
 		c = LB + (1.0 + 2.0 * j) * a;
 		for (i=0 ; i < t ; i++) {
 			/* Todas las MF serán campanas */
 			mf[i*n+j].k = bell;
-			mf[i*n+j].p[0] = a;
-			mf[i*n+j].p[1] = b;
-			mf[i*n+j].p[2] = c;
+			mf[i*n+j].p[0] = a * ran();
+			mf[i*n+j].p[1] = b + ran();
+			mf[i*n+j].p[2] = c + 0.05 * ((double) i);
 		}
 	}
 	
 	return mf;
+}
+
+
+
+static void
+mf_print (anfis_t net, FILE *f_mf)
+{
+	int i = 0, j = 0;
+	MF_t mf;
+	
+	/* Si el archivo no es un archivo no escribimos nada */
+	if (fileno (f_mf) < 0) {
+		return;
+	}
+	
+	fprintf (f_mf, "%zu\n", T);
+	fprintf (f_mf, "%zu\n", N);
+	
+	for (i=0 ; i < T ; i++) {
+		for (j=0 ; j < N ; j++) {
+			assert (ANFIS_OK == anfis_get_MF (net, i, j, &mf));
+			fprintf (f_mf, "%f\t%f\t%f\n",
+				 mf.p[0], mf.p[1], mf.p[2]);
+		}
+	}
+	
+	return;
 }
 
 
@@ -340,18 +404,23 @@ int main (int argc, char **argv)
 	int i = 0, error = 0, p = 0;
 	size_t nlines = 0;
 	FILE *fout = NULL,
-	     *ferr = NULL;
+	     *ferr = NULL,
+	     *f_mf = NULL;
 	double *y = NULL;
 	t_sample *sample = NULL;
 	MF_t *mfs = NULL;
 	anfis_t net = NULL;
 	
+	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	/* Obtenemos los datos */
-	parse_input (argc, argv, &y, &nlines, &fout, &ferr);
+	parse_input (argc, argv, &y, &nlines, &fout, &ferr, &f_mf);
 	
+	printf ("\n\nT = %zu\tN = %zu\n", T, N);
 	/* Creamos la red */
 	mfs = gen_mfs (N, T, LB, UB);
 	net = anfis_create (N, T, mfs);
+	printf ("Red ANFIS antes del aprendizaje:\n\n");
+	anfis_print (net);
 	
 	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
 	 * y entrenamos la red con él */
@@ -364,11 +433,16 @@ int main (int argc, char **argv)
 		assert (error == ANFIS_OK);
 	}
 	
+	printf ("\nRed ANFIS después del aprendizaje:\n\n");
+	anfis_print (net);
+	
 	/* Alimentamos la otra mitad de los datos a la red para analizar
 	 * qué tan bueno fue su aprendizaje */
 	sample_gen (sample, N, p, JUMP, &(y[p-(N+1)*JUMP]));
 	exercise_network (net, sample, p, p, fout, ferr);
 	
+	/* Imprimimos las funciones membresía resultantes */
+	mf_print (net, f_mf);
 	
 	/* Limpiando memoria */
 	net = anfis_destroy (net);
@@ -379,7 +453,9 @@ int main (int argc, char **argv)
 	if (ferr != NULL) {
 		fclose (ferr); ferr = NULL;
 	}
-	
+	if (f_mf != NULL) {
+		fclose (f_mf); f_mf = NULL;
+	}
 	
 	return EXIT_SUCCESS;
 }
