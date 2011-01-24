@@ -1,0 +1,9 @@
+p_2.o: p_2.c ../../common/rdg.h ../../common/gen_continuas.h \
+ ../../common/rdg.h ../../common/monte_carlo.h \
+ ../../common/gen_continuas.h
+gen_continuas.o: ../../common/gen_continuas.c \
+ ../../common/gen_continuas.h ../../common/rdg.h
+monte_carlo.o: ../../common/monte_carlo.c ../../common/monte_carlo.h \
+ ../../common/gen_continuas.h ../../common/rdg.h
+mzran13.o: ../../common/mzran13.c ../../common/rdg.h
+ran2.o: ../../common/ran2.c ../../common/rdg.h
