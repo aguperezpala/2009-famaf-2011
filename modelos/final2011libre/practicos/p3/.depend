@@ -3,6 +3,10 @@ p_2.o: p_2.c ../../common/rdg.h ../../common/gen_continuas.h \
  ../../common/gen_continuas.h
 p_3.o: p_3.c ../../common/rdg.h ../../common/gen_continuas.h \
  ../../common/rdg.h
+p_4.o: p_4.c ../../common/rdg.h ../../common/gen_continuas.h \
+ ../../common/rdg.h
+p_5.o: p_5.c ../../common/rdg.h ../../common/gen_continuas.h \
+ ../../common/rdg.h
 gen_continuas.o: ../../common/gen_continuas.c \
  ../../common/gen_continuas.h ../../common/rdg.h
 monte_carlo.o: ../../common/monte_carlo.c ../../common/monte_carlo.h \

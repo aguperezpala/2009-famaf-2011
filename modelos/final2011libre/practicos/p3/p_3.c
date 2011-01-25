@@ -17,7 +17,7 @@
 */
 
 
-int main(void)
+int main3(void)
 {
 	double result = 0, total = 0;
 	int counter = 0, iter = 1000000, i = 0;
