@@ -42,7 +42,7 @@ double monte_carlo_0toInf(int k, FUNC_PTR g)
 	
 	for(i = 0; i < k; i++) {
 		U = rg_gen_uni_cont(0.0,1.0);
-		result += g((1/U)-1) * pow(U,2);
+		result += g((1.0/U)-1.0) / pow(U,2.0);
 	}
 	
 	return (result / (double)k);	
