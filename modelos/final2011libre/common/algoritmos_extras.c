@@ -56,4 +56,11 @@ double calc_prom(int n, int k, FUNC_PROM_PTR a)
 	return result;
 }
 
+/******************************************************************************/
+int disc_ge_bin_negativa(int r, double p)
+{
+	
+}
+
+
 

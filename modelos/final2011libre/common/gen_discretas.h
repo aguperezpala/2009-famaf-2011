@@ -30,6 +30,19 @@ int disc_transf_inversa(double *pi);
 /* Generacion de una v.a uniforme discreta entre [a,b] */
 int disc_gen_uniforme(int a, int b);
 
+/* Generacion de una Geometrica: Cuenta el numero de fracasos hasta el primer
+ * exito con probabilidad p. P(X = j) = pow(j-1, 1-p) * p.
+ */
+int disc_gen_geometrica(double p);
 
+
+/* Generacion X~Bn(r,p) Binomial Negativa: cuenta la cantidad de ensayos hasta
+ * conseguir r exitos. X = X1 + X2 + ... + Xn, con Xi ~ Geometricas.
+ * P(X = i) = Conv(i-1, r-1) * pow(1-p, i-r) * pow(p,r)
+ */
+int disc_gen_bin_negativa(int r, double p);
+
+/* Generacion Poisson: P(X=x) = exp(-lambda) * pow(lambda, x) / fact(x);
+int disc_gen_poisson(double lambda);
 
 #endif
