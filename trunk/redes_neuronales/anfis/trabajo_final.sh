@@ -16,9 +16,10 @@ LERR_DATA=anfis_err.dat
 LERR_PLOT=anfis_err.png
 
 # Funciones de membresía tras el aprendizaje
-PLOT_MF=final_mf.gp
+PLOT_MF=final_mf_
 MF_DATA=anfis_mf.dat
 MF_PLOT=anfis_mf
+
 
 
 echo "________________________________________________________________________________"
@@ -70,39 +71,55 @@ eog $LERR_PLOT &
 echo -e "Datos en $LERR_DATA\nGráfico en $LERR_PLOT"
 
 
-
-# TODO	Terminar el ciclo siguiente, donde se deben leer del archivo $MF_DATA
-#	los parámetros de cada función de membresía (luego del aprendizaje),
-#	para luego graficar las funciones usando gnuplot.
-#
-#	Idealmente se graficarán superpuestas las MF de una misma rama,
-#	para evidenciar si/como cubren todo el espacio de entrada
 echo -e "\nGraficando las funciones membresía resultantes del aprendizaje"
 cat $MF_DATA | gawk '
 BEGIN {
 	T = '$T'
 	N = '$N'
-	mf_params[""] = ""
+	plot = "'$PLOT_MF'"
+	mf[""] = ""
 }
 {
-	# Guardamos los parámetros del archivo en nuestro arreglo interno
-	if (NF == 3) {
-		mf_params[$1, $2] = $3 " " $4 " " $5
+	# Guardamos las funciones del archivo en nuestro arreglo interno
+	
+	if (NF == 5) {
+		a = $3 ; b = $4 ; c = $5;
+		mf[$1, $2] = "1 / (1 + (((x - " c ") / " a ") ** 2 ** " b ") )"
 	} else {
 		print "Bad # of fields in file line", FNR, ":", NF
 	}
 }
 END {
+	# Por cada rama generamos un script de gnuplot para impresión de las MF
+	
 	for (i=0 ; i < T ; i++) {
-		'
-		# TODO  Para cada rama generar un script de gnuplot que grafique
-		#	todas sus funciones membresía en forma superpuesta,
-		#	y ejecutarlo para generar ese gráfico
-		'
+		
+		fout = "branch_" i ".gp"
+		
+		print "set title \"Membership functions of branch # " i   > fout
+		print "set out \"" plot i ".png\""	   >> fout
+		print "set term png size 1000, 400 nocrop" >> fout
+		
+		for (j=0 ; j < N ; j++) {
+			print "mf_" j "(x) = " mf[i, j]    >> fout
+		}
+		
+		printf "plot"				   >> fout
+		
+		for (j=0 ; j < N-1 ; j++) {
+			printf "\tmf_%d(x) with lines lt %d, \\\n", j, j+1 >> fout
+		}
+		printf "\tmf_%d(x) with lines lt %d\n", N-1, N		 >> fout
 	}
 }
 '
-
+# Por último ejecutamos todos estos scripts de gnuplot para generar los gráficos
+for ((i=0 ; i < $T ; i++))
+do
+	plotter="branch_"$i".gp"
+	gnuplot $plotter && \
+	rm $plotter
+done
 
 make clean >> $LOG 2>&1
 echo -e "\nRegistro de las actividades en $LOG\nFin del programa\n"
