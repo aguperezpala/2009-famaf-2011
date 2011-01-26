@@ -180,7 +180,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 7) {
 		*ferr = fopen (argv[6], "w");
-		if (fileno (ferr) < 0) {
+		if (fileno (*ferr) < 0) {
 			warn ("Archivo de errores de aprendizaje "
 				"corrupto: '%s'\nNo se guardará registro"
 				" del nivel de error\n", argv[4]);
@@ -189,7 +189,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 8) {
 		*f_mf = fopen (argv[7], "w");
-		if (fileno (f_mf) < 0) {
+		if (fileno (*f_mf) < 0) {
 			warn ("'%s': imposible abrir archivo.\nNo se "
 			"graficarán las funciones membresía resultantes"
 			" tras el aprendizaje\n", argv[5]);
@@ -261,16 +261,17 @@ mf_print (anfis_t net, FILE *f_mf)
 		}
 	}
 	/* Formato de impresión del archivo de salida:
-	 * MF[0][0].p[0]       MF[0][0].p[1]       MF[0][0].p[2]
-	 * MF[0][1].p[0]       MF[0][1].p[1]       MF[0][1].p[2]
+	 * 0 0      MF[0][0].p[0]       MF[0][0].p[1]       MF[0][0].p[2]
+	 * 0 1      MF[0][1].p[0]       MF[0][1].p[1]       MF[0][1].p[2]
 	 * ...                 ...                 ...
-	 * MF[0][N-1].p[0]     MF[0][N-1].p[1]     MF[0][N-1].p[2]
-	 * MF[1][0].p[0]       MF[1][0].p[1]       MF[1][0].p[2]
+	 * 0 N-1    MF[0][N-1].p[0]     MF[0][N-1].p[1]     MF[0][N-1].p[2]
+	 * 1 0      MF[1][0].p[0]       MF[1][0].p[1]       MF[1][0].p[2]
 	 * ...                 ...                 ...
-	 * MF[T-1][0].p[0]     MF[T-1][0].p[1]     MF[T-1][0].p[2]
-	 * MF[T-1][1].p[0]     MF[T-1][1].p[1]     MF[T-1][1].p[2]
+	 * 1 N-1    MF[1][N-1].p[0]     MF[1][N-1].p[1]     MF[1][N-1].p[2]
 	 * ...                 ...                 ...
-	 * MF[T-1][N-1].p[0]   MF[T-1][N-1].p[1]   MF[T-1][N-1].p[2]
+	 * T-1 0    MF[T-1][0].p[0]     MF[T-1][0].p[1]     MF[T-1][0].p[2]
+	 * ...                 ...                 ...
+	 * T-1 N-1  MF[T-1][N-1].p[0]   MF[T-1][N-1].p[1]   MF[T-1][N-1].p[2]
 	 */
 	
 	return;
@@ -424,7 +425,6 @@ int main (int argc, char **argv)
 	MF_t *mfs = NULL;
 	anfis_t net = NULL;
 	
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	/* Obtenemos los datos */
 	parse_input (argc, argv, &y, &nlines, &fout, &ferr, &f_mf);
 	

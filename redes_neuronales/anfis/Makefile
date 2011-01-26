@@ -51,6 +51,9 @@ $(TARGET): mzran13.o anfis.o main.o
 clean:
 	rm -f .depend $(GTEST) $(OTEST) $(SAMPLE) $(TARGET) *.o *~
 
+deep_clean:
+	make clean && rm -f anfis.log *.dat *.png
+
 .depend: *.[ch]
 	$(CC) -MM $(SOURCES) >.depend
 
