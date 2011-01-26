@@ -41,7 +41,8 @@ double  LB = 0.0, /* Límite inferior */
 /* # de ejemplos de entre los datos muestrales que se usarán para aprendizaje */
 #define  NTRAIN  500
 
-
+/* para pretty printing de los mf finales */
+#define  width   15
 
 #define  ran()  (((double) mzran13()) / ((double) ULONG_MAX))
 
@@ -153,14 +154,13 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 					"membresía finales (OPCIONAL)\n\n");
 		exit (EXIT_FAILURE);
 	}
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
+	
 	T = (size_t) strtol (argv[1], &error, 10);
 	if (error[0] != '\0') {
 		fprintf (stderr, "\aEl primer argumento debe ser "
 				 " el # de ramas de la red\n");
 		exit (EXIT_FAILURE);
 	}
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	
 	N = (size_t) strtol (argv[2], &error, 10);
 	if (error[0] != '\0') {
@@ -169,38 +169,33 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 		exit (EXIT_FAILURE);
 	}
 	
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	*y = get_sample_values (argc, argv, nlines);
 	/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
 		* Además actualizó los valores de LB y UB */
 	
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	*fout = fopen (argv[5], "w");
 	if (*fout == NULL) {
 		err (1, "No se pudo crear archivo de salida\n");
 	}
 	
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	if (argc >= 7) {
 		*ferr = fopen (argv[6], "w");
-		if (*ferr == NULL) {
+		if (fileno (ferr) < 0) {
 			warn ("Archivo de errores de aprendizaje "
 				"corrupto: '%s'\nNo se guardará registro"
 				" del nivel de error\n", argv[4]);
 		}
 	}
 	
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	if (argc >= 8) {
 		*f_mf = fopen (argv[7], "w");
-		if (*ferr == NULL) {
+		if (fileno (f_mf) < 0) {
 			warn ("'%s': imposible abrir archivo.\nNo se "
 			"graficarán las funciones membresía resultantes"
 			" tras el aprendizaje\n", argv[5]);
 		}
 	}
 	
-	printf ("AAAAAAAAAAAAAAAAAAAAAAAAA : %d\n", __LINE__);
 	return;
 }
 
@@ -208,6 +203,9 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 
 /* Construye un conjunto de t*n funciones membresía
  * donde el rango de valores de entrada a cubrir es 'UB'-'LB'
+ *
+ * Dicho rango es cubierto casi por completo en cada una de las 't' ramas
+ * Sin embargo cada rama lo cubre de manera diferente a las demás.
  */
 static MF_t *
 gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
@@ -237,6 +235,10 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 
 
 
+/* Si el archivo de salida para las funciones membresía finales fue especificado
+ * esta función imprime en él los parámetros de todas las MFs de la red
+ * que fueron modificadas con los ciclos de entrenamiento
+ */
 static void
 mf_print (anfis_t net, FILE *f_mf)
 {
@@ -248,24 +250,35 @@ mf_print (anfis_t net, FILE *f_mf)
 		return;
 	}
 	
-	fprintf (f_mf, "%zu\n", T);
-	fprintf (f_mf, "%zu\n", N);
-	
 	for (i=0 ; i < T ; i++) {
 		for (j=0 ; j < N ; j++) {
 			assert (ANFIS_OK == anfis_get_MF (net, i, j, &mf));
-			fprintf (f_mf, "%f\t%f\t%f\n",
-				 mf.p[0], mf.p[1], mf.p[2]);
+			fprintf ( f_mf, "%d%*d\t%-*.4f%-*.4f%-*.4f\n",
+				  i, width/2, j,
+				  width, mf.p[0],
+				  width, mf.p[1],
+				  width, mf.p[2]  );
 		}
 	}
+	/* Formato de impresión del archivo de salida:
+	 * MF[0][0].p[0]       MF[0][0].p[1]       MF[0][0].p[2]
+	 * MF[0][1].p[0]       MF[0][1].p[1]       MF[0][1].p[2]
+	 * ...                 ...                 ...
+	 * MF[0][N-1].p[0]     MF[0][N-1].p[1]     MF[0][N-1].p[2]
+	 * MF[1][0].p[0]       MF[1][0].p[1]       MF[1][0].p[2]
+	 * ...                 ...                 ...
+	 * MF[T-1][0].p[0]     MF[T-1][0].p[1]     MF[T-1][0].p[2]
+	 * MF[T-1][1].p[0]     MF[T-1][1].p[1]     MF[T-1][1].p[2]
+	 * ...                 ...                 ...
+	 * MF[T-1][N-1].p[0]   MF[T-1][N-1].p[1]   MF[T-1][N-1].p[2]
+	 */
 	
 	return;
 }
 
 
 
-
-/* Crea 'p' muestras con entradas de dimensión n */
+/* Crea 'p' muestras (vacías) con entradas de dimensión n */
 static t_sample *
 sample_alloc (size_t n, size_t p)
 {
