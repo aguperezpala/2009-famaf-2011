@@ -77,33 +77,31 @@ echo -e "Datos en $LERR_DATA\nGráfico en $LERR_PLOT"
 #
 #	Idealmente se graficarán superpuestas las MF de una misma rama,
 #	para evidenciar si/como cubren todo el espacio de entrada
-
 echo -e "\nGraficando las funciones membresía resultantes del aprendizaje"
-# El separador del ciclo será el fin de línea
-# BAKIFS=$IFS
-# IFS=$(echo -en "\n\b")
-# exec 3<&0
-# exec 0<"$MF_DATA"
-# 
-# i=0
-# while [ "$i" -lt "$T" ]
-# do
-# 	j=0
-# 	while [ "$j" -lt "$N" ]
-# 	do
-# 		"A$i"
-# 		let j=j+1
-# 	done
-# 	let i=i+1
-# done
-# 
-# while read -r line
-# do
-# 	# use $line variable to process line in processLine() function
-# 	processLine $line
-# done
-# exec 0<&3
-
+cat $MF_DATA | gawk '
+BEGIN {
+	T = '$T'
+	N = '$N'
+	mf_params[""] = ""
+}
+{
+	# Guardamos los parámetros del archivo en nuestro arreglo interno
+	if (NF == 3) {
+		mf_params[$1, $2] = $3 " " $4 " " $5
+	} else {
+		print "Bad # of fields in file line", FNR, ":", NF
+	}
+}
+END {
+	for (i=0 ; i < T ; i++) {
+		'
+		# TODO  Para cada rama generar un script de gnuplot que grafique
+		#	todas sus funciones membresía en forma superpuesta,
+		#	y ejecutarlo para generar ese gráfico
+		'
+	}
+}
+'
 
 
 make clean >> $LOG 2>&1
