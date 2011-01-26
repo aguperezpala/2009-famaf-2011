@@ -11,13 +11,11 @@ void permutar_equiprobable(int *arr, int size)
 	k = size-1;
 	while(k > 0){
 		p = disc_gen_uniforme(0,k);
-		/* swap */
 		aux = arr[k];
 		arr[k] = arr[p];
 		arr[p] = aux;
 		k--;
 	}
-	
 }
 
 /******************************************************************************/
@@ -40,7 +38,7 @@ void permutar_no_equiprobable(int *arr, int size)
 }
 
 /******************************************************************************/
-double calc_prom(int n, int k, FUNC_PROM_PTR a)
+double calc_prom(int n, int k, FUNC_PROM_PTR func)
 {
 	double result = 0.0;
 	double U = 0.0;
@@ -48,19 +46,10 @@ double calc_prom(int n, int k, FUNC_PROM_PTR a)
 	
 	for(i = 0; i < k; i++) {
 		U = disc_gen_uniforme(1,n);
-		result += a(U);
+		result += func(U);
 	}
-	
-	result = result/(double)k;
+	result = result*((double)k);
 	
 	return result;
 }
-
-/******************************************************************************/
-int disc_ge_bin_negativa(int r, double p)
-{
-	
-}
-
-
 

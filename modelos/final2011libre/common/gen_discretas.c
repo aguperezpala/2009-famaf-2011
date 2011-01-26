@@ -2,7 +2,7 @@
 
 
 /******************************************************************************/
-int disc_transf_inversa(double *pi, int size)
+int disc_transf_inversa(double *pi)
 {
 	double F = pi[0];
 	double U = rg_gen_uni_cont(0.0,1.0);
@@ -19,8 +19,8 @@ int disc_transf_inversa(double *pi, int size)
 /******************************************************************************/
 int disc_gen_uniforme(int a, int b)
 {
-	int result = floor(rg_gen_uni_cont(0.0,1.0)) * (b-a) + a;
-	
+	int result = floor(rg_gen_uni_cont(0.0,1.0) * (b-a)) + a;
+	return result;
 }
 
 /******************************************************************************/
@@ -66,3 +66,24 @@ int disc_gen_poisson(double lambda)
 	
 	return i;
 }
+
+/******************************************************************************/
+int disc_gen_binomial(int n, double p)
+{
+	double U = rg_gen_uni_cont(0.0,1.0);
+	int i = 0;
+	double c = (double)p/(double)(1-p);
+	double Pr = pow(1-p, n);
+	double F = Pr;
+	
+	while (U >= F) {
+		Pr = (((double) c*(n-i)) / (double)(i+1)) * Pr;
+		F += Pr;
+		i++;
+	}
+	return i;
+}
+
+
+
+
