@@ -5,6 +5,7 @@
 #include <err.h>
 #include <math.h>
 #include <limits.h>
+#include <float.h>
 #include <gsl/gsl_vector.h>
 
 #include "anfis.h"
@@ -13,11 +14,11 @@
 
 
 /* # de ramas de la red */
-size_t  T = 0;
+size_t  _T = 0;
 
 /* Dimensión de entrada de la red
  * Es decir, con cuantos puntos previos se tratará de adivinar el "siguiente" */
-size_t  N = 0;
+size_t  _N = 0;
 
 /* Salto entre puntos de entrada de la red
  * ie: 1 indica que los valores tomados serán uno, el siguiente, el siguiente
@@ -30,8 +31,8 @@ size_t  N = 0;
 #define  slope	2.0
 
 /* Rango de los valores de entrada */
-double  LB = 0.0, /* Límite inferior */
-	UB = 0.0; /* Límite superior */
+double  _LB = DBL_MAX,  /* Límite inferior */
+	_UB = -DBL_MAX; /* Límite superior */
 
 
 
@@ -108,10 +109,10 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 		} else {
 			/* Todo en orden, almacenamos el valor */
 			y[i] = f_t;
-			if (f_t < LB)
-				LB = floor (f_t);
-			if (f_t > UB)
-				UB = ceil (f_t);
+			if (f_t < _LB)
+				_LB = f_t;
+			if (f_t > _UB)
+				_UB = f_t;
 		}
 	}
 	
@@ -158,14 +159,14 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 		exit (EXIT_FAILURE);
 	}
 	
-	T = (size_t) strtol (argv[1], &error, 10);
+	_T = (size_t) strtol (argv[1], &error, 10);
 	if (error[0] != '\0') {
 		fprintf (stderr, "\aEl primer argumento debe ser "
 				 " el # de ramas de la red\n");
 		exit (EXIT_FAILURE);
 	}
 	
-	N = (size_t) strtol (argv[2], &error, 10);
+	_N = (size_t) strtol (argv[2], &error, 10);
 	if (error[0] != '\0') {
 		fprintf (stderr, "\aEl segundo argumento debe ser "
 				 " la dimensión de entrada de la red\n");
@@ -219,11 +220,11 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
  * Sin embargo cada rama lo cubre de manera diferente a las demás.
  */
 static MF_t *
-gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
+gen_mfs (size_t n, size_t t, double LB, double UB)
 {
 	int i = 0, j = 0;
 	MF_t *mf = NULL;
-	double	a = (UB-LB) / (2.0*n),
+	double	a = (UB-LB) / (0.75*n*_T),
 		b = slope,
 		c = 0.0;
 	
@@ -231,13 +232,18 @@ gen_mfs (size_t n, size_t t, size_t LB, size_t UB)
 	assert (mf != NULL);
 	
 	for (j=0 ; j < n ; j++) {
+		
 		c = LB + (1.0 + 2.0 * j) * a;
+		/* Corrección hacia atrás */
+		c -= (UB-LB)*(0.01*_T*_T);
+		
 		for (i=0 ; i < t ; i++) {
+			/* Corrección hacia adelante */
+			c += 0.035 * (i + 1.0);
 			/* Todas las MF serán campanas */
 			mf[i*n+j].k = bell;
-			mf[i*n+j].p[0] = a * (ran() + 0.5);
-			mf[i*n+j].p[1] = b + ran();
-			c = (ran() > 0.5) ? c+(ran()/2.0) : c-(ran()/2.0);
+			mf[i*n+j].p[0] = a;
+			mf[i*n+j].p[1] = b;
 			mf[i*n+j].p[2] = c;
 		}
 	}
@@ -262,8 +268,8 @@ mf_print (anfis_t net, FILE *fout)
 		return;
 	}
 	
-	for (i=0 ; i < T ; i++) {
-		for (j=0 ; j < N ; j++) {
+	for (i=0 ; i < _T ; i++) {
+		for (j=0 ; j < _N ; j++) {
 			assert (ANFIS_OK == anfis_get_MF (net, i, j, &mf));
 			fprintf ( fout, "%d%*d\t%-*.4f%-*.4f%-*.4f\n",
 				  i, width/2, j,
@@ -441,10 +447,10 @@ int main (int argc, char **argv)
 	/* Obtenemos los datos */
 	parse_input (argc, argv, &y, &nlines, &fout, &ferr, &f_imf, &f_fmf);
 	
-	printf ("\n\nT = %zu\tN = %zu\n", T, N);
+	printf ("\n\nT = %zu\tN = %zu\n", _T, _N);
 	/* Creamos la red */
-	mfs = gen_mfs (N, T, LB, UB);
-	net = anfis_create (N, T, mfs);
+	mfs = gen_mfs (_N, _T, _LB, _UB);
+	net = anfis_create (_N, _T, mfs);
 	printf ("Red ANFIS antes del aprendizaje:\n\n");
 	anfis_print (net);
 	
@@ -454,10 +460,10 @@ int main (int argc, char **argv)
 	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
 	 * y entrenamos la red con él */
 	p = nlines/2;
-	sample = sample_alloc (N, p);
+	sample = sample_alloc (_N, p);
 	
 	for (i=0 ; i < NITER ; i++) {
-		sample_gen (sample, N, p, JUMP, y);
+		sample_gen (sample, _N, p, JUMP, y);
 		error  = anfis_train (net, sample, p);
 		assert (error == ANFIS_OK);
 	}
@@ -467,7 +473,7 @@ int main (int argc, char **argv)
 	
 	/* Alimentamos la otra mitad de los datos a la red para analizar
 	 * qué tan bueno fue su aprendizaje */
-	sample_gen (sample, N, p, JUMP, &(y[p-(N+1)*JUMP]));
+	sample_gen (sample, _N, p, JUMP, &(y[p-(_N+1)*JUMP]));
 	exercise_network (net, sample, p, p, fout, ferr);
 	
 	/* Imprimimos las funciones membresía resultantes del aprendizaje */
