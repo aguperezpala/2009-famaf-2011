@@ -8,47 +8,31 @@
 #include <time.h>
 #include <math.h>
 
-#include "rdg.h"
-#include "gen_continuas.h"
-#include "monte_carlo.h"
+#define ALFA 0.5
+#define NUM_ITER	10000
 
-
-static double func_a(float x) {return pow (1.0-x*x, 1.5 );}
-
-static double func_b(float x) {return x*pow(1+x*x,-2);}
-
-static double func_c(float x) {return exp(-x*x);}
-
-static double func_d(float x1, float x2)
-{
-	return (exp(pow(x1+x2, 2)));
+double probX1(int i){	
+	return pow(0.5, i);
 }
 
+double probX2(int i){	
+	return (0.5*pow(2./3.,i));
+}
 
-int main6(void)
-{
-	int iter = 100;
-	double result = 0;
+int main(int argc, char *argv[]){
+	int i = 0;
+	double esperanza = 0.;
+	double aux = 0;
 	
 	
-	while (iter <= 1000000) {
-		printf("\n\nIter: %d\n", iter);
-		
-		result = monte_carlo_normal(iter, func_a);
-		printf("a) %G\n", result);
-		
-		result = monte_carlo_0toInf(iter, func_b);
-		printf("b) %G\n", result);
-		
-		result = 2.0 * monte_carlo_0toInf(iter, func_c);
-		printf("c) %G\n", result);
-		
-		result = monte_carlo_multiple(iter, func_d);
-		printf("d) %G\n", result);
-		
-		iter *= 10;
-	}
+	for(i = 0; i < NUM_ITER; i++){
+		aux = disc_metodo_composicion(probX1, probX2, ALFA, 1);
+		esperanza += aux;
+		printf("aux: %f\n", aux);
+	}	
 	
+	esperanza /= (double)NUM_ITER;
+	printf("La esperanza con el metodo de composicion es: %f\n", esperanza);
 	
 	return 0;
 }

@@ -70,7 +70,7 @@ int tirar_dados(void)
 }
 
 
-int main(void)
+int main3(void)
 {
 	int iter = 0;
 	int lanzamientos = 0;

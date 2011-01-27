@@ -15,6 +15,37 @@ int disc_transf_inversa(double *pi)
 	
 	return i;
 }
+/******************************************************************************/
+int disc_trasnf_inversa_func2(FUNC_TI_PTR funcDistr, int j)
+{
+	double F = funcDistr(j);
+	double U = rg_gen_uni_cont(0.0,1.0);
+	int i = j;
+	
+	while(F <= U){
+		
+		i++;
+		F += funcDistr(i);
+	}
+	
+	return i;
+	
+}
+int disc_trasnf_inversa_func(FUNC_TI_PTR funcDistr)
+{
+	double F = funcDistr(0);
+	double U = rg_gen_uni_cont(0.0,1.0);
+	int i = 0;
+	
+	while(F <= U){
+	
+		i++;
+		F += funcDistr(i);
+	}
+	
+	return i;
+	
+}
 
 /******************************************************************************/
 int disc_gen_uniforme(int a, int b)
@@ -83,6 +114,56 @@ int disc_gen_binomial(int n, double p)
 	}
 	return i;
 }
+
+
+
+/*!*****************************************************************************/
+
+
+
+/*****************************************************************************/
+int disc_aceptacion_rechazo(double (*funcDistr_Pj)(int), double (*funcDistrRechazo_Qj)(int,int), 
+			    double cota, int k)
+{
+	double U1 = 0., U2 = 0., Y = 0.;
+		
+	do {
+		U1 = rg_gen_uni_cont(0.0,1.0);
+		Y = disc_gen_uniforme(0, k+2);	/* generamos entre 0 y k+1 (es abierto el intervalo) */
+		U2 = rg_gen_uni_cont(0.0,1.0);
+	} while(U2 >= ((funcDistr_Pj)(Y)/(cota * (funcDistrRechazo_Qj)(Y,k))));
+	
+	return Y;
+}
+
+
+
+/*!*****************************************************************************/
+
+/*****************************************************************************/
+int disc_metodo_composicion(double (*P1j)(int), double (*P2j)(int), double alfa, int j)
+{
+	double U = rg_gen_uni_cont(0.0,1.0);
+	
+	if (U < alfa){
+		return disc_trasnf_inversa_func2(P1j,j); 
+	} else {
+		return disc_trasnf_inversa_func2(P2j,j);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
