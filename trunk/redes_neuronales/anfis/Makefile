@@ -47,10 +47,11 @@ $(TARGET): mzran13.o anfis.o main.o
 	echo "\n\nPara ejecutar el aprendizaje ANFIS de Mackey-Glass " \
 		"ingrese \"./$(TARGET)\"\n"
 
-
+# Erase execution & auxiliary files. Leaves results untouched.
 clean:
 	rm -f .depend $(GTEST) $(OTEST) $(SAMPLE) $(TARGET) *.o *~
 
+# Erase execution, auxiliary & results files
 deep_clean:
 	make clean && rm -f anfis.log *.dat *.png
 
