@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Parámetros para la red ANFIS:
+# Número de ramas
+T=2
+# Dimensión de la entrada
+N=4
+
+
 LOG=anfis.log
 MAIN=./anfis_mg
 
@@ -35,9 +42,6 @@ yinit=1.2
 # Asíntotas horizontales de la eq.dif.
 LB=-0.5 # Lower bound
 UB=3.0  # Upper bound
-# Parámetros para la red ANFIS
-T=3
-N=4
 
 
 echo -e "\nGenerando valores muestrales de la serie Mackey-Glass"
@@ -82,7 +86,6 @@ export ORIGINAL=$MG_DATA
 export LEARNING=$MG_ANFIS
 export PLOT=$MG_PLOT
 gnuplot $PLOT_MG
-eog $MG_PLOT &
 echo -e "\nDatos originales de la serie de Mackey-Glass en $MG_DATA"
 echo -e "Datos del aprendizaje de la red en $MG_ANFIS\nGráfico en $MG_PLOT"
 
@@ -113,7 +116,6 @@ export XHIGH=$2
 export SAMPLE=$LERR_DATA
 export PLOT=$LERR_PLOT
 gnuplot $PLOT_LERR
-eog $LERR_PLOT &
 echo -e "Datos en $LERR_DATA\nGráfico en $LERR_PLOT"
 
 
@@ -268,6 +270,7 @@ rm $TMP_FILE
 
 
 
+eog ./ &
 make clean >> $LOG 2>&1
 echo -e "\nRegistro de las actividades en $LOG\nFin del programa\n"
 
