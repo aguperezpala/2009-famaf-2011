@@ -17,18 +17,17 @@
 size_t  _T = 0;
 
 /* Dimensión de entrada de la red
- * Es decir, con cuantos puntos previos se tratará de adivinar el "siguiente" */
+ * O sea, con cuantos puntos "previos" se tratará de adivinar "el siguiente" */
 size_t  _N = 0;
 
 /* Salto entre puntos de entrada de la red
  * ie: 1 indica que los valores tomados serán uno, el siguiente, el siguiente
- *     M indica que se toma uno, se saltean M-1, se toma el M+1-ésimo...
- *     etc.
+ *     M indica que se toma uno, se saltean M-1, se toma el M+1-ésimo..., etc
  */
 #define  JUMP	6
 
 /* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  slope	2.0
+#define  slope	3.0
 
 /* Rango de los valores de entrada */
 double  _LB = DBL_MAX,  /* Límite inferior */
@@ -38,9 +37,6 @@ double  _LB = DBL_MAX,  /* Límite inferior */
 
 /* # de veces que se presentará la muestra a la red para aprendizaje */
 #define  NITER   1
-
-/* # de ejemplos de entre los datos muestrales que se usarán para aprendizaje */
-#define  NTRAIN  500
 
 /* para pretty printing de los mf finales */
 #define  width   15
@@ -81,7 +77,7 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 	
 	/* Accediendo a los datos */
 	file = fopen (nomfile,"r");
-	if (file == NULL) {
+	if (file == NULL || ferror(file)) {
 		err (1, "\aArchivo de datos corrupto: '%s'\n", nomfile);
 	} else {
 		y = (double *) malloc (*nlines * sizeof (double));
@@ -153,9 +149,9 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 				"\n\t6) Nombre del archivo de salida para el "
 					"error de aprendizaje (OPCIONAL)"
 				"\n\t7) Nombre del archivo para las funciones "
-					"membresía iniciales (OPCIONAL)\n\n"
+					"membresía iniciales (OPCIONAL)"
 				"\n\t8) Nombre del archivo para las funciones "
-					"membresía finales (OPCIONAL)\n\n");
+					"membresía finales   (OPCIONAL)\n\n");
 		exit (EXIT_FAILURE);
 	}
 	
@@ -175,16 +171,16 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	*y = get_sample_values (argc, argv, nlines);
 	/* Si esta rutina regresa es porque tuvo éxito rellenando 'y'
-		* Además actualizó los valores de LB y UB */
+	 * Además actualizó los valores de LB y UB */
 	
 	*fout = fopen (argv[5], "w");
-	if (*fout == NULL) {
+	if (*fout == NULL || ferror (*fout)) {
 		err (1, "No se pudo crear archivo de salida\n");
 	}
 	
 	if (argc >= 7) {
 		*ferr = fopen (argv[6], "w");
-		if (fileno (*ferr) < 0) {
+		if (*ferr == NULL || ferror (*ferr)) {
 			warn ("Archivo de errores de aprendizaje "
 				"corrupto: '%s'\nNo se guardará registro"
 				" del nivel de error\n", argv[4]);
@@ -193,7 +189,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 8) {
 		*f_imf = fopen (argv[7], "w");
-		if (fileno (*f_imf) < 0) {
+		if (*f_imf == NULL || ferror (*f_imf)) {
 			warn ("'%s': imposible abrir archivo.\nNo se graficarán"
 			      " las funciones membresía iniciales\n", argv[5]);
 		}
@@ -201,7 +197,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 9) {
 		*f_fmf = fopen (argv[8], "w");
-		if (fileno (*f_fmf) < 0) {
+		if (*f_fmf == NULL || ferror (*f_fmf)) {
 			warn ("'%s': imposible abrir archivo.\nNo se "
 				"graficarán las funciones membresía resultantes"
 				" tras el aprendizaje\n", argv[5]);
@@ -224,30 +220,40 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 {
 	int i = 0, j = 0;
 	MF_t *mf = NULL;
-	double	a = (UB-LB) / (0.75*n*_T),
+	double	a = (UB-LB) / (2.0*t),
 		b = slope,
 		c = 0.0;
 	
 	mf = (MF_t *) malloc (t * n * sizeof (MF_t));
 	assert (mf != NULL);
 	
-	for (j=0 ; j < n ; j++) {
-		
-		c = LB + (1.0 + 2.0 * j) * a;
-		/* Corrección hacia atrás */
-		c -= (UB-LB)*(0.01*_T*_T);
-		
-		for (i=0 ; i < t ; i++) {
-			/* Corrección hacia adelante */
-			c += 0.035 * (i + 1.0);
-			/* Todas las MF serán campanas */
+	for (i=0 ; i < t ; i++) {
+		c = LB + (1.0 + 2.0 * i) * a;
+		for (j=0 ; j < n ; j++) {
 			mf[i*n+j].k = bell;
 			mf[i*n+j].p[0] = a;
 			mf[i*n+j].p[1] = b;
 			mf[i*n+j].p[2] = c;
 		}
 	}
-	
+/*	
+	for (j=0 ; j < n ; j++) {
+		
+		c = LB + (1.0 + 2.0 * j) * a;
+		* Corrección hacia atrás *
+		c -= (UB-LB)*(0.01*_T*_T);
+		
+		for (i=0 ; i < t ; i++) {
+			* Corrección hacia adelante *
+			c += 0.035 * (i + 1.0);
+			* Todas las MF serán campanas *
+			mf[i*n+j].k = bell;
+			mf[i*n+j].p[0] = a;
+			mf[i*n+j].p[1] = b;
+			mf[i*n+j].p[2] = c;
+		}
+	}
+*/	
 	return mf;
 }
 
@@ -263,8 +269,8 @@ mf_print (anfis_t net, FILE *fout)
 	int i = 0, j = 0;
 	MF_t mf;
 	
-	/* Si el archivo no es un archivo no escribimos nada */
-	if (fileno (fout) < 0) {
+	/* Si el archivo está cagado no escribimos nada */
+	if (fout == NULL || ferror (fout)) {
 		return;
 	}
 	
@@ -419,7 +425,7 @@ exercise_network (anfis_t net, t_sample *sample, size_t p, double offset,
 	for (t=0 ; t < p ; t++) {
 		out = anfis_eval (net, sample[t].in);
 		fprintf (fout, "%f\t%f\n", t + offset, out);
-		if (ferr != NULL) {
+		if (ferr != NULL && !ferror (ferr)) {
 			fprintf (ferr, "%.1f\t%f\n",
 				 t + offset, sample[t].out - out);
 		}
@@ -485,13 +491,13 @@ int main (int argc, char **argv)
 	sample = sample_free (sample, p);
 	free (y);	y = NULL;
 	fclose (fout);	fout = NULL;
-	if (fileno (ferr) >= 0) {
+	if (ferr != NULL && fileno (ferr) >= 0) {
 		fclose (ferr); ferr = NULL;
 	}
-	if (fileno (f_imf) >= 0) {
+	if (f_imf != NULL && fileno (f_imf) >= 0) {
 		fclose (f_imf); f_imf = NULL;
 	}
-	if (fileno (f_fmf) >= 0) {
+	if (f_fmf != NULL && fileno (f_fmf) >= 0) {
 		fclose (f_fmf); f_fmf = NULL;
 	}
 	

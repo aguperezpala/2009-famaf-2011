@@ -65,16 +65,16 @@ typedef struct _anfis_s *anfis_t;
 
 
 anfis_t
-anfis_create (unsigned long n, unsigned long t, const MF_t *a);
+anfis_create (size_t n, size_t t, const MF_t *mf);
 
 /* Creates an instance of the ADT
  *
  * PARAMETERS:	n ---> input dimension
- *		t ---> # of branches the network will have
- *		a ---> membership functions. This must be a vector
- *			of length [t]x[n], simulating a [t][n] matrix
+ *		t ---> # of membership functions for each input element
+ *		mf --> membership functions (must be a n*t vector
+ *			representing a n-row,t-column matrix)
  *
- * PRE: a != NULL
+ * PRE: mf != NULL
  * POS: result != NULL
  */
 
@@ -102,26 +102,16 @@ anfis_print (anfis_t net);
 
 
 
-void
-anfis_print_branch (anfis_t net, unsigned int i);
-
-/* Prints into STDOUT the internal state of the network's i-th branch
- * PRE: net != NULL
- *	i < network # of branches
- */
-
-
-
 int
-anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF_t *mf);
+anfis_get_MF (anfis_t net, size_t i, size_t j, MF_t *mf);
 
-/* Copies into 'mf' the network's i-th row membership function,
- * which evaluates the j-th input component (aka: MF[i][j])
+/* Copies into 'mf' the network's j-th order membership function,
+ * which evaluates the i-th input component (aka: MF[i][j])
  *
  * PRE: net != NULL
  *	mf  != NULL
- *	i < network # of branches
- *	j < network input dimension
+ *	i < network's n_value (input dimension)
+ *	j < network's t_value
  *
  * POS: result == ANFIS_OK   &&   MF[i][j] data has been copied inside 'mf'
  *	or
@@ -131,16 +121,16 @@ anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF_t *mf);
 
 
 int
-anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF_t a);
+anfis_set_MF (anfis_t net, size_t i, size_t j, MF_t mf);
 
-/* Sets 'a' as the new network membership function in the i-th row,
- * which evaluates the j-th input component (aka: MF[i][j])
+/* Sets 'mf' as the new network j-th order membership function,
+ * which evaluates the i-th input component (aka: MF[i][j])
  *
  * PRE:	net != NULL
- *	i < network # of branches
- *	j < network input dimension
+ *	i < network's n_value (input dimension)
+ *	j < network's t_value
  *
- * POS: result == ANFIS_OK   &&   MF[i][j] has been replaced with 'a'
+ * POS: result == ANFIS_OK   &&   MF[i][j] has been replaced with 'mf'
  *	or
  *	result == ANFIS_ERR
  */
@@ -148,14 +138,14 @@ anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF_t a);
 
 
 double *
-anfis_get_P (anfis_t net, unsigned int i);
+anfis_get_P (anfis_t net, size_t i);
 
 /* Returns a copy of the network's i-th consequent parameters
  * Caller owns the memory generated for the returned vector,
  * which must be freed using glibc standard free() routine
  *
  * PRE:	net   != NULL
- *	i < network # of branches
+ *	i < t^n , where (n,t) == network's (n_value,t_value)
  *	
  * POS: result != NULL   &&   result contains the coefficients of p[i]
  *	or
@@ -165,14 +155,14 @@ anfis_get_P (anfis_t net, unsigned int i);
 
 
 int
-anfis_set_P (anfis_t net, unsigned int i, const double *new_p);
+anfis_set_P (anfis_t net, size_t i, const double *new_p);
 
 /* Sets 'new_p' as the new network i-th row consequent parameters (aka: p[i])
  *
  * PRE:	net   != NULL
  *	new_p != NULL
- *	length_of (new_p) == network input dimension + 1
- *	i < network # of branches
+ *	length_of (new_p) == network's n_value + 1
+ *	i < t^n , where (n,t) == network's (n_value,t_value)
  *	
  * POS: result == ANFIS_OK   &&   coefficients in p[i] have been replaced
  *				  with those in 'new_p'
@@ -186,11 +176,11 @@ anfis_set_P (anfis_t net, unsigned int i, const double *new_p);
 
 
 int
-anfis_train (anfis_t net, t_sample *s, unsigned int P);
+anfis_train (anfis_t net, t_sample *s, size_t P);
 
 /* Trains the network using the 'P' training samples provided
  * Input of every sample element should have the correct dimension
- * P should overcome the dimension of the input.
+ * P should greatly outrange the dimension of the input.
  *
  * NOTE: batch-like update mode is used
  * WARNING: this routine is EXTREMELY TIME, MEMORY AND CPU CONSUMING
@@ -198,8 +188,8 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P);
  * PRE: net != NULL
  *	s   != NULL
  *	length_of (s) == P
- *	length_of (s[k].in) == network input dimension      k ∈ {1,..,P}
- *	P > (network # of branches) * (network input dimension + 1)
+ *	length_of (s[k].in) == network's n_value (ie: input dimension)
+ *	P > (t^n)*(n+1) , where (n,t) == network's (n_value,t_value)
  *
  * POS:	result == ANFIS_OK   &&   net's parameters have been updated
  *				  sample was not modified
@@ -210,7 +200,7 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P);
 
 
 double
-anfis_eval (anfis_t net, gsl_vector *input);
+anfis_eval (anfis_t net, const gsl_vector *input);
 
 /* Feeds the network with the given input. Returns the network produced output
  *

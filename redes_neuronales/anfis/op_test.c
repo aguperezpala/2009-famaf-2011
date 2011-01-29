@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <assert.h>
 #include <math.h>
+#include <omp.h>
 
 #include "mzran13.h"
 #include "anfis.h"
@@ -13,15 +14,15 @@
 
 
 /* Dimensión máxima de entrada de la red */
-#define  N_MAX		16
+#define  N_MAX		8
 /* Tamaño del salto de dimensión de entrada */
 #define  N_HOP		4
 
 
 /* Máxima cantidad de ramas paralelas en la red */
-#define  T_MAX		8
+#define  T_MAX		6
 /* Tamaño del salto en el # de ramas */
-#define  T_HOP		2
+#define  T_HOP		3
 
 
 /* # de ejemplos que tendrá un training set */
@@ -164,6 +165,7 @@ int main (void)
 {
 	unsigned long n = 0, t = 0, e = 0, p = 0;
 	int res = ANFIS_ERR;
+	double start = 0.0, end = 0.0;
 	MF_t *mf = NULL;
 	t_sample *s = NULL;
 	anfis_t net = NULL;
@@ -178,6 +180,7 @@ int main (void)
 	net = anfis_destroy (net);
 	printf ("\n");
 	
+	start = omp_get_wtime ();
 	/* Para cada # de ramas especificado */
 	for (t = T_HOP ; t <= T_MAX ; t += T_HOP) {
 		
@@ -194,13 +197,20 @@ int main (void)
 			mf  = init_MF (n, t);
 			s   = sample_alloc (n, p);
 			net = anfis_create (n, t, mf);
+			res = ANFIS_OK;
 			
 			/* Entrenamos la red "NEPOCHS" veces */
-			for (e=0 ; e < NEPOCHS ; e++) {
+			for (e=0 ; e < NEPOCHS && res == ANFIS_OK ; e++) {
 				sample_gen (s, n, p);
 				printf ("\rAlimentando ejemplo # %lu", e);
 				fflush (stdout);
 				res = anfis_train (net, s, p);
+			}
+			
+			if (res != ANFIS_OK) {
+				fprintf (stderr, "Error al entrenar la red, "
+					 "se salteará este caso\n");
+				continue;
 			}
 			
 			/* Ejercitamos la red otras "NEPOCHS" veces */
@@ -213,9 +223,11 @@ int main (void)
 			printf ("\n");
 		}
 	}
+	end = omp_get_wtime();
 	
-	printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-		"~~~~~~~~~~~~~~~~~~\n\nFin de los tests\n\n");
+	printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+		"~~~~~~~~~~~~~~~~~~~~~~~~\n\nTiempo transcurrido: %f s\n"
+		"Fin de los tests\n\n", end-start);
 	
 	
 	return EXIT_SUCCESS;

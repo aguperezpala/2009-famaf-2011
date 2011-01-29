@@ -22,7 +22,7 @@ PLOT_LERR=learn_error.gp
 LERR_DATA=anfis_err.dat
 LERR_PLOT=anfis_err.png
 
-# Funciones de membresía tras el aprendizaje
+# Funciones de membresía (Membership Functions)
 MF_DATA_INITIAL=anfis_mf_initial.dat
 MF_DATA_FINAL=anfis_mf_final.dat
 MF_PLOT=anfis_mf
@@ -43,9 +43,13 @@ yinit=1.2
 LB=-0.5 # Lower bound
 UB=3.0  # Upper bound
 
+START=$(date +%s)
+STARTN=$(date +%N)
+
+
 
 echo -e "\nGenerando valores muestrales de la serie Mackey-Glass"
-make clean &> $LOG
+make deep_clean &> $LOG
 make mg_sample >> $LOG 2>&1
 $GEN_MG $a $b $h $tau $yinit > $MG_DATA
 
@@ -56,7 +60,8 @@ make anfis_mg >> $LOG 2>&1
 # Lo siguiente guarda en $nlines el # de líneas del archivo MG_DATA
 nlines=`wc -l $MG_DATA | tr -c -d [0-9]`
 echo "Ejecutando programa principal"
-$MAIN $T $N $MG_DATA $nlines $MG_ANFIS $LERR_DATA $MF_DATA_INITIAL $MF_DATA_FINAL >> $LOG 2>&1
+$MAIN $T $N $MG_DATA $nlines $MG_ANFIS $LERR_DATA $MF_DATA_INITIAL \
+$MF_DATA_FINAL >> $LOG 2>&1
 
 
 
@@ -270,8 +275,15 @@ rm $TMP_FILE
 
 
 
+END=$(date +%s)
+ENDN=$(date +%N)
+gawk ' BEGIN { 
+	start = '$START' + ('$STARTN' / (10.0**9));
+	end   = '$END'   + ('$ENDN'   / (10.0**9));
+	print "\nTiempo total de ejecución: " end-start " s"
+}'
 eog ./ &
 make clean >> $LOG 2>&1
-echo -e "\nRegistro de las actividades en $LOG\nFin del programa\n"
+echo -e "Registro de las actividades en $LOG\nFin del programa\n"
 
 exit 0
