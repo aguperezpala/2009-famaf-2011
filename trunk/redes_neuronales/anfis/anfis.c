@@ -49,8 +49,9 @@
 
 #define  _byte_size	(1<<3)
 #define  LSB		0
-#define  MSB		(_byte_size*sizeof(long)-1)
-#define  int_val(x)	((x) & (~(((unsigned long) 1) << MSB)))
+#define  MSB		(_byte_size*sizeof(size_t)-1)
+#define  int_val(x)	((x) & (~(((size_t) 1) << MSB)))
+#define  lpow(a,b)	(lround (pow (((double) a), ((double) b))))
 
 /* Debugging printing functions */
 #ifdef _DEBUG
@@ -73,26 +74,22 @@
 /**######################    STRUCTURES & STUFF   ############################*/
 
 
-/* A single network branch. That includes: ... */
-typedef struct {
-	MF_t	   *MF;	/* ... membership functions    (n   in total) */
-	gsl_vector *P;	/* ... consequent coefficients (n+1 in total) */
-} branch;
-
-
 /* Network internal structure */
 struct _anfis_s {
-	long n;		/* # of inputs */
-	long t;		/* # of branches */
-	double etha;	/* update step size */
+	long n;		 /* input dimension, and also # of branches */
+	long t;		 /* # of membership functions per branch */
+	long M;		 /* # of fuzzy rules (t^n in total) */
+	double etha;	 /* update step size */
 	
-	branch *b;	/* branches */
-	double *tau;	/* auxiliary values for signal propagation */
+	MF_t *MF;	 /* Membership functions, (n)*(t) in total */
+	gsl_vector **P;	 /* Consequent parameters, which add up to
+			  * (t^n) vectors of dimension (n+1) each */
+	double *tau;	 /* auxiliary values for signal propagation */
 	
-	double old_err1;/* learning error from the previous epoch  */
-	double old_err2;/* learning error from two previous epochs */
-	int trend;	/* etha heuristic state: 0 = decrease ; 1 = increase  */
-	int trend_st;	/* trend state */
+	double old_err1; /* learning error from the previous epoch  */
+	double old_err2; /* learning error from two previous epochs */
+	int trend;	 /* etha heuristic state: FIXED | INCREASE | DECREASE */
+	int trend_st;	 /* trend state */
 };
 
 
@@ -146,21 +143,22 @@ double belly (double a, double b, double c, double x)
 /**###############    CREATE / DESTROY FUNCTIONS    ##########################*/
 
 
+
 /* Creates an instance of the ADT
  *
  * PARAMETERS:	n ---> input dimension
- *		t ---> # of branches the network will have
- *		mf --> membership functions. This must be a vector
- *			of length [t]x[n], simulating a [t][n] matrix
+ *		t ---> # of membership functions for each input element
+ *		mf --> membership functions (must be a n*t vector
+ *			representing a n-row,t-column matrix)
  *
  * PRE: mf != NULL
  * POS: result != NULL
  */
 anfis_t
-anfis_create (unsigned long n, unsigned long t, const MF_t *mf)
+anfis_create (size_t n, size_t t, const MF_t *mf)
 {
 	anfis_t net = NULL;
-	long i = 0, j = 0;
+	long i = 0, j = 0, M = 0;
 	
 	assert (mf != NULL);
 	
@@ -169,32 +167,30 @@ anfis_create (unsigned long n, unsigned long t, const MF_t *mf)
 	
 	net->n    = int_val(n);
 	net->t    = int_val(t);
+	net->M    = lpow(t,n);   /* M = t^n */
 	net->etha = INIT_ETHA;
 	net->old_err1 = 0.0;
 	net->old_err2 = 0.0;
 	net->trend    = FIXED;
 	net->trend_st = 0;
 	
-	net->b = (branch *) malloc (t * sizeof (branch));
-	assert (net->b != NULL);
-	
-	for (i=0 ; i < t ; i++) {
-		net->b[i].MF = (MF_t *) malloc (n * sizeof (MF_t));
-		assert (net->b[i].MF != NULL);
-		
-		net->b[i].P = gsl_vector_alloc (n+1);
-		assert (net->b[i].P != NULL);
-	}
-	
+	net->MF = (MF *) malloc (n*t * sizeof (MF_t));
+	assert (net->MF != NULL);
 	#pragma omp parallel for default(shared) private(i,j)
-	for (i=0 ; i < t*n ; i++) {
-		net->b[i/n] . MF[i%n] . k = mf[i].k;
-		for (j=0 ; j < MAX_PARAM ; j++) {
-			net->b[i/n] . MF[i%n] . p[j] = mf[i].p[j];
-		}
+	for (i=0 ; i < n*t ; i++) {
+		net->MF[i].k = mf[i].k;
+		memcpy (net->MF[i].p, mf[i].p, MAX_PARAM * sizeof(double));
 	}
 	
-	net->tau = (double *) malloc (net->t * sizeof (double));
+	net->P = (gsl_vector **) malloc (M * sizeof (gsl_vector *));
+	assert (net->P != NULL);
+	#pragma omp parallel for
+	for (i=0 ; i < M ; i++) {
+		net->P[i] = gsl_vector_alloc (n+1);
+		assert (net->P[i] != NULL);
+	}
+	
+	net->tau = (double *) malloc (M * sizeof (double));
 	assert (net->tau != NULL);
 	
 	return net;
@@ -214,15 +210,14 @@ anfis_destroy (anfis_t net)
 	
 	assert (net != NULL);
 	
-	for (i=0 ; i < net->t ; i++) {
-		free (net->b[i].MF);
-		net->b[i].MF = NULL;
-		gsl_vector_free (net->b[i].P);
-		net->b[i].P  = NULL;
+	for (i=0 ; i < net->M ; i++) {
+		gsl_vector_free (net->P[i]);
+		net->P[i] = NULL;
 	}
-	free (net->b);		net->b     = NULL;
-	free (net->tau);	net->tau   = NULL;
-	free (net);		net        = NULL;
+	free (net->P);		net->P   = NULL;
+	free (net->MF);		net->MF  = NULL;
+	free (net->tau);	net->tau = NULL;
+	free (net);		net      = NULL;
 	
 	return net;
 }
@@ -233,66 +228,40 @@ anfis_destroy (anfis_t net)
 /**#####################    ACCESSORS / OBSERVERS    #########################*/
 
 
-/* Prints into STDOUT the internal state of the network's i-th branch
- * PRE: net != NULL
- *	i < network # of branches
- */
+
+/* Prints into STDOUT the internals of the given membership function */
 void
-anfis_print_branch (anfis_t net, unsigned int i)
+print_MF (MF_t mf, int i, int j)
 {
-	int j = 0;
+	printf ("MF[%d,%d] kind: %s\nParamaters: ", i, j, MF_kinds[mf.k]);
+
+	switch (mf.k) {
 	
-	assert (net != NULL);
-	assert (i < (unsigned long) net->t);
-	
-	printf ("\nBranch # %d\n", i);
-	
-	for (j=0 ; j < net->n ; j++) {
+	case (triang):
+		printf ("a = %.4f, b = %.4f, c = %.4f\n",
+			mf.p[0], mf.p[1], mf.p[2] );
+		break;
 		
-		printf ("MF[%d] kind: %s\nParamaters: ",
-			j, MF_kinds[net->b[i].MF[j].k]);
-	
-		switch (net->b[i].MF[j].k) {
+	case (trap):
+		printf ("a = %.4f, b = %.4f, c = %.4f, d = %.4f\n",
+			mf.p[0], mf.p[1], mf.p[2], mf.p[3] );
+		break;
 		
-		case (triang):
-			printf ("a = %.4f, b = %.4f, c = %.4f\n", 
-				net->b[i].MF[j].p[0],
-				net->b[i].MF[j].p[1],
-				net->b[i].MF[j].p[2] );
-			break;
-			
-		case (trap):
-			printf ("a = %.4f, b = %.4f, c = %.4f, d = %.4f\n", 
-				net->b[i].MF[j].p[0],
-				net->b[i].MF[j].p[1],
-				net->b[i].MF[j].p[2],
-				net->b[i].MF[j].p[3] );
-			break;
-			
-		case (gauss):
-			printf ("a = %.4f, σ = %.4f\n", 
-				net->b[i].MF[j].p[0],
-				net->b[i].MF[j].p[1] );
-			break;
-			
-		case (bell):
-			printf ("a = %.4f, b = %.4f, c = %.4f\n", 
-				net->b[i].MF[j].p[0],
-				net->b[i].MF[j].p[1],
-				net->b[i].MF[j].p[2] );
-			break;
-			
-		default:
-			printf ("Error: unknown membership function\n");
-			break;
-		}
+	case (gauss):
+		printf ("a = %.4f, σ = %.4f\n", mf.p[0], mf.p[1] );
+		break;
+		
+	case (bell):
+		printf ("a = %.4f, b = %.4f, c = %.4f\n",
+			mf.p[0], mf.p[1], mf.p[2] );
+		break;
+		
+	default:
+		printf ("Error: unknown membership function\n");
+		break;
 	}
 	
-	printf ("Consequent parameters:\n");
-	for (j=0 ; j <= net->n ; j++) {
-		printf ("p[%d][%d] = %.2f\t", i, j,
-			gsl_vector_get (net->b[i].P, j));
-	}
+	return;
 }
 
 
@@ -308,18 +277,38 @@ anfis_print (anfis_t net)
 	
 	assert (net != NULL);
 	
-	printf ("# of inputs:   N = %ld\n# of branches: T = %ld", net->n, net->t);
+	printf ("\n# of inputs:\tN = %ld\n# of MF per input:\tT = %ld\n"
+		"# of fuzzy rules:\tM = %ld\n\n", net->n, net->t, net->M);
 	
-	for (i=0 ; i < net->t ; i++) {
+	printf ("Membership functions:\n");
+	for (i=0 ; i < net->t * net->n ; i++) {
+		print_MF (net->MF[i], i/net->t, i%net->t);
 		printf ("\n");
-		anfis_print_branch (net, i);
 	}
-	printf ("\n\n");
+	
+	printf ("Consequent parameters:\n");
+	for (i=0 ; i < net->M ; i++) {
+		for (j=0 ; j < net->n+1 ; j++) {
+			printf ("P[%d][%d] = %.2f\t", i, j,
+				gsl_vector_get (net->P[i], j));
+		}
+		printf ("\n");
+	}
+	printf ("\n");
 	
 	return;
 }
 
 
+/** TODO	###	###	###	###	###	###	###	TODO
+ ** TODO								TODO
+ ** TODO   <Hasta acá llegué>						TODO
+ ** TODO   Hay que seguir modificando todo a partir de esta línea	TODO
+ ** TODO								TODO
+ ** TODO	###	###	###	###	###	###	###	TODO
+ ** TODO	###	###	###	###	###	###	###	TODO
+ ** TODO	###	###	###	###	###	###	###	TODO
+ **/
 
 
 /* Copies into 'mf' the network's i-th row membership function,
@@ -1136,16 +1125,11 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
-		#pragma omp parallel for default(shared) \
-					 private(j, err_grad, MF_val) \
-					 firstprivate(mfu) \
-					 reduction(+:total_err) \
-					 if(res==ANFIS_OK)
-		for (j=0 ; j < net->n ; j++) {
+		j = -1;
+		#pragma omp parallel default(shared) private(err_grad, MF_val) \
+				     firstprivate(j, mfu) reduction(+:total_err)
+		while (++j < net->n && res == ANFIS_OK) {
 			gsl_vector_view db_e_ij;
-			
-			if (res != ANFIS_OK)
-				continue;
 			
 			/* MF_val holds MF[i][j] values for all P inputs */
 			MF_val = gsl_matrix_column (MF, i * net->n + j);
@@ -1168,7 +1152,9 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 			} else {
 				total_err += err_grad * err_grad;
 			}
-		}
+/*			debug ("[%d/%ld , %d/%ld] -- res = %d -- num_threads = %d\n",
+			       i, net->t, j, net->n, res, omp_get_num_threads());
+*/		}
 	}
 	
 	if (res == ANFIS_OK) {
@@ -1178,7 +1164,7 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 		anfis_do_mf_up (net, db_e, sqrt (total_err));
 		
 	} else {
-		fprintf (stderr, "anfis.c: anfis_grad_desc: Error updating "
+		fprintf (stderr, "\nanfis.c: anfis_grad_desc: Error updating "
 				 "parameters  ~  ABORTING UPDATE !!!\n\n");
 	}
 	
@@ -1310,7 +1296,7 @@ ________________________________________________________________________________
  * POS: result == network output for the given input
  */
 double
-anfis_eval (anfis_t net, gsl_vector *input)
+anfis_eval (anfis_t net, const gsl_vector *input)
 {
 	gsl_vector  *MF    = NULL,	/* Membership values for input */
 		    *b_tau = NULL;	/* Barred taus for input */
