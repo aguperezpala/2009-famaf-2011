@@ -288,7 +288,7 @@ anfis_print (anfis_t net)
 	
 	printf ("Consequent parameters:\n");
 	for (i=0 ; i < net->M ; i++) {
-		for (j=0 ; j < net->n+1 ; j++) {
+		for (j=0 ; j <= net->n ; j++) {
 			printf ("P[%d][%d] = %.2f\t", i, j,
 				gsl_vector_get (net->P[i], j));
 		}
@@ -300,43 +300,30 @@ anfis_print (anfis_t net)
 }
 
 
-/** TODO	###	###	###	###	###	###	###	TODO
- ** TODO								TODO
- ** TODO   <Hasta acá llegué>						TODO
- ** TODO   Hay que seguir modificando todo a partir de esta línea	TODO
- ** TODO								TODO
- ** TODO	###	###	###	###	###	###	###	TODO
- ** TODO	###	###	###	###	###	###	###	TODO
- ** TODO	###	###	###	###	###	###	###	TODO
- **/
 
 
-/* Copies into 'mf' the network's i-th row membership function,
- * which evaluates the j-th input component (aka: MF[i][j])
+/* Copies into 'mf' the network's j-th order membership function,
+ * which evaluates the i-th input component (aka: MF[i][j])
  *
  * PRE: net != NULL
  *	mf  != NULL
- *	i < network # of branches
- *	j < network input dimension
+ *	i < network's n_value (input dimension)
+ *	j < network's t_value
  *
  * POS: result == ANFIS_OK   &&   MF[i][j] data has been copied inside 'mf'
  *	or
  *	result == ANFIS_ERR
  */
 int
-anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF_t *mf)
+anfis_get_MF (anfis_t net, size_t i, size_t j, MF_t *mf)
 {
-	int l = 0;
-	
 	assert (net != NULL);
 	assert (mf  != NULL);
-	assert (i < (unsigned long) net->t);
-	assert (j < (unsigned long) net->n);
+	assert (i < (size_t) net->n);
+	assert (j < (size_t) net->t);
 	
-	mf->k = net->b[i].MF[j].k;
-	for (l=0 ; l < MAX_PARAM ; l++) {
-		mf->p[l] = net->b[i].MF[j].p[l];
-	}
+	mf->k = net -> MF [i * net->t + j] . k;
+	memcpy (mf->p, net->MF[i*net->t+j] . p, MAX_PARAM * sizeof (double));
 	
 	return ANFIS_OK;
 }
@@ -344,30 +331,26 @@ anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF_t *mf)
 
 
 
-/* Sets 'mf' as the new network membership function in the i-th row,
- * which evaluates the j-th input component (aka: MF[i][j])
+/* Sets 'mf' as the new network j-th order membership function,
+ * which evaluates the i-th input component (aka: MF[i][j])
  *
  * PRE:	net != NULL
- *	i < network # of branches
- *	j < network input dimension
+ *	i < network's n_value (input dimension)
+ *	j < network's t_value
  *
  * POS: result == ANFIS_OK   &&   MF[i][j] has been replaced with 'mf'
  *	or
  *	result == ANFIS_ERR
  */
 int
-anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF_t mf)
+anfis_set_MF (anfis_t net, size_t i, size_t j, MF_t mf)
 {
-	int l = 0;
-	
 	assert (net != NULL);
-	assert (i < (unsigned long) net->t);
-	assert (j < (unsigned long) net->n);
+	assert (i < (size_t) net->t);
+	assert (j < (size_t) net->n);
 	
-	net->b[i].MF[j].k = mf.k;
-	for (l=0 ; l < MAX_PARAM ; l++) {
-		net->b[i].MF[j].p[l] = mf.p[l];
-	}
+	net->MF[i*net->t+j].k = mf.k;
+	memcpy (net->MF[i*net->t+j].p, mf.p , MAX_PARAM * sizeof (double));
 	
 	return ANFIS_OK;
 }
@@ -380,25 +363,25 @@ anfis_set_MF (anfis_t net, unsigned int i, unsigned int j, MF_t mf)
  * which must be freed using glibc standard free() routine
  *
  * PRE:	net   != NULL
- *	i < network # of branches
+ *	i < t^n , where (n,t) == network's (n_value,t_value)
  *	
  * POS: result != NULL   &&   result contains the coefficients of p[i]
  *	or
  *	result == NULL
  */
 double *
-anfis_get_P (anfis_t net, unsigned int i)
+anfis_get_P (anfis_t net, size_t i)
 {
 	int j = 0;
 	double *p = NULL;
 	
 	assert (net != NULL);
-	assert (i < (unsigned long) net->t);
+	assert (i < ((size_t) net->M));
 	
 	p = (double *) malloc ((net->n+1) * sizeof (double));
 	if (p != NULL) {
-		for (j=0 ; j < net->n+1 ; j++) {
-			p[j] = gsl_vector_get (net->b[i].P, j);
+		for (j=0 ; j <= net->n ; j++) {
+			p[j] = gsl_vector_get (net->P[i], j);
 		}
 	}
 	
@@ -412,8 +395,8 @@ anfis_get_P (anfis_t net, unsigned int i)
  *
  * PRE:	net   != NULL
  *	new_p != NULL
- *	length_of (new_p) == network input dimension + 1
- *	i < network # of branches
+ *	length_of (new_p) == network's n_value + 1
+ *	i < t^n , where (n,t) == network's (n_value,t_value)
  *	
  * POS: result == ANFIS_OK   &&   coefficients in p[i] have been replaced
  *				  with those in 'new_p'
@@ -421,16 +404,16 @@ anfis_get_P (anfis_t net, unsigned int i)
  *	result == ANFIS_ERR
  */
 int
-anfis_set_P (anfis_t net, unsigned int i, const double *new_p)
+anfis_set_P (anfis_t net, size_t i, const double *new_p)
 {
 	int j = 0;
 	
 	assert (net   != NULL);
 	assert (new_p != NULL);
-	assert (i < (unsigned long) net->t);
+	assert (i < net->M);
 	
-	for (j=0 ; j < net->n+1 ; j++) {
-		gsl_vector_set (net->b[i].P, j, new_p[j]);
+	for (j=0 ; j <= net->n ; j++) {
+		gsl_vector_set (net->P[i], j, new_p[j]);
 	}
 	
 	return ANFIS_OK;
@@ -480,7 +463,8 @@ eval_MF (MF_t mf, double x)
  * PRE: net   != NULL
  *	input != NULL
  *	MF_k  != NULL
- *	length_of (input) == network input dimension
+ *	length_of (input) == network's n_value (input dimension)
+ *	length_of (MF_k)  == n_value * t_value
  *
  * POS: result == ANFIS_OK   &&   membership values stored in MF
  *	or
@@ -490,7 +474,7 @@ static int
 anfis_compute_membership (const anfis_t net, const gsl_vector *input,
 			  gsl_vector *MF_k)
 {
-	int i = 0, n = 0, t = 0;
+	long i = 0, n = 0, t = 0;
 	double value = 0.0;
 	
 	assert (net   != NULL);
@@ -501,9 +485,8 @@ anfis_compute_membership (const anfis_t net, const gsl_vector *input,
 	n = net->n;
 	
 	#pragma omp parallel for shared(MF_k,input) private(value)
-	for (i=0 ; i < t*n ; i++) {
-		value = eval_MF (net->b[i/n].MF[i%n],
-				 gsl_vector_get (input, i%n));
+	for (i=0 ; i < n*t ; i++) {
+		value = eval_MF (net->MF[i], gsl_vector_get (input, i%n));
 		assert (value >= 0.0);
 		gsl_vector_set (MF_k, i, value);
 	}
@@ -513,44 +496,61 @@ anfis_compute_membership (const anfis_t net, const gsl_vector *input,
 
 
 
+/* WARNING: there's no range check for 'index' */
+static inline void
+next_index (int *index, long base)
+{
+	int k = 0;
+	
+	while (++index[k] >= base) {
+		index[k] = 0;
+		k++;
+	}
+	
+	return;
+}
 
-/* Performs a partial forward propagation of the given input to compute
+
+
+/* Performs a partial forward propagation of the current input to compute
  * the barred-taus, which are then stored in b_tau_k
  *
- * MF_k must contain the network's membership values for this input
+ * MF_k must contain the network's membership values for the current input
  *
  * PRE: net     != NULL
- *	input   != NULL
  *	MF_k    != NULL
  *	b_tau_k != NULL
- *	length_of (input) == network input dimension
+ *	length_of (input) == network's n_value (input dimension)
+ *	length_of (MF_k)  == n_value * t_value
  *
  * POS: result == ANFIS_OK   &&   b_tau_k values in net were updated
  *	or
  *	result == ANFIS_ERR
  */
 static int
-anfis_partial_fwd_prop (const anfis_t net, const gsl_vector *input,
-			const gsl_vector *MF_k,  gsl_vector *b_tau_k)
+anfis_partial_fwd_prop (const anfis_t net, const gsl_vector *MF_k,
+			  gsl_vector *b_tau_k)
 {
-	int i = 0, j = 0, t = 0, n = 0;
+	int *index = NULL;
+	long i = 0, j = 0;
 	double *tau = NULL, tau_sum = 0.0;
 	
 	assert (net     != NULL);
-	assert (input   != NULL);
 	assert (MF_k    != NULL);
 	assert (b_tau_k != NULL);
 	
-	t   = net->t;
-	n   = net->n;
 	tau = net->tau;
+	index = (int *) calloc (net->n * sizeof(int));
+	assert (index != NULL);
 	
-	/* First taus are computed */
-	#pragma omp parallel for default(shared) private(i,j)
-	for (i=0 ; i < t ; i++) {
+	/* First thing tau values are computed */
+	for (i=0 ; i < net->M ; i++) {
+		
 		tau[i] = 1.0;
-		for (j=0 ; j < n ; j++) {
-			tau[i] *= gsl_vector_get (MF_k, i*n+j);
+		next_index (index, net->t);
+		
+		for (j=0 ; j < net->n ; j++) {
+			tau[i] *= MF_k [j * net->t + index[j]]
 		}
 		assert (tau[i] >= 0.0);
 	}
@@ -558,18 +558,20 @@ anfis_partial_fwd_prop (const anfis_t net, const gsl_vector *input,
 	/* Now we calculate b_taus */
 	tau_sum = 0.0;
 	#pragma omp parallel for shared(tau) reduction(+:tau_sum)
-	for (i=0 ; i < t ; i++) {
+	for (i=0 ; i < net->M ; i++) {
 		tau_sum += tau[i];
 	}
 	#pragma omp parallel for default(shared) private(i)
-	for (i=0 ; i < t ; i++) {
+	for (i=0 ; i < net->M ; i++) {
 		if (tau_sum != 0.0) {
 			gsl_vector_set (b_tau_k, i, tau[i] / tau_sum);
 		} else {
-			gsl_vector_set (b_tau_k, i, 0.0);
+			gsl_vector_set_zero (b_tau_k);
 		}
 	}
 	
+	free (index);
+	index = NULL;
 	tau = NULL;
 	
 	return ANFIS_OK;
@@ -709,11 +711,13 @@ anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
 
 
 /* Performs least square estimate (aka LSE) for the given sample (of size P)
- * to find best values for the network's consequent parameters
+ * to find best values for the network's consequent parameters.
  *
  * The network is updated internally, and a copy of these new values is returned
- * as a vector of length (network # of branches) * (network input dimension + 1)
- * to facilitate further calculations. Free result using gsl_vector_free()
+ * as a vector of length (t^n)*(n+1) to facilitate further calculations,
+ * where (n,t) == network's (n_value,t_value)
+ * 
+ * Free result using gsl_vector_free()
  *
  * PRE: net != NULL
  *	A   != NULL
@@ -738,6 +742,8 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	assert (net != NULL);
 	assert (A   != NULL);
 	assert (s   != NULL);
+	
+	/** TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
 	
 	M = ((size_t) net->t) * ((size_t) net->n + 1);
 	
@@ -1182,16 +1188,16 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 
 /* Trains the network using the 'P' training samples provided
  * Input of every sample element should have the correct dimension
- * P should overcome the dimension of the input.
+ * P should greatly outrange the dimension of the input.
  *
  * NOTE: batch-like update mode is used
- * WARNING: this routine is EXTREMELY SLOW & CPU BOUND
+ * WARNING: this routine is EXTREMELY TIME, MEMORY AND CPU CONSUMING
  *
  * PRE: net != NULL
  *	s   != NULL
  *	length_of (s) == P
- *	length_of (s[k].in) == network input dimension      k ∈ {1,..,P}
- *	P > (network # of branches) * (network input dimension + 1)
+ *	length_of (s[k].in) == network's n_value (ie: input dimension)
+ *	P > (t^n)*(n+1) , where (n,t) == network's (n_value,t_value)
  *
  * POS:	result == ANFIS_OK   &&   net's parameters have been updated
  *				  sample was not modified
@@ -1215,20 +1221,20 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 	
 	t = (size_t) net->t;
 	n = (size_t) net->n;
-	M = t * (n+1);
+	Mn = ((size_t) net->M) * (n+1);
 	
 	assert (P > M);
 	
 	/* Membership values for all the P inputs */
-	MF = gsl_matrix_alloc (P, t*n);
+	MF = gsl_matrix_alloc (P, n*t);
 	handle_error_2 (MF);
 	
 	/* Barred taus for all the P inputs */
-	b_tau = gsl_matrix_alloc (P, t);
+	b_tau = gsl_matrix_alloc (P, net->M);
 	handle_error_2 (b_tau);
 	
-	/* Predictor variables matrix for LSE. See below 'A' layout */
-	A = gsl_matrix_alloc (P, M);
+	/* Predictor variables matrix for LSE. See below for 'A' layout */
+	A = gsl_matrix_alloc (P, Mn);
 	handle_error_2 (A);
 	
 	
@@ -1242,13 +1248,12 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 		handle_error_1 (res);
 		
 		/* Filling b_tau matrix k-th row */
-		res = anfis_partial_fwd_prop (net, s[k].in, &(MF_k.vector),
-					      &(b_tau_k.vector));
+		res = anfis_partial_fwd_prop (net, &(MF_k.vector), &(b_tau_k.vector));
 		handle_error_1 (res);
 		
-		/* Filling A matrix k-th row (see below) */
+		/* Filling A matrix k-th row (see below for 'A' layout) */
 		#pragma omp parallel for default(shared) private(i,value)
-		for (i=0 ; i < M ; i++) {
+		for (i=0 ; i < Mn ; i++) {
 			
 			value = gsl_matrix_get (b_tau, k, i/(n+1));
 			if (i % (n+1)) {
@@ -1259,6 +1264,7 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 		}
 	}
 	
+	/** TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
 	/* Computing best consequent parameters with LSE */
 	ccp = anfis_lse (net, A, s, P);
 	if (ccp == NULL) {
@@ -1277,12 +1283,12 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 	return res;
 }
 /* Matrix 'A' has the following layout:
-_________________________________________________________________________________
-| b_tau[0] | b_tau[0]*x[0,0]   | b_tau[0]*x[0,1]   | ... | b_tau[t-1]*x[0,n-1]  |
-| b_tau[0] | b_tau[0]*x[1,0]   | b_tau[0]*x[1,1]   | ... | b_tau[t-1]*x[1,n-1]  |
-|   ...    |       ...         |       ...         | ... |          ...         |
-| b_tau[0] | b_tau[0]*x[P-1,0] | b_tau[0]*x[P-1,1] | ... | b_tau[t-1]*x[P-1,n-1]|
-=================================================================================
++----------+-------------------+-------------------+-----+-----------------------+
+| b_tau[0] | b_tau[0]*x[0,0]   | b_tau[0]*x[0,1]   | ... | b_tau[Mn-1]*x[0,n-1]  |
+| b_tau[0] | b_tau[0]*x[1,0]   | b_tau[0]*x[1,1]   | ... | b_tau[Mn-1]*x[1,n-1]  |
+|   ...    |       ...         |       ...         | ... |          ...          |
+| b_tau[0] | b_tau[0]*x[P-1,0] | b_tau[0]*x[P-1,1] | ... | b_tau[Mn-1]*x[P-1,n-1]|
++----------+-------------------+-------------------+-----+-----------------------+
 */
 
 
@@ -1330,7 +1336,7 @@ anfis_eval (anfis_t net, const gsl_vector *input)
 	}
 		
 	/* Filling b_tau vector */
-	res = anfis_partial_fwd_prop (net, input, MF, b_tau);
+	res = anfis_partial_fwd_prop (net, MF, b_tau);
 	if (res != ANFIS_OK) {
 		fprintf (stderr, "anfis.c: anfis_eval: Unable to perform "
 				 "forward propagation   ~   ABORTING PROPAGATION\n");
