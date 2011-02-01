@@ -103,7 +103,7 @@ typedef struct {
 	gsl_vector *db_e_ij;/* error gradient for each parameter of this MF */
 	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
 	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
-	gsl_vector *p_sub;  /* consequent parameters (in MF's branch) */
+	gsl_vector *cp_i;   /* consequent parameters (in MF's branch) */
 	gsl_vector *f_out;  /* network output values for the given sample */
 } mfu_t; 
 
@@ -625,9 +625,9 @@ calc_den (const gsl_matrix *S, const gsl_vector *A_i, gsl_vector *v_aux)
 
 
 
-/* Performs LSE of consequent parameters for all branches in the network
+/* Performs LSE of all the consequent parameters in the network
  *
- * PARAMETERS:	A ---> predictor variables matrix
+ * PARAMETERS:	A ---> predictor variables matrix  (of dimension [P][M])
  *		y ---> expected results for this sample set  (P in total)
  *
  * PRE: A != NULL
@@ -674,7 +674,7 @@ anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
 	
 	/* Performing Least Square Estimation */
 	for (i=0 ; i < P ; i++) {
-		/* Matrix A i-th row (row At_i+1 in Jang's paper) */
+		/* A matrix' i-th row (row At_i+1 in Jang's paper) */
 		gsl_vector_const_view A_i = gsl_matrix_const_row (A, i);
 		
 		/* Snew = S(i) * A_i+1 * At_i+1 * S(i) */
@@ -717,16 +717,17 @@ anfis_fit_linear (const gsl_matrix *A, const gsl_vector *y, size_t P, size_t M)
  * as a vector of length (t^n)*(n+1) to facilitate further calculations,
  * where (n,t) == network's (n_value,t_value)
  * 
- * Free result using gsl_vector_free()
+ * Free result memory resources using gsl_vector_free()
  *
  * PRE: net != NULL
  *	A   != NULL
  *	s   != NULL
  *
- * USE: new_params = anfis_lse
+ * USE: new_params = anfis_lse (net, A, s, P);
  *
- * POS: new_params != NULL   &&   consequent parameters were computed and saved
- *				  in net. A copy of the new values was returned
+ * POS: new_params != NULL   &&   consequent parameters were computed and stored
+ *				  inside net. 'new_params' is a vector holding
+ *				  a copy of these new values
  *	or
  *	new_params == NULL
  */
@@ -743,29 +744,29 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 	assert (A   != NULL);
 	assert (s   != NULL);
 	
-	/** TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
-	
-	M = ((size_t) net->t) * ((size_t) net->n + 1);
+	M = ((size_t) net->M) * ((size_t) net->n + 1);
 	
 	/* Saving desired results in vector 'y' */
 	y = gsl_vector_alloc (P);
 	handle_error_3 (y);
+	#pragma omp parallel for shared(s,y)
 	for (i=0 ; i < P ; i++) {
 		gsl_vector_set (y, i, s[i].out);
 	}
 	
+	/* Here's were all the magic happens */
 	X = anfis_fit_linear (A, y, P, M);
 	
 	if (X != NULL) {
 		/* Saving estimated parameters inside the network */
 /*		debug ("LSE parameters estimation (call # %lu):\n", ++calls);
-*/		for (i=0 ; i < net->t ; i++) {
-			/* p_sub references the i-th branch consequent param.
-			 * estimation, originally stored in vector X */
-			gsl_vector_view p_sub;
+*/		for (i=0 ; i < net->M ; i++) {
+			/* cp_i references the i-th series of consequent parame-
+			 * ters, which are stored in vector X */
+			gsl_vector_view cp_i;
 			
-			p_sub = gsl_vector_subvector (X, i*(net->n+1), net->n+1);
-			gsl_vector_memcpy (net->b[i].P, &(p_sub.vector));
+			cp_i = gsl_vector_subvector (X, i*(net->n+1), net->n+1);
+			gsl_vector_memcpy (net->P[i], &(cp_i.vector));
 			
 /*			dfor (j=0 ; j <= net->n ; j++) {
 				debug ("p[%u][%u] = %.4f\n", i, j,
@@ -1064,10 +1065,11 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
  * PARAMETERS:  A ------> predictor variables matrix used for LSE
  *		s ------> training samples set
  *		MF -----> matrix containing the network's membership values
- *			  for the last training sample processed
+ *			  for the last training sample processed (ie: s)
  *		b_tau --> barred taus for the last training sample processed
  *		cp -----> network's consequent parameters in ascending order
- *			  That is: p[0][0], p[0][1], ..., p[t][n]
+ *			  That is: p[0][0], p[0][1], ..., p[0][n-1], p[1][0],...
+ *			  	   ,p[1][n-1], ..., p[t^n][0], ..., p[t^n][n-1]
  *		P ------> # of samples in the last training sample processed
  *
  * PRE: net   != NULL
@@ -1117,17 +1119,25 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 	 * to the parameters update of the network membership function
 	 * located in branch # k/n, for input element k%n (ie: MF[k/n][k%n])
 	 */
-	db_e = gsl_matrix_alloc (net->t * net->n, MAX_PARAM);
+	db_e = gsl_matrix_alloc (net->n * net->t, MAX_PARAM);
 	handle_error_2 (db_e);
 	
 	mfu.s      = s;
 	mfu.f_out  = f_out;
 	total_err  = 0.0;
+	
+	/** TODO Ahora tenemos más consequent parameters que MFs, contrario a
+	 **	 lo que plantea el paper de Nicolás Bruno.
+	 **	 ¿¿¿ Cómo poronga hacemos las actualizaciones de las MFs ???
+	 **
+	 **	 Hay que revisar todo el método de descenso por el gradiente
+	 **	 y la put@$~#&*$/~! que lo parió
+	 **/
 	for (i=0 ; i < net->t && res == ANFIS_OK; i++) {
-		gsl_vector_view p_sub, b_tau_i, MF_val;
+		gsl_vector_view cp_i, b_tau_i, MF_val;
 		
-		/* p_sub holds paramaters p[i][0], p[i][1], ..., p[i][n] */
-		p_sub = gsl_vector_subvector (cp, i*(net->n+1), net->n+1);
+		/* cp_i holds paramaters p[i][0], p[i][1], ..., p[i][n] */
+		cp_i = gsl_vector_subvector (cp, i*(net->n+1), net->n+1);
 		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
 		b_tau_i = gsl_matrix_column (b_tau, i);
 		
@@ -1143,7 +1153,7 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 			db_e_ij = gsl_matrix_row (db_e, i * net->n + j);
 			
 			mfu.mf_ij   = &(net->b[i].MF[j]);
-			mfu.p_sub   = &(p_sub.vector);
+			mfu.cp_i    = &(cp_i.vector);
 			mfu.b_tau   = &(b_tau_i.vector);
 			mfu.MF_val  = &(MF_val.vector);
 			mfu.db_e_ij = &(db_e_ij.vector);
@@ -1264,15 +1274,14 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 		}
 	}
 	
-	/** TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
 	/* Computing best consequent parameters with LSE */
 	ccp = anfis_lse (net, A, s, P);
 	if (ccp == NULL) {
 		res = ANFIS_ERR;
 	} else {
 		/* Updating premise parameters with gradient descent method */
+		/** TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO */
 		res = anfis_grad_desc (net, s, A, MF, b_tau, ccp, P);
-		handle_error_1 (res);
 	}
 	
 	gsl_matrix_free (A);		A     = NULL;
@@ -1283,12 +1292,12 @@ anfis_train (anfis_t net, t_sample *s, unsigned int P)
 	return res;
 }
 /* Matrix 'A' has the following layout:
-+----------+-------------------+-------------------+-----+-----------------------+
-| b_tau[0] | b_tau[0]*x[0,0]   | b_tau[0]*x[0,1]   | ... | b_tau[Mn-1]*x[0,n-1]  |
-| b_tau[0] | b_tau[0]*x[1,0]   | b_tau[0]*x[1,1]   | ... | b_tau[Mn-1]*x[1,n-1]  |
-|   ...    |       ...         |       ...         | ... |          ...          |
-| b_tau[0] | b_tau[0]*x[P-1,0] | b_tau[0]*x[P-1,1] | ... | b_tau[Mn-1]*x[P-1,n-1]|
-+----------+-------------------+-------------------+-----+-----------------------+
++----------+-------------------+-------------------+-----+----------------------+
+| b_tau[0] | b_tau[0]*x[0,0]   | b_tau[0]*x[0,1]   | ... | b_tau[M-1]*x[0,n-1]  |
+| b_tau[0] | b_tau[0]*x[1,0]   | b_tau[0]*x[1,1]   | ... | b_tau[M-1]*x[1,n-1]  |
+|   ...    |       ...         |       ...         | ... |         ...          |
+| b_tau[0] | b_tau[0]*x[P-1,0] | b_tau[0]*x[P-1,1] | ... | b_tau[M-1]*x[P-1,n-1]|
++----------+-------------------+-------------------+-----+----------------------+
 */
 
 
