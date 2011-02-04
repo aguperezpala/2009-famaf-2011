@@ -53,3 +53,18 @@ double calc_prom(int n, int k, FUNC_PROM_PTR func)
 	return result;
 }
 
+/******************************************************************************/
+void sort_doubles(double *arr, int size) 
+{
+	int a = 0, b = 0;
+	double t = 0;
+	
+	for(a = 1; a < size; ++a)
+		for(b = size-1; b >= a; --b) {
+			if(arr[ b - 1] > arr[ b ]) {
+				t = arr[ b - 1];
+				arr[ b - 1] = arr[ b ];
+				arr[ b ] = t;
+			}
+		}
+}

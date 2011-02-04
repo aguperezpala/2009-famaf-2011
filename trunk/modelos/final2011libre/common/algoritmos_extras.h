@@ -33,4 +33,10 @@ void permutar_no_equiprobable(int *arr, int size);
  */
 double calc_prom(int n, int k, FUNC_PROM_PTR a);
 
+
+/* Funcion que ordena un arreglo de doubles, cambiar el tipo si necesitamos en
+ * orden decreciente a[0] < a[1] < ... < a[size] */
+void sort_doubles(double *arr, int size);
+
+
 #endif
