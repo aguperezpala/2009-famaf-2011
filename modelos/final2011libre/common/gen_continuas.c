@@ -92,7 +92,7 @@ double gen_normal_estandard_polar(void)
 		v1 = rg_gen_uni_cont(-1,1);
 		v2 = rg_gen_uni_cont(-1,1);
 		s = pow(v1,2) + pow(v2,2);
-	}while(s >= 1);
+	}while(s >= 1.0);
 
 	X = sqrt((-2. * log(s)) / s) * v1;
 	Y = sqrt((-2. * log(s)) / s) * v2;
