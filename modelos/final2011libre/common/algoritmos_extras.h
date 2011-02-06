@@ -25,6 +25,9 @@ void permutar_equiprobable(int *arr, int size);
 /* permutacion no equiprobable */
 void permutar_no_equiprobable(int *arr, int size);
 
+/* Generar una permutacion con valores repetidos */
+void permutar_con_repeticion(double *original, double *permutado, int tam);
+
 /* Calculo de promedios para a = Sumatoria a(i)/n from i=1 to n, n >> 1
  * podemos simularlo calculando la E(a(X)) con Xi~floor(n*Ui)+1 pero iterando
  * solo k veces con k < n.

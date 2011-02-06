@@ -5,10 +5,9 @@ int process_poisson_homogeneo(double T, double lambda, double *timesResults)
 {
 	int I = 0;
 	double t = 0;
-	double U = 0, aux = 0;
+	double aux = 0;
 	
-	while (1){
-		U = rg_gen_uni_cont(0,1);
+	while (1){		
 		aux = rg_gen_exp(lambda);
 		if (t + aux > T)
 			break;

@@ -16,7 +16,7 @@ double rg_gen_exp(double lambda)
 {
 	double U = 0;
 	
-	U = (double)mzran13()/(double)ULONG_MAX;
+	U = rg_gen_uni_cont(0,1);
 	
 	return (((double) -1.0/ (double) lambda) * log(U));
 }
