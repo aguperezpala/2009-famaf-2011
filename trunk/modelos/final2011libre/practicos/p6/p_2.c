@@ -19,7 +19,7 @@ static double	TOL = 0.01;	/* Nivel de tolerancia deseado: S/sqrt(n) < TOL */
 static double montecarlo_f(double x) {return exp(pow(x,2));}
 
 
-int main (void)
+int main2 (void)
 {
 	double Xobservada = 0, Xpromj = 0, Xpromj1 = 0;
 	double Sj = 0, Sj1 = 0;
@@ -27,7 +27,6 @@ int main (void)
 	double condition = 0;
 	double ValorIntegral = 0;
 	int n = 0;
-	bool flag = false;
 	
 	/* Notar que S0 debe ser siempre = 0 para inicializar y que 
 	 * Xpromj = X1 (osea el primer valor generado) */

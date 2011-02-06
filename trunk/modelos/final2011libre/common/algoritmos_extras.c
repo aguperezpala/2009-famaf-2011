@@ -38,6 +38,17 @@ void permutar_no_equiprobable(int *arr, int size)
 }
 
 /******************************************************************************/
+void permutar_con_repeticion(double *original, double *permutado, int tam)
+{
+	int i = 0, j = 0;
+	for(j=0;j<tam;j++){
+		i = disc_gen_uniforme(0,tam);
+		permutado[j] = original[i];
+	}
+}
+
+
+/******************************************************************************/
 double calc_prom(int n, int k, FUNC_PROM_PTR func)
 {
 	double result = 0.0;

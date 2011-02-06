@@ -14,6 +14,11 @@
 #include "rdg.h"
 #include "gen_continuas.h"
 #include "gen_discretas.h"
+#include "algoritmos_extras.h"
+
+
+/* Web para obtener los Z alfa/2, http://davidmlane.com/hyperstat/z_table.html */
+
 
 
 /* Funcion que estima la media muestral (X(n) = sumatoria xi/n from i=1 to n) con los
@@ -39,6 +44,37 @@ double estimar_media_muestral(int j, double Xpromj, double Xj1);
  */
 double estimar_varianza_muestral(int j, double Sj, double Xpromj1, double Xpromj);
 
+
+/* Funcion que calcula la media muestral sin hacer recursion, ineficiente
+* pero segura
+* Requiere la muestra de tamanio N
+*/
+double estimar_media_muest_inef(double *sample, int N);
+
+/* Funcion que calcula la varianza muestral sin hacer recursion, ineficiente
+ * pero segura
+ * Requiere la media muestral y la muestra de tamanio N
+ */
+double estimar_var_muest_inef(double *sample, int N, double mediaMuestral);
+
+
+/*! Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
+* del estimador "Media muestral" con respecto a la verdadera media µ,
+* dada una muestra de 'n' datos pasada como primer argumento
+*
+* Utiliza Montecarlo para devolver un valor que aproxima al ECM exacto
+*
+* PRE: sample != NULL
+*/
+double bootstrap_media (double *sample, unsigned int N);
+
+
+/*! Metodo de Bootstrap para calcular el ECM de la Varianza muestral.
+ * Toma una muestra sample de n elementos.
+ * En caso de que N muy grande (definido en el .c) usa montecarlo para
+ * aproximar 
+ */
+double bootstrap_varianza (double *sample, unsigned int N);
 
 
 #endif
