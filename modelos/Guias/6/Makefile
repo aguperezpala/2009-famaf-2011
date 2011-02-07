@@ -18,7 +18,7 @@ CFLAGS = -ansi -Wall -Wextra -Wdeclaration-after-statement -Wbad-function-cast \
 LIBRARIES = -lm
 RANDOMIZERS=rdg.c permuter.c ssv.c
 INCLUDES=.depend
-i=1
+i=8
 
 $(i):p$(i)
 p$(i): p_$(i).o $(RANDOMIZERS)

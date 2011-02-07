@@ -12,6 +12,9 @@
 
 #define PAD 40	/* Definido para arquitectura de 64 bits */
 
+
+int ma1in (int argc, char *argv[]);
+
 /** Funciones a integrar */
 
 static double a (double x) {
@@ -25,7 +28,7 @@ static double b (double y) {
 
 /** Rutina estimadora de las integrales */
 
-int main (int argc, char *argv[])
+int ma1in (int argc, char *argv[])
 {
 	unsigned int  i=0;
 	unsigned long N=0;	/* Total de iteraciones a realizar */

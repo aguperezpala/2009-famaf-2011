@@ -48,7 +48,8 @@ int main (int argc, char **argv)
 		Ij = (mzran13() % N) + 1;
 		est += f ((double) Ij, (double) N);
 	}
-	est = (est*(double)N) / (double)n;
+	/*est = (est*(double)N) / (double)n;*/
+	est = est * n;
 	
 	/* Para poder comparar calculamos la suma verdadera */
 	for (j=0 ; j<N ; j++)
@@ -56,7 +57,7 @@ int main (int argc, char **argv)
 	
 	printf ("La estimacion de la sumatoria es: %.8f\n", est);
 	printf ("Aproxima al valor real de la sumatoria con un error cercano"
-		" a %.8f\n", fabs(real-est));
+		" a %.8f\n", /*fabs(real-est)*/ real);
 	
 	return 0;
 }

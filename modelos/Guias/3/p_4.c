@@ -11,11 +11,11 @@
 #define PAD 40	/* Definido para arquitectura de 64 bits */
 
 
-int moin (int argc, char **argv);
+int main (int argc, char **argv);
 
 
 
-int moin (int argc, char **argv)
+int main (int argc, char **argv)
 {
 	unsigned int i=0, n=0;
 	unsigned long N=0, k=0;
