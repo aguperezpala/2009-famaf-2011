@@ -7,8 +7,8 @@
 
 #define PAD 40	/* Definido para arquitectura de 64 bits */
 
-
-int main (int argc, char * argv[])
+int main1 (int argc, char * argv[]);
+int main1 (int argc, char * argv[])
 {
 	unsigned int  i=0;
 	unsigned long n=0;	/* Total de iteraciones a realizar */

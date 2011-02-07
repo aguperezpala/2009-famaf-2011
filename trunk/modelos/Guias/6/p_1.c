@@ -56,7 +56,9 @@ int main (void)
 		n += 1.0;
 		X = media_m (X1, n);
 		S = sqrt (var_m (X1, n));
-		
+
+		printf("X1: %G\n", X1);		
+
 		if (S/sqrt(n) < TOL)
 			/* Ya terminamos, no nos hizo falta X2 */
 			continue;

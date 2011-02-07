@@ -19,8 +19,8 @@ static void init_int_array (int *a, unsigned int n)
 	return;
 }
 
-
-int main (int argc, char **argv)
+int main1 (int argc, char **argv);
+int main1 (int argc, char **argv)
 {
 	unsigned int i=0, j=0;	/* Contadores misceláneos */
 	int *deck=NULL;		/* Mazo de cartas */
