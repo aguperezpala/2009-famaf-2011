@@ -10,11 +10,18 @@
 #include <sys/time.h>
 #include <time.h>
 #include <math.h>
+#include <float.h>
+
 
 #include "rdg.h"
 #include "gen_continuas.h"
 #include "gen_discretas.h"
 #include "algoritmos_extras.h"
+
+
+
+#define PAD 40	/* Definido para arquitectura de 64 bits */
+
 
 
 /* Web para obtener los Z alfa/2, http://davidmlane.com/hyperstat/z_table.html */
@@ -73,8 +80,114 @@ double bootstrap_media (double *sample, unsigned int N);
  * Toma una muestra sample de n elementos.
  * En caso de que N muy grande (definido en el .c) usa montecarlo para
  * aproximar 
+ * TODO: verificar esto porque puede estar andando mal
  */
 double bootstrap_varianza (double *sample, unsigned int N);
+
+
+
+
+/*! Calcula el valor de una Ji-Cuadrado */
+
+/* Returns the value of the beta function B(z, w). */
+float beta(float z, float w);
+
+
+/* Returns the incomplete gamma function P (a, x). */
+float gammp(float a, float x);
+
+
+/* Returns the incomplete gamma function Q(a, x) ≡ 1 − P (a, x). */
+float gammq(float a, float x);
+
+/* Para una funcion de distribucion chi-cuadrada con ciertos gradosLibertad,
+ * calcula la probabilidad acumulada: P (chi-cuadrada > value)
+ * Recordando que T = sumatoria pow((Ni - n*pi,2)/n*pi from i=1 to n, donde
+ * los Ni = cantidad de Xi (Xi son los valores observados, osea la muestra, hasta n)
+ * que caen en el intervalo i (que es [yi-1, yi]). Los pi = ProbHipotesisNula(Yi = i)
+ * osea la probabilidad asignada a cada intervalo i de la Hipotesis nula.
+ * n es el tamanio de la muestra.
+ * Luego t = T evaluado, y cuando n es grande T ~ Ji-cuadrado(k-1 - m grados de libertad)
+ * Con k = rango de la v.a (o cantidad de intervalos) y m cantidad de parametros 
+ * desconocidos (por ejemplo si no se conoce bien la funcion de distribucion de H0 
+ * -se supone que es una exponencial de parametro lambda, sin conocerlo- entonces
+ * m = 1 = lambda).
+ */
+double chi_cuadrada (int gradosLibertad, double value);
+
+
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~  SIMULACION  -  ESTADISTICOS  ~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
+/* Estadístico del test Ji-cuadrado para una muestra 'sample' de 'n' valores
+ * Los intervalos de agrupacion de resultados deben estar en el parametro 'I'
+ * p[i] == "probabilidad de caer en el intervalo Int(i)"
+ *
+ * Se define al i-esimo intervalo Int(i) como:
+ *	Int(i) = [ I[i] , I[i+1] )
+ * y para el ultimo intervalo vale que:
+ *	Int(k) = [ I[k] , inifinity )
+ *
+ * PRE: sample != NULL	&&  n == #(sample)
+ *	I != NULL	&&  k == #(I)
+ *	p != NULL	&&  k == #(p)
+ * NOTE: de esta forma generamos varios t-valores, mediante la funcion de prob
+ * de H0 (los pi), y determinamos de esta forma la proporcion de los t-valores
+ * generados en cada simulacion de aquellos que son mayores que el t (calculado
+ * con los datos observados) y sacamos la proporcion de los t' simulados aquellos
+ * que son mayores que t / cantidad de t' generados. Luego esto es el p-valor
+ * Osea: p-valor = #{t' : t' > t} / #{t' simulados}
+ */
+double ji_cuadrado (double *sample, unsigned int n,
+		    double *I, unsigned int k, double *p);
+
+
+/* Estadístico (D) del test Kolmogorov-Smirnov de una muestra 'sample' con 'n' datos
+ * 'F' es la función de probabilidad teórica a aplicar sobre los datos
+ * Donde D = d = max x |F(x) - Fempirica(e)|
+ * Luego p-valor = #{i : Di > d}/#{Di simulados} (se calcula por simulacion)
+ * 
+ *NOTE: Revisar problemas 3/4 del p7 carlox, se usan siempre Uniformes (las muestras)
+ * ya que no depende de la distribucion!. 
+ * PRE: sample != NULL  &&  n == #(sample)
+ *	F != NULL
+ */
+ double kolmogorov_smirnov (double *sample, unsigned int n, double (*F) (double));
+
+
+ 
+ 
+
+/** ------------------------------------------------------------------------- */
+/** ~~~~~~~~~~~~~~~~~~~~~~~ AUXILIARES (IGNORAR) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/** ------------------------------------------------------------------------- */
+
+
+/* Returns the value n! as a floating-point number. */
+float factrl(int n);
+
+float bico(int n, int k);
+
+float factln(int n);
+
+/* Returns the value ln[Γ(xx)] for xx > 0. */
+float gammln(float xx);
+
+/* Returns the incomplete gamma function P (a, x) evaluated by its series 
+* representation as gamser.
+* Also returns ln Γ(a) as gln.
+*/
+void gser(float *gamser, float a, float x, float *gln);
+
+/* Returns the incomplete gamma function Q(a, x) evaluated by its continued 
+* fraction representation as gammcf. Also returns ln Γ(a) as gln.
+*/
+void gcf(float *gammcf, float a, float x, float *gln);
+
+
 
 
 #endif
