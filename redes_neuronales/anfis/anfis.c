@@ -102,10 +102,10 @@ typedef struct {
 	MF_t *mf_ij;	    /* MF whose parameters must be updated */
 	gsl_vector *db_e_ij;/* error gradient for each parameter of this MF */
 	gsl_vector *MF_val; /* MF values for all P inputs in the given sample */
-	gsl_vector *b_tau;  /* barred tau values (in MF's branch) of sample */
-	gsl_vector *cp_i;   /* consequent parameters (in MF's branch) */
+	gsl_matrix *b_tau;  /* barred tau values of whole sample */
+	gsl_vector *cp;     /* consequent parameters ((t^n)*(n+1) in total) */
 	gsl_vector *f_out;  /* network output values for the given sample */
-} mfu_t; 
+} mfu_t;
 
 
 /* For pretty printing */
@@ -486,10 +486,15 @@ anfis_compute_membership (const anfis_t net, const gsl_vector *input,
 	
 	#pragma omp parallel for shared(MF_k,input) private(value)
 	for (i=0 ; i < n*t ; i++) {
-		value = eval_MF (net->MF[i], gsl_vector_get (input, i%n));
+		value = eval_MF (net->MF[i], gsl_vector_get (input, i/t));
 		assert (value >= 0.0);
 		gsl_vector_set (MF_k, i, value);
 	}
+	/* This way the vector MF_k is filled as:
+	 * +----------+-----+------------+----------+-----+--------------+
+	 * | MF[0][0] | ... | MF[0][T-1] | MF[1][0] | ... | MF[N-1][T-1] |
+	 * +----------+-----+------------+----------+-----+--------------+
+	 */
 	
 	return ANFIS_OK;
 }
@@ -548,9 +553,11 @@ anfis_partial_fwd_prop (const anfis_t net, const gsl_vector *MF_k,
 		
 		tau[i] = 1.0;
 		next_index (index, net->t);
+		/* This way we visit all posible t^n combinations
+		 * of the n*t membership functions in the network */
 		
 		for (j=0 ; j < net->n ; j++) {
-			tau[i] *= MF_k [j * net->t + index[j]]
+			tau[i] *= MF_k [j * net->t + index[j]];
 		}
 		assert (tau[i] >= 0.0);
 	}
@@ -627,7 +634,7 @@ calc_den (const gsl_matrix *S, const gsl_vector *A_i, gsl_vector *v_aux)
 
 /* Performs LSE of all the consequent parameters in the network
  *
- * PARAMETERS:	A ---> predictor variables matrix  (of dimension [P][M])
+ * PARAMETERS:	A ---> predictor variables matrix  (dimension [P][M])
  *		y ---> expected results for this sample set  (P in total)
  *
  * PRE: A != NULL
@@ -785,28 +792,101 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
 
 
 
+/* Computes phi value for the membership function MF[i][j]. That is:
+ * phi = Σ [tl * (Pl - fk)] , where:
+ * 
+ * the sumation's index is 'l', and it moves through all the t^(n-1) branches
+ * where MF[i][j] appears
+ * tl == barred tau sub l
+ * Pl == cp[l][0] + cp[l][1] * x[k][0] + ... + cp[l][n] * x[k][n-1]
+ * fk == network's output for k-th sample
+ */
+static double
+compute_phi (long i, long j, size_t k, long n, long t, mfu_t *mfu)
+{
+	double  phi = 0.0,
+		Pl  = 0.0,
+		tl  = 0.0,
+		fk  = 0.0;
+	long l = 0,
+	     ll = 0,
+	     index = 0,
+	     l_max = lpow (t, n-1),
+	     jump_line = lpow (t,i);
+	
+	assert (mfu != NULL);
+	assert (mfu->s     != NULL);
+	assert (mfu->b_tau != NULL);
+	assert (mfu->cp    != NULL);
+	assert (mfu->f_out != NULL);
+	assert (0 <= i && i < n);
+	assert (0 <= j && j < t);
+	
+	
+	/* 'index' will identify those branches in the network (among all the
+	 * t^n possibilities) where MF[i][j] appears
+	 *
+	 * Starting point: j * (t^i)
+	 */
+	index = j * lpow (t,i);
+	phi = 0.0;
+	fk = gsl_vector_get (mfu -> f_out, k);
+	
+	for (l=0 ; l < l_max ; l++) {
+		gsl_vector_view p_aux;
+		
+		/* Pl = cp[l][0] + cp[l][1] * x[k][1] + ... + cp[i][n] * x[k][n-1] */
+		Pl = 0.0;
+		p_aux = gsl_vector_subvector (mfu -> cp, index * (n+1) + 1, n);
+		gsl_blas_ddot (&(p_aux.vector), (mfu -> s)[k].in, &Pl);
+		Pl += gsl_vector_get (mfu -> cp, index * (n+1));
+		
+		/* tl = barred tau (sub l) for k-th sample */
+		tl = gsl_matrix_get (mfu -> b_tau, k, index);
+		
+		phi += tl * (Pl - fk);
+		
+		/* Now 'index' must be updated */
+		if (++ll >= jump_line) {
+			/* Jumping size: (T-1)*(T^i)+1 */
+			ll = 0;
+			index += (t-1) * jump_line + 1;
+		} else {
+			/* Just one step advance */
+			index++;
+		}
+	}
+	
+	return phi;
+}
+
+
+
+
 /* Computes error gradient for all parameters of the given membership function.
  * Each parameter's err.grad. is stored in vector db_e_ij.
  * The whole learning error is the returned value.
  *
  * PARAMETERS:  mfu --> MF update TAD
- *		P ----> # of samples in the set
- *		j ----> order # of the input element this MF processes
+ *		i,j --> order # of this membership function
+ *			ie: this is MF[i][j], with 'i' ∈ [0..n) & 'j' ∈ [0..t)
  *		n ----> network input dimension
+ *		t ----> # of membership functions for each input element
+ *		P ----> # of samples in the set
  *
  * PARAMETERS INSIDE mfu:
  *		s --------> samples training set
  *		mf_ij ----> membership function whose parameters must be updated
  *		db_e_ij --> error gradient for each parameter of this MF
  *		MF_val ---> MF values for all P inputs in the given sample
- *		b_tau ----> barred tau values for all P inputs (for this branch)
- *		p_sub ----> consequent parameters (for this branch)
+ *		b_tau ----> network's barred tau values for all P inputs
+ *		cp -------> network's consequent parameters (after LSE)
  *		f_out ----> network output values for the given sample
  *		
  * PRE: mfu != NULL
  *	All values inside mfu != NULL
- *	All vectors dimension (inside mfu) == P
- *	j < n
+ *	i < n
+ *	j < t
  *
  * USE: err = anfis_update_mf (&mfu, db_e_ij, j, P, n)
  *
@@ -816,17 +896,16 @@ anfis_lse (anfis_t net, const gsl_matrix *A, const t_sample *s, unsigned int P)
  *	isnan(err)   &&   an internal misfunction has ocurred
  */
 static double
-anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
+anfis_calc_mf_up (mfu_t *mfu, long i, long j, long n, long t, size_t P)
 {
-	int k = 0;
+	unsigned long k = 0;
 	MF_t *mf_ij = NULL;	/* MF whose parameters must be updated */
 	gsl_vector *db_e_ij = NULL;	/* error gradient for MF's parameters */
 	double	mf_k = 0.0,	/* MF value for the k-th sample */
 		w    = 0.0,	/* mf_k * (1.0 - mf_k) */
 		xj   = 0.0,	/* j-th input element for k-th sample */
 		fk   = 0.0,	/* network output for k-th sample */
-		pk   = 0.0,
-		tk   = 0.0,	/* barred tau for k-th sample (of this branch) */
+		phi  = 0.0,
 		yk   = 0.0,	/* correct output for k-th sample */
 		aux  = 0.0;
 	double  d_mf[MAX_PARAM];  /* derivatives of MF to its parameters */
@@ -837,12 +916,11 @@ anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 	assert (mfu->s      != NULL);
 	assert (mfu->MF_val != NULL);
 	assert (mfu->b_tau  != NULL);
-	assert (mfu->p_sub  != NULL);
+	assert (mfu->cp     != NULL);
 	assert (mfu->f_out  != NULL);
-	assert (j < n);
+	assert (i < n);
+	assert (j < t);
 	
-	mf_ij   = mfu -> mf_ij;
-	db_e_ij = mfu -> db_e_ij;
 	
 	/** TODO: erase the following check and implement support for
 	 **	  every membership function defined in the header file
@@ -852,14 +930,17 @@ anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 				 "Membership function not implemented  ~  "
 				 "ABORTING UPDATE !!!\n\n");
 		return NAN;
+		
+	} else {
+		mf_ij   = mfu -> mf_ij;
+		db_e_ij = mfu -> db_e_ij;
 	}
 	
 	gsl_vector_set_zero (db_e_ij);
-	omp_set_nested (1);
 	/** WARNING Following loop works only for MF of kind 'bell' */
 /*	#pragma omp parallel for default(shared) \
 				 private(k, mf_k, w, xj, fk, pk, tk, yk, d_mf, aux)
-*/	for (k=0 ; (unsigned int) k < P ; k++) {
+*/	for (k=0 ; k < P ; k++) {
 		gsl_vector_view  p_aux;
 		
 		/* mf_k = MF value for k-th sample */
@@ -872,14 +953,8 @@ anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 		/* fk = network output for k-th sample */
 		fk = gsl_vector_get (mfu -> f_out, k);
 		
-		pk = 0.0;
-		/* pk = p[i][0] + p[i][1] * x[k][1] + ... + p[i][n-1] * x[k][n-1] */
-		p_aux = gsl_vector_subvector (mfu -> p_sub, 1, n);
-		gsl_blas_ddot (&(p_aux.vector), (mfu -> s)[k].in, &pk);
-		pk += gsl_vector_get (mfu -> p_sub, 0);
-		
-		/* tk = barred tau for k-th sample (of this branch) */
-		tk = gsl_vector_get (mfu -> b_tau, k);
+		/* phi = Σ [tl * (Pl - fk)]  ,  see above */
+		phi = compute_phi (i, j, (size_t) k, n, t, mfu);
 		
 		/* yk = correct output for k-th sample */
 		yk = (mfu -> s)[k].out;
@@ -891,7 +966,7 @@ anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 			{
 				d_mf[0] = (-2.0 * w * mf_ij->p[1]) / mf_ij->p[0];
 				aux = gsl_vector_get (db_e_ij, 0);
-				aux += -2.0 * (yk - fk) * (pk - fk) * tk
+				aux += -2.0 * (yk - fk) * phi
 					    * (1.0/mf_k) * d_mf[0];
 				gsl_vector_set (db_e_ij, 0, aux);
 			}
@@ -902,7 +977,7 @@ anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 				aux = (xj - mf_ij->p[2]) / mf_ij->p[0];
 				d_mf[1]  = -2.0 * w * log (fabs (aux));
 				aux = gsl_vector_get (db_e_ij, 1);
-				aux += -2.0 * (yk - fk) * (pk - fk) * tk
+				aux += -2.0 * (yk - fk) * phi
 					    * (1.0/mf_k) * d_mf[1];
 				gsl_vector_set (db_e_ij, 1, aux);
 			}
@@ -913,13 +988,12 @@ anfis_calc_mf_up (mfu_t *mfu, unsigned int j, unsigned int P, unsigned int n)
 				d_mf[2]  = (-2.0 * w * mf_ij->p[1]) /
 						(xj - mf_ij->p[2]);
 				aux = gsl_vector_get (db_e_ij, 2);
-				aux += -2.0 * (yk - fk) * (pk - fk) * tk
+				aux += -2.0 * (yk - fk) * phi
 					    * (1.0/mf_k) * d_mf[2];
 				gsl_vector_set (db_e_ij, 2, aux);
 			}
 		}
 	}
-	omp_set_nested (0);
 	
 	aux = 0.0;
 	for (int l = 0 ; l < MAX_PARAM ; l++) {
@@ -1020,6 +1094,7 @@ anfis_update_etha (anfis_t net, double new_err)
 
 
 
+
 /* Applies the updates stored in 'db_e' to all membership functions inside 'net'
  * 'new_err' must be the total learning error, ie: sum all over db_e values
  *
@@ -1043,19 +1118,18 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
 	etha = net->etha / ((new_err !=0) ? new_err : 2.0);
 	
 	#pragma omp parallel for default(shared) private(i,l,db_e_ij)
-	for (i=0 ; i < net->t * net->n ; i++) {
+	for (i=0 ; i < net->n * net->t ; i++) {
 		
-		/* Error gradients for the parameters of M[i/n][i%n] */
+		/* Error gradients for the parameters of M[i/t][i%t] */
 		db_e_ij = gsl_matrix_ptr (db_e, i, 0);
 		
 		for (l=0 ; l < MAX_PARAM ; l++) {
-			net-> b[i/net->n]. MF[i%net->n]. p[l] -= etha * db_e_ij[l];
+			net-> MF[i]. p[l] -= etha * db_e_ij[l];
 		}
 	}
 	
 	return;
 }
-
 
 
 
@@ -1068,8 +1142,8 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
  *			  for the last training sample processed (ie: s)
  *		b_tau --> barred taus for the last training sample processed
  *		cp -----> network's consequent parameters in ascending order
- *			  That is: p[0][0], p[0][1], ..., p[0][n-1], p[1][0],...
- *			  	   ,p[1][n-1], ..., p[t^n][0], ..., p[t^n][n-1]
+ *			  That is: p[0][0], p[0][1], ... , p[0][n], p[1][0], ...
+ *			  	   , p[1][n], ... , p[t^n][0], ... , p[t^n][n]
  *		P ------> # of samples in the last training sample processed
  *
  * PRE: net   != NULL
@@ -1084,13 +1158,13 @@ anfis_do_mf_up (anfis_t net, gsl_matrix *db_e, double new_err)
  */
 static int
 anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
-		 gsl_matrix *MF, gsl_matrix *b_tau, gsl_vector *cp, unsigned int P)
+		 gsl_matrix *MF, gsl_matrix *b_tau, gsl_vector *cp, size_t P)
 {
 	gsl_vector *f_out = NULL;
 	gsl_matrix *db_e  = NULL;
 	double	err_grad  = 0.0,
 		total_err = 0.0;
-	int i = 0, j = 0;
+	long i = 0, j = 0;
 	int res = ANFIS_OK;
 	mfu_t mfu;
 	
@@ -1116,50 +1190,36 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
 	debug ("%s","\n");
 */	
 	/* The k-th row of "db_e" will hold the error gradient corresponding
-	 * to the parameters update of the network membership function
-	 * located in branch # k/n, for input element k%n (ie: MF[k/n][k%n])
+	 * to the parameters update of the network membership function which
+	 * gives input element k/t its k%t interpretation (ie: MF[k/t][k%t])
 	 */
 	db_e = gsl_matrix_alloc (net->n * net->t, MAX_PARAM);
 	handle_error_2 (db_e);
 	
-	mfu.s      = s;
-	mfu.f_out  = f_out;
-	total_err  = 0.0;
+	mfu.s     = s;
+	mfu.cp    = cp;
+	mfu.b_tau = b_tau;
+	mfu.f_out = f_out;
+	total_err = 0.0;
 	
-	/** TODO Ahora tenemos más consequent parameters que MFs, contrario a
-	 **	 lo que plantea el paper de Nicolás Bruno.
-	 **	 ¿¿¿ Cómo poronga hacemos las actualizaciones de las MFs ???
-	 **
-	 **	 Hay que revisar todo el método de descenso por el gradiente
-	 **	 y la put@$~#&*$/~! que lo parió
-	 **/
-	for (i=0 ; i < net->t && res == ANFIS_OK; i++) {
-		gsl_vector_view cp_i, b_tau_i, MF_val;
-		
-		/* cp_i holds paramaters p[i][0], p[i][1], ..., p[i][n] */
-		cp_i = gsl_vector_subvector (cp, i*(net->n+1), net->n+1);
-		/* b_tau_i holds b_tau values of i-th branch (all P inputs) */
-		b_tau_i = gsl_matrix_column (b_tau, i);
-		
+	for (i=0 ; i < net->n && res == ANFIS_OK; i++) {
 		j = -1;
-		#pragma omp parallel default(shared) private(err_grad, MF_val) \
+		#pragma omp parallel default(shared) private(err_grad) \
 				     firstprivate(j, mfu) reduction(+:total_err)
-		while (++j < net->n && res == ANFIS_OK) {
-			gsl_vector_view db_e_ij;
+		while (++j < net->t && res == ANFIS_OK) {
+			gsl_vector_view MF_val, db_e_ij;
 			
 			/* MF_val holds MF[i][j] values for all P inputs */
-			MF_val = gsl_matrix_column (MF, i * net->n + j);
+			MF_val = gsl_matrix_column (MF, i * net->t + j);
 			/* Error gradients for the parameters of M[i][j] */
-			db_e_ij = gsl_matrix_row (db_e, i * net->n + j);
+			db_e_ij = gsl_matrix_row (db_e, i * net->t + j);
 			
-			mfu.mf_ij   = &(net->b[i].MF[j]);
-			mfu.cp_i    = &(cp_i.vector);
-			mfu.b_tau   = &(b_tau_i.vector);
+			mfu.mf_ij   = &(net->MF [i * net->t + j]);
 			mfu.MF_val  = &(MF_val.vector);
 			mfu.db_e_ij = &(db_e_ij.vector);
 			
 			/* Computing update values */
-			err_grad = anfis_calc_mf_up (&mfu, j, P, net->n);
+			err_grad = anfis_calc_mf_up (&mfu, i, j, net->n, net->t, P);
 			
 			if (isnan(err_grad)) {
 				/* An error ocurred */
@@ -1215,7 +1275,7 @@ anfis_grad_desc (anfis_t net, const t_sample *s, const gsl_matrix *A,
  *	result == ANFIS_ERR
  */
 int
-anfis_train (anfis_t net, t_sample *s, unsigned int P)
+anfis_train (anfis_t net, t_sample *s, size_t P)
 {
 	int res = ANFIS_OK;
 	long k = 0, i = 0;
