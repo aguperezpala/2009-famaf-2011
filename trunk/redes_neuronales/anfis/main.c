@@ -13,12 +13,12 @@
 
 
 
-/* # de ramas de la red */
-size_t  _T = 0;
-
 /* Dimensión de entrada de la red
  * O sea, con cuantos puntos "previos" se tratará de adivinar "el siguiente" */
 size_t  _N = 0;
+
+/* # de interpretaciones para cada uno de los _N elementos de entrada */
+size_t  _T = 0;
 
 /* Salto entre puntos de entrada de la red
  * ie: 1 indica que los valores tomados serán uno, el siguiente, el siguiente
@@ -53,6 +53,8 @@ double  _LB = DBL_MAX,  /* Límite inferior */
  * usando la rutina standard de glibc: free()
  *
  * El valor de retorno es el arreglo generado, que tiene longitud 'nlines'
+ *
+ * USO: y = get_sample_values (argc, argv, &nlines)
  */
 static double *
 get_sample_values (int argc, char **argv, size_t *nlines)
@@ -97,9 +99,9 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 		
 		} else if (matched != 2) {
 			fprintf (stderr, "El archivo debe contener sólo dos "
-				 "columnas: la izquierda con los tiempos y la "
-				 "derecha con los valores de la serie/función "
-				 "para esos tiempos\n");
+				 "columnas: la izquierda con los tiempos\ny "
+				 "la derecha con los valores de la serie/"
+				 "función para esos tiempos\n");
 			exit (EXIT_FAILURE);
 		
 		} else {
@@ -122,10 +124,10 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 
 /* Parsea la entrada. En caso de ser correcta:
  *
- *  · setea al # de ramas y la dimensión de entrada de la red
- *  · devuelve un array con espacio suficiente para los datos muestrales (y)
+ *  · setea la dimensión de entrada y el # de interpretaciones (ie: _N y _T)
+ *  · guarda en 'y' los datos muestrales
  *  · calcula la cantidad de datos muestrales (nlines)
- *  · genera el archivo de salida de las estimaciones de la red (fout)
+ *  · genera el archivo de salida para las estimaciones de la red (fout)
  *  · (OP) genera el archivo de salida para los errores de aprendizaje (ferr)
  *  · (OP) genera el archivo de salida para las funciones MF iniciales (f_imf)
  *  · (OP) genera el archivo de salida para las funciones MF finales   (f_fmf)
@@ -139,8 +141,9 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	printf ("argc = %d\n", argc);
 	if (6 > argc || argc > 9) {
 		fprintf (stderr, "Debe invocar al programa con los argumentos:"
-				"\n\t1) # de ramas de la red"
-				"\n\t2) Dimensión de la entrada"
+				"\n\t1) Dimensión de la entrada"
+				"\n\t2) # de interpretaciones para cada "
+					"elemento de la entrada"
 				"\n\t3) Nombre del archivo que contiene los "
 					"datos muestrales"
 				"\n\t4) # de líneas del mismo"
@@ -155,17 +158,17 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 		exit (EXIT_FAILURE);
 	}
 	
-	_T = (size_t) strtol (argv[1], &error, 10);
+	_N = (size_t) strtol (argv[1], &error, 10);
 	if (error[0] != '\0') {
 		fprintf (stderr, "\aEl primer argumento debe ser "
-				 " el # de ramas de la red\n");
+				 "la dimensión de entrada de la red\n");
 		exit (EXIT_FAILURE);
 	}
 	
-	_N = (size_t) strtol (argv[2], &error, 10);
+	_T = (size_t) strtol (argv[2], &error, 10);
 	if (error[0] != '\0') {
-		fprintf (stderr, "\aEl segundo argumento debe ser "
-				 " la dimensión de entrada de la red\n");
+		fprintf (stderr, "\aEl segundo argumento debe ser el # de "
+				 "interpretaciones para cada elemento de entrada\n");
 		exit (EXIT_FAILURE);
 	}
 	
@@ -181,9 +184,8 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	if (argc >= 7) {
 		*ferr = fopen (argv[6], "w");
 		if (*ferr == NULL || ferror (*ferr)) {
-			warn ("Archivo de errores de aprendizaje "
-				"corrupto: '%s'\nNo se guardará registro"
-				" del nivel de error\n", argv[4]);
+			warn ("'%s': imposible abrir archivo.\nNo se guardará "
+			      "registro de los errores de aprendizaje\n", argv[6]);
 		}
 	}
 	
@@ -191,7 +193,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 		*f_imf = fopen (argv[7], "w");
 		if (*f_imf == NULL || ferror (*f_imf)) {
 			warn ("'%s': imposible abrir archivo.\nNo se graficarán"
-			      " las funciones membresía iniciales\n", argv[5]);
+			      " las funciones membresía iniciales\n", argv[7]);
 		}
 	}
 	
@@ -200,7 +202,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 		if (*f_fmf == NULL || ferror (*f_fmf)) {
 			warn ("'%s': imposible abrir archivo.\nNo se "
 				"graficarán las funciones membresía resultantes"
-				" tras el aprendizaje\n", argv[5]);
+				" tras el aprendizaje\n", argv[8]);
 		}
 	}
 	
@@ -209,11 +211,15 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 
 
 
-/* Construye un conjunto de t*n funciones membresía
- * donde el rango de valores de entrada a cubrir es 'UB'-'LB'
+
+/* Construye un conjunto de n*t funciones membresía.
+ * Es decir que por cada uno de los 'n' elementos de entrada existen 't' MFs.
  *
- * Dicho rango es cubierto casi por completo en cada una de las 't' ramas
- * Sin embargo cada rama lo cubre de manera diferente a las demás.
+ * El rango de valores de entrada a cubrir es 'UB'-'LB'
+ * Para cada elemento de la entrada dicho rango es cubierto casi por completo.
+ *
+ * Dado un elemento específico de la entrada dicho rango se divide más o menos
+ * uniformemente entre sus 't' interpretaciones.
  */
 static MF_t *
 gen_mfs (size_t n, size_t t, double LB, double UB)
@@ -224,47 +230,32 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 		b = slope,
 		c = 0.0;
 	
-	mf = (MF_t *) malloc (t * n * sizeof (MF_t));
+	assert (a != 0.0);
+	
+	mf = (MF_t *) malloc (n * t * sizeof (MF_t));
 	assert (mf != NULL);
 	
-	for (i=0 ; i < t ; i++) {
-		c = LB + (1.0 + 2.0 * i) * a;
-		for (j=0 ; j < n ; j++) {
-			mf[i*n+j].k = bell;
-			mf[i*n+j].p[0] = a;
-			mf[i*n+j].p[1] = b;
-			mf[i*n+j].p[2] = c;
-		}
-	}
-/*	
-	for (j=0 ; j < n ; j++) {
-		
+	for (j=0 ; j < t ; j++) {
 		c = LB + (1.0 + 2.0 * j) * a;
-		* Corrección hacia atrás *
-		c -= (UB-LB)*(0.01*_T*_T);
-		
-		for (i=0 ; i < t ; i++) {
-			* Corrección hacia adelante *
-			c += 0.035 * (i + 1.0);
-			* Todas las MF serán campanas *
-			mf[i*n+j].k = bell;
-			mf[i*n+j].p[0] = a;
-			mf[i*n+j].p[1] = b;
-			mf[i*n+j].p[2] = c;
+		for (i=0 ; i < n ; i++) {
+			mf[i*t+j].k = bell;
+			mf[i*t+j].p[0] = a;
+			mf[i*t+j].p[1] = b;
+			mf[i*t+j].p[2] = c;
 		}
 	}
-*/	
+	
 	return mf;
 }
 
 
 
-/* Si el archivo de salida para las funciones membresía finales fue especificado
- * esta función imprime en él los parámetros de todas las MFs de la red
- * que fueron modificadas con los ciclos de entrenamiento
+
+/* Imprime en el archivo de salida especificado
+ * los parámetros de todas las funciones membresía de la red
  */
 static void
-mf_print (anfis_t net, FILE *fout)
+mf_print (anfis_t net, FILE *fout, size_t n, size_t t)
 {
 	int i = 0, j = 0;
 	MF_t mf;
@@ -274,8 +265,8 @@ mf_print (anfis_t net, FILE *fout)
 		return;
 	}
 	
-	for (i=0 ; i < _T ; i++) {
-		for (j=0 ; j < _N ; j++) {
+	for (i=0 ; i < n ; i++) {
+		for (j=0 ; j < t ; j++) {
 			assert (ANFIS_OK == anfis_get_MF (net, i, j, &mf));
 			fprintf ( fout, "%d%*d\t%-*.4f%-*.4f%-*.4f\n",
 				  i, width/2, j,
@@ -288,14 +279,14 @@ mf_print (anfis_t net, FILE *fout)
 	 * 0 0      MF[0][0].p[0]       MF[0][0].p[1]       MF[0][0].p[2]
 	 * 0 1      MF[0][1].p[0]       MF[0][1].p[1]       MF[0][1].p[2]
 	 * ...                 ...                 ...
-	 * 0 N-1    MF[0][N-1].p[0]     MF[0][N-1].p[1]     MF[0][N-1].p[2]
+	 * 0 T-1    MF[0][T-1].p[0]     MF[0][T-1].p[1]     MF[0][T-1].p[2]
 	 * 1 0      MF[1][0].p[0]       MF[1][0].p[1]       MF[1][0].p[2]
 	 * ...                 ...                 ...
-	 * 1 N-1    MF[1][N-1].p[0]     MF[1][N-1].p[1]     MF[1][N-1].p[2]
+	 * 1 T-1    MF[1][T-1].p[0]     MF[1][T-1].p[1]     MF[1][T-1].p[2]
 	 * ...                 ...                 ...
-	 * T-1 0    MF[T-1][0].p[0]     MF[T-1][0].p[1]     MF[T-1][0].p[2]
+	 * N-1 0    MF[N-1][0].p[0]     MF[N-1][0].p[1]     MF[N-1][0].p[2]
 	 * ...                 ...                 ...
-	 * T-1 N-1  MF[T-1][N-1].p[0]   MF[T-1][N-1].p[1]   MF[T-1][N-1].p[2]
+	 * N-1 T-1  MF[N-1][T-1].p[0]   MF[N-1][T-1].p[1]   MF[N-1][T-1].p[2]
 	 */
 	
 	return;
@@ -308,14 +299,15 @@ static t_sample *
 sample_alloc (size_t n, size_t p)
 {
 	t_sample *s = NULL;
-	unsigned long i = 0;
+	unsigned long k = 0;
 	
 	s = (t_sample *) malloc (p * sizeof (t_sample));
 	assert (s != NULL);
 	
-	for (i=0 ; i < p ; i++) {
-		s[i].in = gsl_vector_alloc (n);
-		assert (s[i].in != NULL);
+	#pragma omp parallel for
+	for (k=0 ; k < p ; k++) {
+		s[k].in = gsl_vector_alloc (n);
+		assert (s[k].in != NULL);
 	}
 	
 	return s;
@@ -363,7 +355,7 @@ sample_gen (t_sample *s, size_t n, size_t p, size_t jump, double *y)
 		loi[k] -= loi[i];
 	}
 	
-	/* Ahora escogemos aleatoriamente las 'p' muestras */
+	/* Ahora escogemos aleatoriamente (o no) las 'p' muestras */
 	#pragma omp parallel for default(shared) private(i,j)
 	for (k=0 ; k < p ; k++) {
 		i = loi[k];
@@ -408,26 +400,26 @@ sample_free (t_sample *s, size_t p)
 
 /* Ejercita la red 'p' veces con los valores de 's'
  *
- * Para ello alimenta cada entrada s[i].in a la red y compara el valor devuelto
- * con el resultado verdadero (s[i].out)
+ * Para ello alimenta cada entrada s[k].in a la red y compara el valor devuelto
+ * con el resultado verdadero (s[k].out)
  *
- * Los valores de salida de la red son impresos secuencialmente en el archivo
- * 'fout' Si se especificó archivo para los errores de aprendizaje ('ferr')
- * éstos también serán registrados
+ * Las salidas de la red son impresas secuencialmente en el archivo 'fout'
+ * Si se especificó un nombre de archivo para los errores de aprendizaje
+ * ('ferr') éstos también serán registrados
  */
 static void
-exercise_network (anfis_t net, t_sample *sample, size_t p, double offset,
-		   FILE *fout, FILE *ferr)
+exercise_network (const anfis_t net, const t_sample *sample,
+		   size_t p, double offset, FILE *fout, FILE *ferr)
 {
-	unsigned long t = 0;
+	unsigned long k = 0;
 	double out = 0.0;
 	
-	for (t=0 ; t < p ; t++) {
-		out = anfis_eval (net, sample[t].in);
-		fprintf (fout, "%f\t%f\n", t + offset, out);
+	for (k=0 ; k < p ; k++) {
+		out = anfis_eval (net, sample[k].in);
+		fprintf (fout, "%f\t%f\n", k + offset, out);
 		if (ferr != NULL && !ferror (ferr)) {
 			fprintf (ferr, "%.1f\t%f\n",
-				 t + offset, sample[t].out - out);
+				 k + offset, sample[k].out - out);
 		}
 	}
 	
@@ -453,7 +445,7 @@ int main (int argc, char **argv)
 	/* Obtenemos los datos */
 	parse_input (argc, argv, &y, &nlines, &fout, &ferr, &f_imf, &f_fmf);
 	
-	printf ("\n\nT = %zu\tN = %zu\n", _T, _N);
+	printf ("\n\nN = %zu\tT = %zu\n", _N, _T);
 	/* Creamos la red */
 	mfs = gen_mfs (_N, _T, _LB, _UB);
 	net = anfis_create (_N, _T, mfs);
@@ -461,7 +453,7 @@ int main (int argc, char **argv)
 	anfis_print (net);
 	
 	/* Imprimimos las funciones membresía iniciales (antes del aprendizaje) */
-	mf_print (net, f_imf);
+	mf_print (net, f_imf, _N, _T);
 	
 	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
 	 * y entrenamos la red con él */
@@ -483,7 +475,7 @@ int main (int argc, char **argv)
 	exercise_network (net, sample, p, p, fout, ferr);
 	
 	/* Imprimimos las funciones membresía resultantes del aprendizaje */
-	mf_print (net, f_fmf);
+	mf_print (net, f_fmf, _N, _T);
 	
 	/* Limpiando memoria */
 	net = anfis_destroy (net);

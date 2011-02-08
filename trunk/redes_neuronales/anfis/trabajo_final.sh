@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Parámetros para la red ANFIS:
-# Número de ramas
-T=2
 # Dimensión de la entrada
 N=4
+# Número de interpretaciones por elemento de entrada
+T=2
 
 
 LOG=anfis.log
@@ -60,7 +60,7 @@ make anfis_mg >> $LOG 2>&1
 # Lo siguiente guarda en $nlines el # de líneas del archivo MG_DATA
 nlines=`wc -l $MG_DATA | tr -c -d [0-9]`
 echo "Ejecutando programa principal"
-$MAIN $T $N $MG_DATA $nlines $MG_ANFIS $LERR_DATA $MF_DATA_INITIAL \
+$MAIN $N $T $MG_DATA $nlines $MG_ANFIS $LERR_DATA $MF_DATA_INITIAL \
 $MF_DATA_FINAL >> $LOG 2>&1
 
 
