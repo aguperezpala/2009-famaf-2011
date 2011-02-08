@@ -3,7 +3,7 @@
  * Network ADT
  *
  * $ Author: Carlos E. Budde $
- * $ Date: 13/12/2010 11:35 $
+ * $ Date: 08/02/2011 17:05 $
  * $ License: GPL v3 $
  *
  */
@@ -25,7 +25,7 @@ typedef struct _anfis_s *anfis_t;
 #define  ANFIS_ERR	(-1)
 
 
-/* Quantity of possible membership functions (ie: length of MF_kind enum) */
+/* Quantity of possible membership functions (ie: length of enum MF_kind) */
 #define  MAX_FUNC	4
 /* Maximum # of parameters for any membership function */
 #define  MAX_PARAM	4
@@ -200,7 +200,7 @@ anfis_train (anfis_t net, t_sample *s, size_t P);
 
 
 double
-anfis_eval (anfis_t net, const gsl_vector *input);
+anfis_eval (const anfis_t net, const gsl_vector *input);
 
 /* Feeds the network with the given input. Returns the network produced output
  *

@@ -14,23 +14,23 @@
 
 
 /* Dimensión máxima de entrada de la red */
-#define  N_MAX		8
+#define  N_MAX		4
 /* Tamaño del salto de dimensión de entrada */
 #define  N_HOP		4
 
 
-/* Máxima cantidad de ramas paralelas en la red */
-#define  T_MAX		6
-/* Tamaño del salto en el # de ramas */
-#define  T_HOP		3
+/* Máxima cantidad de MFs (aka: interpretaciones) por elemento de entrada */
+#define  T_MAX		2
+/* Tamaño del salto en el # de interpretaciones */
+#define  T_HOP		1
 
 
 /* # de ejemplos que tendrá un training set */
-#define  P		((3*N_MAX*T_MAX)/2)
+#define  P		(pow (T_MAX, N_MAX) * (N_MAX + 1) + 1)
 
 
 /* # de épocas (de entrenamiento) antes de empezar a medir */
-#define  NEPOCHS	100
+#define  NEPOCHS	10
 
 
 /* Rango de valores para las entradas */
@@ -49,11 +49,11 @@ init_MF (size_t n, size_t t)
 	size_t i = 0;
 	MF_t *mf = NULL;
 	
-	mf = (MF_t *) malloc ( t*n * sizeof (MF_t));
+	mf = (MF_t *) malloc ( n * t * sizeof (MF_t));
 	assert (mf != NULL);
 	
 	/* Construimos las funciones de membresía ... */
-	for (i=0 ; i < t*n ; i++) {
+	for (i=0 ; i < n*t ; i++) {
 		
 		/* ... con una función predeterminada ... */
 		mf[i].k = MF_KIND;
@@ -77,14 +77,14 @@ static t_sample *
 sample_alloc (size_t n, size_t p)
 {
 	t_sample *s = NULL;
-	unsigned long i = 0;
+	unsigned long k = 0;
 	
 	s = (t_sample *) malloc (p * sizeof (t_sample));
 	assert (s != NULL);
 	
-	for (i=0 ; i < p ; i++) {
-		s[i].in = gsl_vector_alloc (n);
-		assert (s[i].in != NULL);
+	for (k=0 ; k < p ; k++) {
+		s[k].in = gsl_vector_alloc (n);
+		assert (s[k].in != NULL);
 	}
 	
 	return s;
@@ -99,15 +99,15 @@ sample_alloc (size_t n, size_t p)
 static void
 sample_gen (t_sample *s, size_t n, size_t p)
 {
-	unsigned int i = 0;
+	unsigned long k = 0;
 	double rand = 0.0;
 	
 	assert (s != NULL);
 	
-	for (i=0 ; i < p ; i++) {
+	for (k=0 ; k < p ; k++) {
 		rand = ran() * (UBOUND - LBOUND) + LBOUND;
-		gsl_vector_set_all (s[i].in, rand);
-		s[i].out = rand*rand;
+		gsl_vector_set_all (s[k].in, rand);
+		s[k].out = rand*rand;
 	}
 	
 	return;
@@ -119,13 +119,13 @@ sample_gen (t_sample *s, size_t n, size_t p)
 static t_sample *
 sample_free (t_sample *s, size_t p)
 {
-	unsigned long i = 0;
+	unsigned long k = 0;
 	
 	assert (s != NULL);
 	
-	for (i=0 ; i < p ; i++) {
-		gsl_vector_free (s[i].in);
-		s[i].in = NULL;
+	for (k=0 ; k < p ; k++) {
+		gsl_vector_free (s[k].in);
+		s[k].in = NULL;
 	}
 	
 	free (s);
@@ -176,24 +176,25 @@ int main (void)
 	mf  = init_MF (N_HOP, T_HOP);
 	net = anfis_create (N_HOP, T_HOP, mf);
 	anfis_print (net);
-	free (mf);	mf = NULL;
 	net = anfis_destroy (net);
+	free (mf);	mf = NULL;
 	printf ("\n");
 	
 	start = omp_get_wtime ();
-	/* Para cada # de ramas especificado */
-	for (t = T_HOP ; t <= T_MAX ; t += T_HOP) {
+	/* Para cada dimensión de entrada especificada */
+	for (n = N_HOP ; n <= N_MAX ; n += N_HOP) {
 		
-		/* Para cada dimensión de entrada especificada */
-		for (n = N_HOP ; n <= N_MAX ; n += N_HOP) {
+		/* Para cada # de interpretaciones por elemento de entrada */
+		for (t = T_HOP ; t <= T_MAX ; t += T_HOP) {
 			
-			printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-				"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nEjercitand"
-				"o red con:  [%lu rama%s]\t[%lu entrada%s]\n",
-				t, (t>1)?"s":"", n, (n>1)?"s":"");
+			printf ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+				"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+				"Ejercitando red con:  [%lu entrada%s]  "
+				"[%lu interpretaci%s]\n",
+				n, (n>1)?"s":"", t, (t>1)?"ones":"ón");
 			
 			/* Creamos espacio de trabajo */
-			p   = (3*n*t) / 2;
+			p   = lround (pow (t, n)) * (n + 1) + 1;
 			mf  = init_MF (n, t);
 			s   = sample_alloc (n, p);
 			net = anfis_create (n, t, mf);

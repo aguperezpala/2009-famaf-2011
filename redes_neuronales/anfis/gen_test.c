@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 
 #include "anfis.h"
 #include "mzran13.h"
@@ -13,10 +14,10 @@
 
 /* Dimensión de la entrada de la red */
 #define  N  4
-/* Número de ramas paralelas en la red */
+/* Número MFs por cada elemento de entrada */
 #define  T  3
 /* Número de ejemplos que tendrá un training set */
-#define  P  16
+#define  P  406
 
 
 
@@ -25,12 +26,12 @@ static void init_MF (MF_t mf[N*T])
 	int i = 0, j = 0;
 	
 	/* Construimos las funciones de membresía ... */
-	for (i=0 ; i < T*N ; i++) {
+	for (i=0 ; i < N*T ; i++) {
 		/* ... con cualquier función ... */
 		mf[i].k = i % MAX_FUNC;
 		for (j=0 ; j < MAX_PARAM ; j++) {
 			/* ... y parámetros cualesquiera */
-			mf[i].p[j] = (double) i+j;
+			mf[i].p[j] = ((double) i+j) / ((double) j+0.1);
 		}
 	}
 	
@@ -157,14 +158,14 @@ int main (void)
 	
 	init_MF (mf);
 	
-	printf ("Creating sample ANFIS network\n\n");
-	net = anfis_create (N, T, (const MF_t *) mf);
+	printf ("\nCreating sample ANFIS network\n");
+	net = anfis_create (N, T, mf);
 	anfis_print (net);
 	
 	
 	/* Getting a membership function */
 	printf ("Retrieving membership function...\n");
-	res = anfis_get_MF (net, T-1, N-1, &(mf[0]));
+	res = anfis_get_MF (net, N-1, T-1, &(mf[0]));
 	assert (res == ANFIS_OK);
 	print_MF (mf[0]);
 	printf ("Should be equal to the last MF in the network\n");
@@ -180,12 +181,12 @@ int main (void)
 	printf ("Setting MF as the network's first (ie: Branch # 0 / MF[0])");
 	res = anfis_set_MF (net, 0, 0, mf[0]);
 	assert (res == ANFIS_OK);
-	anfis_print_branch (net, 0);
+	anfis_print (net);
 	
 	
 	/* Getting consequent parameters */
 	printf ("\n\nRetrieving last consequent parameters...\n");
-	p = anfis_get_P (net, T-1);
+	p = anfis_get_P (net, lround (pow (T, N)) - 1);
 	assert (p != NULL);
 	printf ("p =");
 	for (i=0 ; i <= N ; i++)
@@ -198,10 +199,10 @@ int main (void)
 		p[i] = ((double) mzran13()) / ((double) ULONG_MAX) + ((double) N-i);
 		printf ("  %.2f", p[i]);
 	}
-	printf ("\nSetting p as the first consequent parameters (ie: Branch # 0)");
+	printf ("\nSetting p as the first consequent parameters");
 	res = anfis_set_P (net, 0, p);
 	assert (res == ANFIS_OK);
-	anfis_print_branch (net, 0);
+	anfis_print (net);
 	printf ("\n\n");
 	free (p);	p = NULL;
 	
