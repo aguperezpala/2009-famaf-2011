@@ -176,7 +176,7 @@ anfis_create (size_t n, size_t t, const MF_t *mf)
 	
 	net->MF = (MF_t *) malloc (n * t * sizeof (MF_t));
 	assert (net->MF != NULL);
-	#pragma omp parallel for default(shared) private(i)
+	#pragma omp parallel for
 	for (i=0 ; i < n*t ; i++) {
 		net->MF[i].k = mf[i].k;
 		memcpy (net->MF[i].p, mf[i].p, MAX_PARAM * sizeof(double));

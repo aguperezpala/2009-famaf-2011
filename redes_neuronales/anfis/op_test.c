@@ -14,9 +14,9 @@
 
 
 /* Dimensión máxima de entrada de la red */
-#define  N_MAX		4
+#define  N_MAX		2
 /* Tamaño del salto de dimensión de entrada */
-#define  N_HOP		4
+#define  N_HOP		1
 
 
 /* Máxima cantidad de MFs (aka: interpretaciones) por elemento de entrada */
