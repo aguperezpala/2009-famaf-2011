@@ -38,7 +38,7 @@ double estimar_var_muest_inef(double *sample, int N, double mediaMuestral)
 	for(i; i < N; i++)
 		result += pow(sample[i]-mediaMuestral,2);
 	
-	return result/(double)N;
+	return result/(double)(N-1);
 }
 
 
@@ -49,7 +49,7 @@ double estimar_var_muest_inef(double *sample, int N, double mediaMuestral)
 /*!*****************************************************************************/
 
 #define SIZE	2
-#define MONTECARLO_BOUND 10000		/* iteraciones de montecarlo */
+#define MONTECARLO_BOUND 1000		/* iteraciones de montecarlo */
 
 
 /** Estructura Media muestral */
@@ -136,6 +136,8 @@ double bootstrap_media (double *sample, unsigned int n)
 	for (i=0 ; i<n ; i++)
 		Xe += sample[i] / (double) n;
 	
+	/*printf("MediaEmpirica calculada: %.8f\n", Xe);*/
+	
 	N = pow ((double) n, (double) n);
 	ecm = 0.0;
 	
@@ -200,6 +202,9 @@ double bootstrap_varianza (double *sample, unsigned int n)
 	double Vc = 0.0;	/* Varianza muestral de una configuración */
 	int *config = NULL;	/* Configuración posible dada la muestra */
 	double aux = 0;
+	double MuestraPermutada[n];
+	double XmPermutada = 0.0;	/* Media muestral de la muestra permutada */
+	double VmPermutada = 0.0;	/* Varianza muestral de la muestra Permutada */
 	
 	/* Metemos la media empírica de la muestra real en Xe */
 	for (i=0 ; i<n ; i++)
@@ -210,6 +215,8 @@ double bootstrap_varianza (double *sample, unsigned int n)
 		Ve += pow(sample[i]-Xe,2)/(double)n;
 	}
 	
+	/*printf("MediaEmpirica calculada: %.8f\n", Xe);
+	printf("VarianzaEmpirica calculada: %.8f\n", Ve);*/
 	N = pow ((double) n, (double) n);
 	ecm = 0.0;
 	
@@ -250,18 +257,21 @@ double bootstrap_varianza (double *sample, unsigned int n)
 		
 		for (i=0 ; i<MONTECARLO_BOUND ; i++) {
 			
-			/* Guardamos en Xc la media muestral de una
-			* configuracion aleatoria de valores de la muestra */
-			reset_media_m ();
-			reset_var_m ();
+			/* Generamos una permutacion */
 			for (j=0 ; j<n ; j++) {
 				k = disc_gen_uniforme(0, n);
-				media_m (sample[k], j+1);
-				Vc  = var_m (sample[k], j+1);
+				MuestraPermutada[j] = sample[k];
 			}
 			
+			/* Calculamos la media muestral de la muestra permutada */
+			XmPermutada = estimar_media_muest_inef(MuestraPermutada, n);
+			
+			/* calculamos la varianza muestral de la muestra permutada */
+			VmPermutada = estimar_var_muest_inef(MuestraPermutada, n, 
+							     XmPermutada);
+			
 			/* Actualizamos el valor del ECM */
-			ecm += (pow (Vc - Ve, 2.0)) / (double) MONTECARLO_BOUND;
+			ecm += (pow (VmPermutada - Ve, 2.0)) / (double) MONTECARLO_BOUND;
 			/*
 			if (!(i%500))
 			printf ("loop # %u\tecm == %.4f\n", i, ecm);*/

@@ -130,7 +130,7 @@ double simular_server(void)
 }
 
 
-int main(int argc, char * argv[])
+int main8(int argc, char * argv[])
 {
 	double Xobservada = 0, Xpromj = 0, Xpromj1 = 0;
 	double Sj = 0, Sj1 = 0;
