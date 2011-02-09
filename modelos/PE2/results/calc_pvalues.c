@@ -19,7 +19,7 @@
 #define  SAMPLE_SIZE	500
 
 /* # de intervalos en los que se particiona la muestra */
-#define  NI	25
+#define  NI	10
 
 /* Extremo izquierdo del primer intervalo */
 #define  LI	0.0
