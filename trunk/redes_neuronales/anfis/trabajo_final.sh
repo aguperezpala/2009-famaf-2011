@@ -40,11 +40,11 @@ h=0.1
 tau=17
 yinit=1.2
 # Asíntotas horizontales de la eq.dif.
-LB=-0.5 # Lower bound
-UB=3.0  # Upper bound
+LB=0.0 # Lower bound
+UB=2.0  # Upper bound
 
-START=$(date +%s)
-STARTN=$(date +%N)
+START=$(date +%s)  # Tiempo de inicio (segundos)
+STARTN=$(date +%N) # Tiempo de inicio (nano segundos)
 
 
 
@@ -61,7 +61,7 @@ make anfis_mg >> $LOG 2>&1
 nlines=`wc -l $MG_DATA | tr -c -d [0-9]`
 echo "Ejecutando programa principal"
 $MAIN $N $T $MG_DATA $nlines $MG_ANFIS $LERR_DATA $MF_DATA_INITIAL \
-$MF_DATA_FINAL >> $LOG 2>&1
+      $MF_DATA_FINAL >> $LOG 2>&1
 
 
 
@@ -172,12 +172,12 @@ END {
 			inf = $2;
 		}
 	}
-	# Por cada rama generamos un script de gnuplot para impresión de las MF
-	for (i=0 ; i < T ; i++) {
+	# Por cada entrada generamos un script de gnuplot para imprimir las MF
+	for (i=0 ; i < N ; i++) {
 		
-		fout = "branch_" i "_initial.gp"
+		fout = "input_" i "_initial.gp"
 		
-		title = "Initial membership functions of branch # " i
+		title = "Initial membership functions for input # " i
 		print "set title \"" title "\" font \"giant\""		  > fout
 		print "set arrow from " inf ",0 to " inf ",1 nohead lt 0" >>fout
 		print "set arrow from " sup ",0 to " sup ",1 nohead lt 0" >>fout
@@ -185,24 +185,24 @@ END {
 		print "set out \"" plot i ".png\""	   >> fout
 		print "set term png size 1000, 400 nocrop" >> fout
 		
-		for (j=0 ; j < N ; j++) {
+		for (j=0 ; j < T ; j++) {
 			print "mf_" j "(x) = " mf[i, j]    >> fout
 		}
-		
+			
 		printf "plot"				   >> fout
 		
-		for (j=0 ; j < N-1 ; j++) {
+		for (j=0 ; j < T-1 ; j++) {
 			printf "\tmf_%d(x) with lines lt %d lw 2, \\\n",
 				j, j+1 >> fout
 		}
-		printf "\tmf_%d(x) with lines lt %d lw 2\n", N-1, N	 >> fout
+		printf "\tmf_%d(x) with lines lt %d lw 2\n", T-1, T	 >> fout
 	}
 }
 '
 # Por último ejecutamos todos estos scripts de gnuplot para generar los gráficos
-for ((i=0 ; i < $T ; i++))
+for ((i=0 ; i < $N ; i++))
 do
-	plotter="branch_"$i"_initial.gp"
+	plotter="input_"$i"_initial.gp"
 	gnuplot $plotter && \
 	rm $plotter
 done
@@ -237,12 +237,12 @@ END {
 			inf = $2;
 		}
 	}
-	# Por cada rama generamos un script de gnuplot para impresión de las MF
-	for (i=0 ; i < T ; i++) {
+	# Por cada entrada generamos un script de gnuplot para imprimir las MF
+	for (i=0 ; i < N ; i++) {
 		
-		fout = "branch_" i "_final.gp"
+		fout = "input_" i "_final.gp"
 		
-		title = "Final membership functions of branch # " i
+		title = "Final membership functions for input # " i
 		print "set title \"" title "\" font \"giant\""		  > fout
 		print "set arrow from " inf ",0 to " inf ",1 nohead lt 0" >>fout
 		print "set arrow from " sup ",0 to " sup ",1 nohead lt 0" >>fout
@@ -250,24 +250,24 @@ END {
 		print "set out \"" plot i ".png\""	   >> fout
 		print "set term png size 1000, 400 nocrop" >> fout
 		
-		for (j=0 ; j < N ; j++) {
+		for (j=0 ; j < T ; j++) {
 			print "mf_" j "(x) = " mf[i, j]    >> fout
 		}
 		
 		printf "plot"				   >> fout
 		
-		for (j=0 ; j < N-1 ; j++) {
+		for (j=0 ; j < T-1 ; j++) {
 			printf "\tmf_%d(x) with lines lt %d lw 2, \\\n",
 				j, j+1 >> fout
 		}
-		printf "\tmf_%d(x) with lines lt %d lw 2\n", N-1, N	 >> fout
+		printf "\tmf_%d(x) with lines lt %d lw 2\n", T-1, T	 >> fout
 	}
 }
 '
 # Por último ejecutamos todos estos scripts de gnuplot para generar los gráficos
-for ((i=0 ; i < $T ; i++))
+for ((i=0 ; i < $N ; i++))
 do
-	plotter="branch_"$i"_final.gp"
+	plotter="input_"$i"_final.gp"
 	gnuplot $plotter && \
 	rm $plotter
 done

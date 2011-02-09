@@ -27,7 +27,7 @@ size_t  _T = 0;
 #define  JUMP	6
 
 /* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  slope	3.0
+#define  slope	2.0
 
 /* Rango de los valores de entrada */
 double  _LB = DBL_MAX,  /* Límite inferior */
@@ -36,7 +36,7 @@ double  _LB = DBL_MAX,  /* Límite inferior */
 
 
 /* # de veces que se presentará la muestra a la red para aprendizaje */
-#define  NITER   1
+#define  NITER   3
 
 /* para pretty printing de los mf finales */
 #define  width   15
@@ -80,7 +80,7 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 	/* Accediendo a los datos */
 	file = fopen (nomfile,"r");
 	if (file == NULL || ferror(file)) {
-		err (1, "\aArchivo de datos corrupto: '%s'\n", nomfile);
+		err (1, "\aNo se pudo abrir el archivo de datos '%s'\n", nomfile);
 	} else {
 		y = (double *) malloc (*nlines * sizeof (double));
 		assert (y != NULL);
@@ -216,17 +216,16 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
  * Es decir que por cada uno de los 'n' elementos de entrada existen 't' MFs.
  *
  * El rango de valores de entrada a cubrir es 'UB'-'LB'
- * Para cada elemento de la entrada dicho rango es cubierto casi por completo.
- *
  * Dado un elemento específico de la entrada dicho rango se divide más o menos
- * uniformemente entre sus 't' interpretaciones.
+ * uniformemente entre sus 't' interpretaciones, para así cubrirlo por completo.
  */
 static MF_t *
 gen_mfs (size_t n, size_t t, double LB, double UB)
 {
 	int i = 0, j = 0;
 	MF_t *mf = NULL;
-	double	a = (UB-LB) / (2.0*t),
+	double	range = 2.0 * (UB-LB),
+		a = range / (2.0*t),
 		b = slope,
 		c = 0.0;
 	
@@ -236,7 +235,7 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 	assert (mf != NULL);
 	
 	for (j=0 ; j < t ; j++) {
-		c = LB + (1.0 + 2.0 * j) * a;
+		c = LB - 0.5 * (UB-LB) + (1.0 + 2.0 * j) * a;
 		for (i=0 ; i < n ; i++) {
 			mf[i*t+j].k = bell;
 			mf[i*t+j].p[0] = a;
@@ -365,7 +364,7 @@ sample_gen (t_sample *s, size_t n, size_t p, size_t jump, double *y)
 			/* Presentación aleatoria de ejemplos: */
 /*			gsl_vector_set (s[k].in, j, y[i+j*jump]);
 */		}
-		s[i].out = y[i+n*jump];
+		s[i].out = y[k+j*jump];
 	}
 	
 	free (loi);
@@ -381,13 +380,13 @@ sample_gen (t_sample *s, size_t n, size_t p, size_t jump, double *y)
 static t_sample *
 sample_free (t_sample *s, size_t p)
 {
-	unsigned long i = 0;
+	unsigned long k = 0;
 	
 	assert (s != NULL);
 	
-	for (i=0 ; i < p ; i++) {
-		gsl_vector_free (s[i].in);
-		s[i].in = NULL;
+	for (k=0 ; k < p ; k++) {
+		gsl_vector_free (s[k].in);
+		s[k].in = NULL;
 	}
 	
 	free (s);
