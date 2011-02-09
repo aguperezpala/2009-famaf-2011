@@ -6,6 +6,7 @@
 #include "analisis_estadistico.h"
 #include "gen_discretas.h"
 
+/*! Mal hecho mirar el de xcarlox mejor */
 
 /* # de intervalos en los que se divide el rango de la muestra */
 #define  NI  8
@@ -31,7 +32,7 @@ static void generar_prob_bin (unsigned int n, double p, double *prob)
 }
 
 
-int main (void)
+int main5 (void)
 {
 	double p_value = 0.0;
 	unsigned int i = 0, j = 0;

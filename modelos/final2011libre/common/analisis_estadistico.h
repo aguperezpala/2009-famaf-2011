@@ -27,6 +27,25 @@
 /* Web para obtener los Z alfa/2, http://davidmlane.com/hyperstat/z_table.html */
 
 
+/*! modo de uso para usar las recursivas 
+* 
+	double Xpromj1 = 0, Xpromj = 0;
+	double Sj1 = 0, Sj= 0;
+
+	Xpromj = sample[0]; -- aca va X(1)
+	-- NOTE: fijarse que el bucle va de 1 en adelante, si no deberiamos
+	-- usar Xpromj1 = estimar_media_muestral(i+1, Xpromj, sample[i+1]);
+	-- Sj1 = estimar_varianza_muestral(i+1, Sj, Xpromj1, Xpromj);
+	-- si i empezase de 0
+	for(i = 1; i < SIZEMUESTRA; i++){
+		Xpromj1 = estimar_media_muestral(i, Xpromj, sample[i]);
+		Sj1 = estimar_varianza_muestral(i, Sj, Xpromj1, Xpromj);
+		
+		Xpromj = Xpromj1;
+		Sj = Sj1;
+		
+       }
+*/
 
 /* Funcion que estima la media muestral (X(n) = sumatoria xi/n from i=1 to n) con los
  * xi datos observados.
@@ -63,6 +82,14 @@ double estimar_media_muest_inef(double *sample, int N);
  * Requiere la media muestral y la muestra de tamanio N
  */
 double estimar_var_muest_inef(double *sample, int N, double mediaMuestral);
+
+
+/*! ********************** METODO DE BOOSTRAP: ****************************************
+ * Recordemos que X|(n) ~ N(X|(n), sigma/sqrt(n)). Ademas sabemos que ECM[estimador, parametro] ~
+ * ECMempirico[estimador, parametro empirico], en particular E[X|(n), mu empirico] = Varianza(X|(n)) =
+ * simga/sqrt(n), Osea se calcula por medio del mu empirico.
+ * Revisar problema boostrap_prob practico 6
+*/
 
 
 /*! Método de Bootstrap para estimar el Error Cuadrático Medio (ECM)
@@ -108,7 +135,7 @@ float gammq(float a, float x);
  * osea la probabilidad asignada a cada intervalo i de la Hipotesis nula.
  * n es el tamanio de la muestra.
  * Luego t = T evaluado, y cuando n es grande T ~ Ji-cuadrado(k-1 - m grados de libertad)
- * Con k = rango de la v.a (o cantidad de intervalos) y m cantidad de parametros 
+ * Con k = rango de la v.a H0 (que es igua a la cantidad de intervalos) y m cantidad de parametros 
  * desconocidos (por ejemplo si no se conoce bien la funcion de distribucion de H0 
  * -se supone que es una exponencial de parametro lambda, sin conocerlo- entonces
  * m = 1 = lambda).
@@ -130,11 +157,12 @@ double chi_cuadrada (int gradosLibertad, double value);
  *	Int(i) = [ I[i] , I[i+1] )
  * y para el ultimo intervalo vale que:
  *	Int(k) = [ I[k] , inifinity )
+ * Recordar que k = Rango de la v.a H0 (equivalente a la cantidad de intervalos)
  *
  * PRE: sample != NULL	&&  n == #(sample)
  *	I != NULL	&&  k == #(I)
  *	p != NULL	&&  k == #(p)
- * NOTE: de esta forma generamos varios t-valores, mediante la funcion de prob
+ * NOTE:Para simular generamos varios t-valores, mediante la funcion de prob
  * de H0 (los pi), y determinamos de esta forma la proporcion de los t-valores
  * generados en cada simulacion de aquellos que son mayores que el t (calculado
  * con los datos observados) y sacamos la proporcion de los t' simulados aquellos
