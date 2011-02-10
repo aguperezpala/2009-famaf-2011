@@ -84,11 +84,11 @@ double estimar_media_muest_inef(double *sample, int N);
 double estimar_var_muest_inef(double *sample, int N, double mediaMuestral);
 
 
-/*! ********************** METODO DE BOOSTRAP: ****************************************
+/*! ********************** METODO DE BOOTSTRAP: ****************************************
  * Recordemos que X|(n) ~ N(X|(n), sigma/sqrt(n)). Ademas sabemos que ECM[estimador, parametro] ~
  * ECMempirico[estimador, parametro empirico], en particular E[X|(n), mu empirico] = Varianza(X|(n)) =
  * simga/sqrt(n), Osea se calcula por medio del mu empirico.
- * Revisar problema boostrap_prob practico 6
+ * Revisar problema bootstrap_prob practico 6
 */
 
 
