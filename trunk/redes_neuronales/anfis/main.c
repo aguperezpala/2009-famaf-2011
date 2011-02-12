@@ -27,7 +27,7 @@ size_t  _T = 0;
 #define  JUMP	6
 
 /* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  slope	2.0
+#define  SLOPE	2.0
 
 /* Rango de los valores de entrada */
 double  _LB = DBL_MAX,  /* Límite inferior */
@@ -36,12 +36,15 @@ double  _LB = DBL_MAX,  /* Límite inferior */
 
 
 /* # de veces que se presentará la muestra a la red para aprendizaje */
-#define  NITER   3
+#define  NITER   5
 
 /* para pretty printing de los mf finales */
 #define  width   15
 
-#define  ran()  (((double) mzran13()) / ((double) ULONG_MAX))
+#define  ran()		(((double) mzran13()) / ((double) ULONG_MAX))
+#define  _byte_size	(1<<3)
+#define  MSB		(_byte_size*sizeof(size_t)-1)
+#define  int_val(x)	((x) & (~(((size_t) 1) << MSB)))
 
 
 
@@ -138,7 +141,6 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 {
 	char *error = NULL;
 	
-	printf ("argc = %d\n", argc);
 	if (6 > argc || argc > 9) {
 		fprintf (stderr, "Debe invocar al programa con los argumentos:"
 				"\n\t1) Dimensión de la entrada"
@@ -226,7 +228,7 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 	MF_t *mf = NULL;
 	double	range = 2.0 * (UB-LB),
 		a = range / (2.0*t),
-		b = slope,
+		b = SLOPE,
 		c = 0.0;
 	
 	assert (a != 0.0);
@@ -298,13 +300,13 @@ static t_sample *
 sample_alloc (size_t n, size_t p)
 {
 	t_sample *s = NULL;
-	unsigned long k = 0;
+	long k = 0;
 	
 	s = (t_sample *) malloc (p * sizeof (t_sample));
 	assert (s != NULL);
 	
 	#pragma omp parallel for
-	for (k=0 ; k < p ; k++) {
+	for (k=0 ; k < int_val(p) ; k++) {
 		s[k].in = gsl_vector_alloc (n);
 		assert (s[k].in != NULL);
 	}
@@ -456,14 +458,15 @@ int main (int argc, char **argv)
 	
 	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
 	 * y entrenamos la red con él */
-	p = nlines/2;
-	sample = sample_alloc (_N, p);
+	sample = sample_alloc (_N, nlines/2);
 	
+	p = nlines / (2*NITER);
 	for (i=0 ; i < NITER ; i++) {
-		sample_gen (sample, _N, p, JUMP, y);
+		sample_gen (sample, _N, p, JUMP, &(y[i*p]));
 		error  = anfis_train (net, sample, p);
 		assert (error == ANFIS_OK);
 	}
+	p = nlines/2;
 	
 	printf ("\nRed ANFIS después del aprendizaje:\n\n");
 	anfis_print (net);
