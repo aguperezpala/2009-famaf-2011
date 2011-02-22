@@ -25,14 +25,17 @@ size_t  _N = 0;
  *     M indica que se toma uno, se saltean M-1, se toma el M+1-ésimo...
  *     etc.
  */
-#define  JUMP	6
+#define  JUMP		6
 
 /* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  SLOPE	2.0
-/* Desviación (por rama) de las funciones membresía respecto del centro óptimo */
-#define  DEVI	0.2
-/* Desviación inicial */
-#define  DINIT	1.5
+#define  SLOPE		3.0
+/* Modificación (opcional) del rango de datos de entrada
+ * RANGEXP == 1: el rango será (_UB - _LB) */
+#define  RANGEXP	2.0
+/* Modificación (opcional) del ancho de cada función membresía
+ * AWIDTH == 1.0: se mantiene el ancho "óptimo" */
+#define  AWIDTH		2.0
+
 
 /* Rango de los valores de entrada */
 double  _LB = DBL_MAX,  /* Límite inferior */
@@ -228,27 +231,29 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 {
 	int i = 0, j = 0;
 	MF_t *mf = NULL;
-	double	range = DINIT * (UB-LB),
-		deviation = DEVI * (range / ((double) t)),
-		a = range / (((double) n) * sqrt (t)),
+	double	nn = n, tt = t,
+		range = (UB-LB) * RANGEXP,
+		/* base = LB + (UB - LB) / 2.0 - range / 2.0 */
+		base = (UB + LB - range) / 2.0,
+		a = range / (2.0 * (nn * tt - 1.0)),
 		b = SLOPE,
 		c = 0.0;
 	
 	mf = (MF_t *) malloc (t * n * sizeof (MF_t));
 	assert (mf != NULL);
 	
+	#pragma omp parallel for private(i,c)
 	for (j=0 ; j < n ; j++) {
-		double	tt = t,
-			cc = LB - range / (tt * DINIT) + (1.0 + 2.0 * j) * a;
 		
 		for (i=0 ; i < t ; i++) {
-			double ii = i;
-			/* Desviación de rama */
-			c = cc + (ii - tt/2.0) * deviation;
+			double ii = i, jj = j;
+			
+			/* Centro de ésta MF */
+			c = base + 2.0 * a * (ii * nn + jj);
 			
 			/* Todas las MF serán campanas */
 			mf[i*n+j].k = bell;
-			mf[i*n+j].p[0] = a;
+			mf[i*n+j].p[0] = a * AWIDTH;
 			mf[i*n+j].p[1] = b;
 			mf[i*n+j].p[2] = c;
 		}
