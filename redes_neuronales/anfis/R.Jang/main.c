@@ -10,6 +10,8 @@
 
 #include "anfis.h"
 #include "mzran13.h"
+#include "membership_functions.h"
+#include "consequent_parameters.h"
 
 
 
@@ -26,8 +28,6 @@ size_t  _T = 0;
  */
 #define  JUMP	6
 
-/* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  SLOPE	2.0
 
 /* Rango de los valores de entrada */
 double  _LB = DBL_MAX,  /* Límite inferior */
@@ -36,7 +36,7 @@ double  _LB = DBL_MAX,  /* Límite inferior */
 
 
 /* # de veces que se presentará la muestra a la red para aprendizaje */
-#define  NITER   5
+#define  NITER   1
 
 /* para pretty printing de los mf finales */
 #define  width   15
@@ -45,6 +45,7 @@ double  _LB = DBL_MAX,  /* Límite inferior */
 #define  _byte_size	(1<<3)
 #define  MSB		(_byte_size*sizeof(size_t)-1)
 #define  int_val(x)	((x) & (~(((size_t) 1) << MSB)))
+#define  lpow(a,b)	(lround (pow (((double) a), ((double) b))))
 
 
 
@@ -156,7 +157,9 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 				"\n\t7) Nombre del archivo para las funciones "
 					"membresía iniciales (OPCIONAL)"
 				"\n\t8) Nombre del archivo para las funciones "
-					"membresía finales   (OPCIONAL)\n\n");
+					"membresía finales   (OPCIONAL)"
+				"\n\t9) Nombre del archivo con los conseq.param"
+					". para usar tras el aprendizaje\n\n");
 		exit (EXIT_FAILURE);
 	}
 	
@@ -207,7 +210,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 				" tras el aprendizaje\n", argv[8]);
 		}
 	}
-	
+
 	return;
 }
 
@@ -226,8 +229,10 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 {
 	int i = 0, j = 0;
 	MF_t *mf = NULL;
-	double	range = 2.0 * (UB-LB),
-		a = range / (2.0*t),
+	double	range = (UB-LB) * RANGEXP,
+		/* base = LB + (UB - LB) / 2.0 - range / 2.0 */
+		base = (UB + LB - range) / 2.0,
+		a = range / (2.0 * ((double) t)),
 		b = SLOPE,
 		c = 0.0;
 	
@@ -237,12 +242,13 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 	assert (mf != NULL);
 	
 	for (j=0 ; j < t ; j++) {
-		c = LB - 0.5 * (UB-LB) + (1.0 + 2.0 * j) * a;
+		c = base + (1.0 + 2.0 * j) * a;
+		c += (((double) j) - ((double) t) / 2.0) * (-0.1 * JUNCTION);
 		for (i=0 ; i < n ; i++) {
 			mf[i*t+j].k = bell;
-			mf[i*t+j].p[0] = a;
+			mf[i*t+j].p[0] = a * AWIDTH;
 			mf[i*t+j].p[1] = b;
-			mf[i*t+j].p[2] = c;
+			mf[i*t+j].p[2] = c + DECENTRE;
 		}
 	}
 	
@@ -272,11 +278,11 @@ mf_print (anfis_t net, FILE *fout, size_t n, size_t t)
 			res = anfis_get_MF (net, i, j, &mf);
 			assert (res == ANFIS_OK);
 			
-			fprintf ( fout, "%d%*d\t%-*.4f%-*.4f%-*.4f\n",
+			fprintf ( fout, "%d%*d\t%-*.4f%-*.4f%.4f\n",
 				  i, width/2, j,
 				  width, mf.p[0],
 				  width, mf.p[1],
-				  width, mf.p[2]  );
+				  mf.p[2]  );
 		}
 	}
 	/* Formato de impresión del archivo de salida:
@@ -369,7 +375,7 @@ sample_gen (t_sample *s, size_t n, size_t p, size_t jump, double *y)
 			/* Presentación aleatoria de ejemplos: */
 /*			gsl_vector_set (s[k].in, j, y[i+j*jump]);
 */		}
-		s[i].out = y[k+j*jump];
+		s[k].out = y[k+j*jump];
 	}
 	
 	free (loi);
@@ -402,6 +408,7 @@ sample_free (t_sample *s, size_t p)
 
 
 
+
 /* Ejercita la red 'p' veces con los valores de 's'
  *
  * Para ello alimenta cada entrada s[k].in a la red y compara el valor devuelto
@@ -417,6 +424,18 @@ exercise_network (const anfis_t net, const t_sample *sample,
 {
 	unsigned long k = 0;
 	double out = 0.0;
+	
+	/* Primero insertamos en la red los valores de los consequent parameters
+	 * que setearon en "consequent_parameters.c"
+	 */
+	if (cp != NULL) {
+		size_t	n = anfis_get_n (net),
+			t = anfis_get_t (net);
+		long  i = 0, M = lpow (t, n);
+		for (i=0 ; i < M ; i++) {
+			anfis_set_P (net, i, &(cp[i*(n+1)]));
+		}
+	}
 	
 	for (k=0 ; k < p ; k++) {
 		out = anfis_eval (net, sample[k].in);
@@ -441,7 +460,7 @@ int main (int argc, char **argv)
 	     *ferr = NULL,
 	     *f_imf = NULL,
 	     *f_fmf = NULL;
-	double *y = NULL;
+	double	*y  = NULL;
 	t_sample *sample = NULL;
 	MF_t *mfs = NULL;
 	anfis_t net = NULL;
@@ -449,35 +468,35 @@ int main (int argc, char **argv)
 	/* Obtenemos los datos */
 	parse_input (argc, argv, &y, &nlines, &fout, &ferr, &f_imf, &f_fmf);
 	
-	printf ("\n\nN = %zu\tT = %zu\n", _N, _T);
 	/* Creamos la red */
 	mfs = gen_mfs (_N, _T, _LB, _UB);
 	net = anfis_create (_N, _T, mfs);
-	printf ("Red ANFIS antes del aprendizaje:\n\n");
+	printf ("Red ANFIS antes del aprendizaje:\n");
 	anfis_print (net);
 	
 	/* Imprimimos las funciones membresía iniciales (antes del aprendizaje) */
 	mf_print (net, f_imf, _N, _T);
 	
-	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
-	 * y entrenamos la red con él */
-	sample = sample_alloc (_N, nlines/2);
-	
+	/** Generamos un conjunto de entrenamiento con la mitad de los datos
+	 ** y entrenamos la red con él */
+	sample = sample_alloc (_N, nlines);
 	p = nlines / (2*NITER);
 	for (i=0 ; i < NITER ; i++) {
 		sample_gen (sample, _N, p, JUMP, &(y[i*p]));
 		error  = anfis_train (net, sample, p);
 		assert (error == ANFIS_OK);
 	}
-	p = nlines/2;
 	
-	printf ("\nRed ANFIS después del aprendizaje:\n\n");
+	printf ("\n\nRed ANFIS después del aprendizaje:\n");
 	anfis_print (net);
 	
-	/* Alimentamos la otra mitad de los datos a la red para analizar
-	 * qué tan bueno fue su aprendizaje */
-	sample_gen (sample, _N, p, JUMP, &(y[p-(_N+1)*JUMP]));
-	exercise_network (net, sample, p, p, fout, ferr);
+	
+	/** Alimentamos la red con todos los datos a disposición
+	 ** para analizar qué tan bueno fue su aprendizaje */
+	p = nlines - (_N+1) * JUMP;
+	sample_gen (sample, _N, p, JUMP, y);
+	exercise_network (net, sample, p, 118, fout, ferr);
+	
 	
 	/* Imprimimos las funciones membresía resultantes del aprendizaje */
 	mf_print (net, f_fmf, _N, _T);

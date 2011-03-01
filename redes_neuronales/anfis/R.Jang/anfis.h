@@ -102,6 +102,24 @@ anfis_print (anfis_t net);
 
 
 
+size_t
+anfis_get_n (anfis_t net);
+
+/* Returns the n-value (ie: input dimension) with which 'net' was created
+ * PRE: net != NULL
+ */
+
+
+
+size_t
+anfis_get_t (anfis_t net);
+
+/* Returns the t-value (ie: # of MF's per input) with which 'net' was created
+ * PRE: net != NULL
+ */
+
+
+
 int
 anfis_get_MF (anfis_t net, size_t i, size_t j, MF_t *mf);
 

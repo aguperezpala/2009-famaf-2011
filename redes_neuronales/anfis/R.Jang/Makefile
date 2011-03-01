@@ -7,7 +7,7 @@ CC=gcc
 # For debugging include flag:	-D_DEBUG
 # Otherwise include flag:	-DNDEBUG
 CFLAGS = -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE \
-	 -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes \
+	 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes \
 	 -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes \
 	 -Wdeclaration-after-statement -Wno-unused-parameter -Werror
 
@@ -42,7 +42,7 @@ $(SAMPLE): Mackey_Glass.o
 
 
 anfis_mg: $(TARGET)
-$(TARGET): mzran13.o anfis.o main.o
+$(TARGET): consequent_parameters.o mzran13.o anfis.o main.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nPara ejecutar el aprendizaje ANFIS de Mackey-Glass " \
 		"ingrese \"./$(TARGET)\"\n"
