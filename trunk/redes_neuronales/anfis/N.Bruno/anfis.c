@@ -322,6 +322,24 @@ anfis_print (anfis_t net)
 
 
 
+/* Returns the n-value (ie: input dimension) with which 'net' was created
+* PRE: net != NULL
+*/
+size_t
+anfis_get_n (anfis_t net) { assert (net != NULL); return net->n; }
+
+
+
+
+/* Returns the t-value (ie: # of MF's per input) with which 'net' was created
+* PRE: net != NULL
+*/
+size_t
+anfis_get_t (anfis_t net) { assert (net != NULL); return net->t; }
+
+
+
+
 /* Copies into 'mf' the network's i-th row membership function,
  * which evaluates the j-th input component (aka: MF[i][j])
  *

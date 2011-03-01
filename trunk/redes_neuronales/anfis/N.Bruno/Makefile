@@ -42,7 +42,7 @@ $(SAMPLE): Mackey_Glass.o
 
 
 anfis_mg: $(TARGET)
-$(TARGET): mzran13.o anfis.o main.o
+$(TARGET): consequent_parameters.o mzran13.o anfis.o main.o
 	$(CC) $(CFLAGS) $^ $(LIBRARIES) -o $@; \
 	echo "\n\nPara ejecutar el aprendizaje ANFIS de Mackey-Glass " \
 		"ingrese \"./$(TARGET)\"\n"
