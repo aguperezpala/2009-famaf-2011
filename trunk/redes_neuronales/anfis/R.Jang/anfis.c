@@ -53,6 +53,9 @@
 #define  int_val(x)	((x) & (~(((size_t) 1) << MSB)))
 #define  lpow(a,b)	(lround (pow (((double) a), ((double) b))))
 
+/* For anfis_print pretty printing */
+#define  WIDTH		9
+
 /* Debugging printing functions */
 #ifdef _DEBUG
   #define  handle_error_1(err)   if ((err) != ANFIS_OK) return err;
@@ -288,16 +291,38 @@ anfis_print (anfis_t net)
 	
 	printf ("Consequent parameters:\n");
 	for (i=0 ; i < net->M ; i++) {
-		for (j=0 ; j <= net->n ; j++) {
-			printf ("P[%d][%d] = %.2f\t", i, j,
+		/* cpn is for pretty printing */
+		char cpn[WIDTH];
+		
+		for (j=0 ; j < net->n ; j++) {
+			snprintf (cpn, WIDTH, "P[%d][%d]", i, j);
+			printf ("%-*s = %-*.2f", WIDTH+1, cpn, WIDTH,
 				gsl_vector_get (net->P[i], j));
 		}
-		printf ("\n");
+		printf ("%-*s = %.2f\n", WIDTH+1, cpn,
+			gsl_vector_get (net->P[i], j));
 	}
-	printf ("\n");
 	
 	return;
 }
+
+
+
+
+/* Returns the n-value (ie: input dimension) with which 'net' was created
+ * PRE: net != NULL
+ */
+size_t
+anfis_get_n (anfis_t net) { assert (net != NULL); return net->n; }
+
+
+
+
+/* Returns the t-value (ie: # of MF's per input) with which 'net' was created
+ * PRE: net != NULL
+ */
+size_t
+anfis_get_t (anfis_t net) { assert (net != NULL); return net->t; }
 
 
 

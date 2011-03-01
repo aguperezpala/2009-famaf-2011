@@ -16,7 +16,7 @@ double *y = NULL;	/* Results array */
 
 
 /* # of places to overlook when printing */
-#define  margin   50
+#define  MARGIN   0
 /* Initial values before the first point */
 #define  _y0	 0.0
 
@@ -144,7 +144,7 @@ int main (int argc, char **argv)
 	
 	/* Creating work environment  */
 	a = time(_a);
-	b = time(_b + margin);
+	b = time(_b + MARGIN);
 	
 	y = (double *) calloc (b, sizeof (double));
 	if (y == NULL) {
@@ -161,15 +161,15 @@ int main (int argc, char **argv)
 	
 	/* Estimating series */
 	t = _a;
-	while (t < _b + margin) {
+	while (t < _b + MARGIN) {
 		new_val = RungeKutta (t, y[time(t)], _h, f);
 		t += _h;
 		y[time(t)] = new_val;
 	}
 	
 	/* Printing results */
-	t = _a + margin;
-	a += time(margin);
+	t = _a + MARGIN;
+	a += time(MARGIN);
 	for (i = a ; i < b ; i++) {
 		if (!(i % ((int)(1.0/_h))))
 			printf ("%.1f\t%f\n", t, y[time(t)]);
