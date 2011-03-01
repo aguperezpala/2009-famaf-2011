@@ -242,8 +242,12 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 	assert (mf != NULL);
 	
 	for (j=0 ; j < t ; j++) {
+		
+		/* Centro de ésta MF */
 		c = base + (1.0 + 2.0 * j) * a;
-		c += (((double) j) - ((double) t) / 2.0) * (-0.1 * JUNCTION);
+		/* Solapamiento entre MF's (sii JUNCTION != 0) */
+		c += (c - (base + range/2.0)) * (-0.2 * JUNCTION);
+		
 		for (i=0 ; i < n ; i++) {
 			mf[i*t+j].k = bell;
 			mf[i*t+j].p[0] = a * AWIDTH;
