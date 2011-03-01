@@ -1,0 +1,88 @@
+gcc -MM  >.depend
+gcc: no input files
+rm -f .depend gen_test op_test Mackey_Glass anfis_mg *.o *~
+gcc -MM  >.depend
+gcc: no input files
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o Mackey_Glass.o Mackey_Glass.c
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror Mackey_Glass.o -lgsl -lgslcblas -lm -o Mackey_Glass; \
+	echo "\n\nPara ejecutar el programa ingrese \"./Mackey_Glass\"\n"
+
+
+Para ejecutar el programa ingrese "./Mackey_Glass"
+
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o consequent_parameters.o consequent_parameters.c
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o mzran13.o mzran13.c
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o anfis.o anfis.c
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror   -c -o main.o main.c
+make: Circular anfis_mg <- anfis_mg dependency dropped.
+gcc -Wall -ansi -pedantic -D_DEBUG -D_BSD_SOURCE -O3 -fopenmp -g -std=c99 -D_XOPEN_SOURCE=600 -Wmissing-prototypes -Wmissing-declarations -Winline -Wcast-qual -Wstrict-prototypes -Wdeclaration-after-statement -Wno-unused-parameter -Werror consequent_parameters.o mzran13.o anfis.o main.o -lgsl -lgslcblas -lm -o anfis_mg; \
+	echo "\n\nPara ejecutar el aprendizaje ANFIS de Mackey-Glass " \
+		"ingrese \"./anfis_mg\"\n"
+
+
+Para ejecutar el aprendizaje ANFIS de Mackey-Glass  ingrese "./anfis_mg"
+
+argc = 9
+
+
+T = 2	N = 4
+Red ANFIS antes del aprendizaje:
+
+# of inputs:   N = 4
+# of branches: T = 2
+
+Branch # 0
+MF[0] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 0.1278
+MF[1] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 0.3456
+MF[2] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 0.5634
+MF[3] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 0.7812
+Consequent parameters:
+p[0][0] = 0.00	p[0][1] = 0.00	p[0][2] = 0.00	p[0][3] = 0.00	p[0][4] = 0.00	
+
+Branch # 1
+MF[0] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 0.7501
+MF[1] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 0.9679
+MF[2] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 1.1857
+MF[3] kind: bell
+Paramaters: a = 0.1126, b = 2.0000, c = 1.4035
+Consequent parameters:
+p[1][0] = 0.00	p[1][1] = 0.00	p[1][2] = 0.00	p[1][3] = 0.00	p[1][4] = 0.00	
+
+
+
+Red ANFIS después del aprendizaje:
+# of inputs:   N = 4
+# of branches: T = 2
+
+Branch # 0
+MF[0] kind: bell
+Paramaters: a = 0.5321, b = 2.0652, c = 0.1202
+MF[1] kind: bell
+Paramaters: a = 0.5077, b = 2.0531, c = 0.3333
+MF[2] kind: bell
+Paramaters: a = 0.0061, b = 1.9951, c = 0.5385
+MF[3] kind: bell
+Paramaters: a = 0.0328, b = 1.9961, c = 0.7708
+Consequent parameters:
+p[0][0] = 0.14	p[0][1] = -0.02	p[0][2] = 0.71	p[0][3] = -0.44	p[0][4] = 0.84	
+
+Branch # 1
+MF[0] kind: bell
+Paramaters: a = -0.2793, b = 1.9545, c = 0.4607
+MF[1] kind: bell
+Paramaters: a = 0.1299, b = 2.0131, c = 0.7835
+MF[2] kind: bell
+Paramaters: a = 0.1383, b = 2.0012, c = 1.1764
+MF[3] kind: bell
+Paramaters: a = 0.0572, b = 1.9944, c = 1.4134
+Consequent parameters:
+p[1][0] = 1.02	p[1][1] = -0.33	p[1][2] = -0.40	p[1][3] = -0.23	p[1][4] = 0.85	
+
+rm -f .depend gen_test op_test Mackey_Glass anfis_mg *.o *~

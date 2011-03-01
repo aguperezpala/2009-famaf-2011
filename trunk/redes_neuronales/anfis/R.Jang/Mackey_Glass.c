@@ -6,9 +6,9 @@
 
 double  _a   = 0.0,	/* Estimation lower bound */
 	_b   = 0.0,	/* Estimation upper bound */
-	_h   = 0.1,	/* Time step size */
-	_tau = 17.0,	/* Time delay for the differential equation */
-	_ya  = 1.2;	/* Series first point value */
+	_h   = 0.0,	/* Time step size */
+	_tau = 0.0,	/* Time delay for the differential equation */
+	_ya  = 0.0;	/* Series first point value */
 
 double *y = NULL;	/* Results array */
 
@@ -146,7 +146,7 @@ int main (int argc, char **argv)
 	a = time(_a);
 	b = time(_b + MARGIN);
 	
-	y = (double *) calloc (b, sizeof (double));
+	y = (double *) calloc (b+1, sizeof (double));
 	if (y == NULL) {
 		perror ("Mackey-Glass: insufficient memory to execute");
 		exit (EXIT_FAILURE);
@@ -164,7 +164,9 @@ int main (int argc, char **argv)
 	while (t < _b + MARGIN) {
 		new_val = RungeKutta (t, y[time(t)], _h, f);
 		t += _h;
-		y[time(t)] = new_val;
+		if (t < _b + MARGIN) {
+			y[time(t)] = new_val;
+		}
 	}
 	
 	/* Printing results */

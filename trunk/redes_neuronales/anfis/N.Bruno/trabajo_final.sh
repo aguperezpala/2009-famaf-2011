@@ -35,7 +35,7 @@ echo -e "    Análisis del aprendizaje para la equación diferencial de Mackey-G
 
 # Parámetros para la construcción de la eq. dif. de Mackey-Glass
 a=118
-b=1618
+b=1118
 h=0.1
 tau=17
 yinit=1.2

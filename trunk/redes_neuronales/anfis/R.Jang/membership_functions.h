@@ -8,32 +8,34 @@
 
 
 /* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  SLOPE		2.0
+#define  SLOPE		2.5
 
 
 /* Modificación del rango de datos de entrada                              *
+ * WARNING: RANGEXP debe ser positivo                                      *
  * RANGEXP = 1.0: se cubrirá exactamente el rango de los datos de entrada  *
  * RANGEXP < 1.0: se cubrirá menos rango                                   *
  * RANGEXP > 1.0: se cubrirá más rango                                     */
-#define  RANGEXP	1.5
+#define  RANGEXP	2.0
 
 
 /* Modificación del ancho de cada función membresía  *
+ * WARNING: AWIDTH debe ser positivo                 *
  * AWIDTH = 1.0: se mantiene el ancho "óptimo"       */
- #define  AWIDTH	1.06
+ #define  AWIDTH	0.75
 
 
 /* Desplazamiento del centro de cada función membresía  *
  * en exactamente 'DECENTRE' unidades                   *
  * DECENTRE = 0.0: se mantiene el centrado "óptimo"     */
-#define  DECENTRE	0.16
+#define  DECENTRE	-0.12
 
 
 /* Modificación del solapamiento entre funciones membresía  *
  * JUNCTION = 0.0: se mantiene el solapamiento "óptimo"     *
  * JUNCTION > 0.0: aumenta   el solapamiento entre MF's     *
  * JUNCTION < 0.0: disminuye el solapamiento entre MF's     */
-#define  JUNCTION	0.0
+#define  JUNCTION	1.0
 
 
 #endif

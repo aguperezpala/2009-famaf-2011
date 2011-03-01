@@ -15,12 +15,12 @@
  * RANGEXP = 1.0: se cubrirá exactamente el rango de los datos de entrada  *
  * RANGEXP < 1.0: se cubrirá menos rango                                   *
  * RANGEXP > 1.0: se cubrirá más rango                                     */
-#define  RANGEXP	1.0
+#define  RANGEXP	1.5
 
 
 /* Modificación del ancho de cada función membresía  *
  * AWIDTH = 1.0: se mantiene el ancho "óptimo"       */
- #define  AWIDTH	1.06
+ #define  AWIDTH	1.1
 
 
 /* Desplazamiento del centro de cada función membresía  *
@@ -34,15 +34,16 @@
  * JUNCTION_1 = 0.0: se mantiene el solapamiento "óptimo"          *
  * JUNCTION_1 > 0.0: las MF's de cada rama se superponen entre sí  *
  * JUNCTION_1 < 0.0: las MF's de cada rama se separan entre sí     */
-#define  JUNCTION_1	2.0
+#define  JUNCTION_1	-2.0
 
 
-/* Modificación del solapamiento entre las funciones membresía           *
- * de las distintas ramas                                                *
- * JUNCTION_2 = 0.0: se mantiene el solapamiento "óptimo"                *
- * JUNCTION_2 > 0.0: las MF's de cada rama se acercan a un centro común  *
- * JUNCTION_2 < 0.0: las MF's de cada rama tienen su propio espacio      */
-#define  JUNCTION_2	2.0
+/* Modificación del solapamiento entre las funciones membresía             *
+ * de las distintas ramas                                                  *
+ * JUNCTION_2 = 0.0: se mantiene el solapamiento "óptimo"                  *
+ * JUNCTION_2 > 0.0: las MF's de todas las rama tienden a un centro común  *
+ * JUNCTION_2 < 0.0: el dominio cubierto por las MF's de una rama          *
+ *		     es disjunto al de las demás ramas                     */
+#define  JUNCTION_2	1.2
 
 
 #endif

@@ -229,7 +229,7 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 		range = (UB-LB) * RANGEXP,
 		/* base = LB + (UB - LB) / 2.0 - range / 2.0 */
 		base = (UB + LB - range) / 2.0,
-		a = range / (2.0 * (nn * tt - 1.0)),
+		a = range / (2.0 * nn * tt),
 		b = SLOPE,
 		c = 0.0;
 	
@@ -240,14 +240,17 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 	for (j=0 ; j < n ; j++) {
 		
 		for (i=0 ; i < t ; i++) {
-			double ii = i, jj = j;
+			double	ii = i, jj = j,
+				base_i = base + ii * range/tt,
+				/* centro gral. de las MF's de la i-ésima rama */
+				ci = base_i + range / (2.0*tt);
 			
 			/* Centro de ésta MF */
-			c = base + 2.0 * a * (ii * nn + jj);
-			/** TODO: implementar las modificaciones de JUNCTION_?
-			 **	  especificadas en membership_functions.h
-			 **/
-			c += (((double) i) - ((double) t) / 2.0) * (-0.1 * JUNCTION);
+			c = base + 2.0 * a * (ii * nn + jj) + a;
+			/* Solapamiento entre las MF's de una misma rama */
+			c += (c - ci) * (-0.2 * JUNCTION_1);
+			/* Solapamiento del dominio cubierto por cada rama */
+			c += (c - (base + range/2.0)) * (-0.2 * JUNCTION_2);
 			
 			/* Todas las MF serán campanas */
 			mf[i*n+j].k = bell;
@@ -478,24 +481,26 @@ int main (int argc, char **argv)
 	/* Imprimimos las funciones membresía iniciales (antes del aprendizaje) */
 	mf_print (net, f_imf);
 	
-	/* Generamos un conjunto de entrenamiento con la mitad de los datos 
-	 * y entrenamos la red con él */
-	p = nlines/2;
-	sample = sample_alloc (_N, p);
-	
+	/** Generamos un conjunto de entrenamiento con la mitad de los datos
+	 ** y entrenamos la red con él */
+	sample = sample_alloc (_N, nlines);
+	p = nlines / (2*NITER);
 	for (i=0 ; i < NITER ; i++) {
-		sample_gen (sample, _N, p, JUMP, y);
+		sample_gen (sample, _N, p, JUMP, &(y[i*p]));
 		error  = anfis_train (net, sample, p);
 		assert (error == ANFIS_OK);
 	}
 	
-	printf ("\nRed ANFIS después del aprendizaje:\n\n");
+	printf ("\n\nRed ANFIS después del aprendizaje:\n");
 	anfis_print (net);
 	
-	/* Alimentamos la otra mitad de los datos a la red para analizar
-	 * qué tan bueno fue su aprendizaje */
-	sample_gen (sample, _N, p, JUMP, &(y[p-(_N+1)*JUMP]));
-	exercise_network (net, sample, p, p, fout, ferr);
+	
+	/** Alimentamos la red con todos los datos a disposición
+	 ** para analizar qué tan bueno fue su aprendizaje */
+	p = nlines - (_N+1) * JUMP;
+	sample_gen (sample, _N, p, JUMP, y);
+	exercise_network (net, sample, p, 118, fout, ferr);
+	
 	
 	/* Imprimimos las funciones membresía resultantes del aprendizaje */
 	mf_print (net, f_fmf);
