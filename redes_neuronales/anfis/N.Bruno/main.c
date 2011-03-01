@@ -10,6 +10,8 @@
 
 #include "anfis.h"
 #include "mzran13.h"
+#include "membership_functions.h"
+#include "consequent_parameters.h"
 
 
 
@@ -27,15 +29,6 @@ size_t  _N = 0;
  */
 #define  JUMP		6
 
-/* Pendiente de las funciones membresía (parámetro 'b' de la MF tipo "bell") */
-#define  SLOPE		3.0
-/* Modificación (opcional) del rango de datos de entrada
- * RANGEXP == 1: el rango será (_UB - _LB) */
-#define  RANGEXP	2.0
-/* Modificación (opcional) del ancho de cada función membresía
- * AWIDTH == 1.0: se mantiene el ancho "óptimo" */
-#define  AWIDTH		2.0
-
 
 /* Rango de los valores de entrada */
 double  _LB = DBL_MAX,  /* Límite inferior */
@@ -52,7 +45,8 @@ double  _LB = DBL_MAX,  /* Límite inferior */
 /* para pretty printing de los mf finales */
 #define  width   15
 
-#define  ran()  (((double) mzran13()) / ((double) ULONG_MAX))
+#define  ran()		(((double) mzran13()) / ((double) ULONG_MAX))
+#define  lpow(a,b)	(lround (pow (((double) a), ((double) b))))
 
 
 
@@ -81,7 +75,7 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 	nomfile = argv[3];
 	*nlines = (size_t) strtol (argv[4], &error, 10);
 	if (error[0] != '\0') {
-		fprintf (stderr, "\aEl segundo argumento debe ser el # de líneas"
+		fprintf (stderr, "\aEl cuarto argumento debe ser el # de líneas"
 				 " que tiene el archivo con la muestra\n");
 		exit (EXIT_FAILURE);
 	}
@@ -160,7 +154,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 				"\n\t6) Nombre del archivo de salida para el "
 					"error de aprendizaje (OPCIONAL)"
 				"\n\t7) Nombre del archivo para las funciones "
-					"membresía iniciales (OPCIONAL)\n\n"
+					"membresía iniciales (OPCIONAL)"
 				"\n\t8) Nombre del archivo para las funciones "
 					"membresía finales (OPCIONAL)\n\n");
 		exit (EXIT_FAILURE);
@@ -191,7 +185,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 7) {
 		*ferr = fopen (argv[6], "w");
-		if (fileno (*ferr) < 0) {
+		if (*ferr == NULL || ferror (*ferr)) {
 			warn ("Archivo de errores de aprendizaje "
 				"corrupto: '%s'\nNo se guardará registro"
 				" del nivel de error\n", argv[4]);
@@ -200,7 +194,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 8) {
 		*f_imf = fopen (argv[7], "w");
-		if (fileno (*f_imf) < 0) {
+		if (*f_imf == NULL || ferror (*f_imf)) {
 			warn ("'%s': imposible abrir archivo.\nNo se graficarán"
 			      " las funciones membresía iniciales\n", argv[5]);
 		}
@@ -208,7 +202,7 @@ parse_input (int argc, char **argv, double **y, size_t *nlines,
 	
 	if (argc >= 9) {
 		*f_fmf = fopen (argv[8], "w");
-		if (fileno (*f_fmf) < 0) {
+		if (*f_fmf == NULL || ferror (*f_fmf)) {
 			warn ("'%s': imposible abrir archivo.\nNo se "
 				"graficarán las funciones membresía resultantes"
 				" tras el aprendizaje\n", argv[5]);
@@ -250,12 +244,16 @@ gen_mfs (size_t n, size_t t, double LB, double UB)
 			
 			/* Centro de ésta MF */
 			c = base + 2.0 * a * (ii * nn + jj);
+			/** TODO: implementar las modificaciones de JUNCTION_?
+			 **	  especificadas en membership_functions.h
+			 **/
+			c += (((double) i) - ((double) t) / 2.0) * (-0.1 * JUNCTION);
 			
 			/* Todas las MF serán campanas */
 			mf[i*n+j].k = bell;
 			mf[i*n+j].p[0] = a * AWIDTH;
 			mf[i*n+j].p[1] = b;
-			mf[i*n+j].p[2] = c;
+			mf[i*n+j].p[2] = c + DECENTRE;
 		}
 	}
 	
@@ -275,7 +273,7 @@ mf_print (anfis_t net, FILE *fout)
 	MF_t mf;
 	
 	/* Si el archivo no es un archivo no escribimos nada */
-	if (fileno (fout) < 0) {
+	if (fout == NULL || ferror (fout)) {
 		return;
 	}
 	
@@ -427,6 +425,18 @@ exercise_network (anfis_t net, t_sample *sample, size_t p, double offset,
 	unsigned long t = 0;
 	double out = 0.0;
 	
+	/* Primero insertamos en la red los valores de los consequent parameters
+	 * que setearon en "consequent_parameters.c"
+	 */
+	if (cp[0] != -DBL_MAX) {
+		size_t	n = anfis_get_n (net),
+			t = anfis_get_t (net);
+		long  i = 0;
+		for (i=0 ; i < t ; i++) {
+			anfis_set_P (net, i, &(cp[i*(n+1)]));
+		}
+	}
+	
 	for (t=0 ; t < p ; t++) {
 		out = anfis_eval (net, sample[t].in);
 		fprintf (fout, "%f\t%f\n", t + offset, out);
@@ -496,13 +506,13 @@ int main (int argc, char **argv)
 	sample = sample_free (sample, p);
 	free (y);	y = NULL;
 	fclose (fout);	fout = NULL;
-	if (fileno (ferr) >= 0) {
+	if (ferr != NULL && fileno (ferr) >= 0) {
 		fclose (ferr); ferr = NULL;
 	}
-	if (fileno (f_imf) >= 0) {
+	if (f_imf != NULL && fileno (f_imf) >= 0) {
 		fclose (f_imf); f_imf = NULL;
 	}
-	if (fileno (f_fmf) >= 0) {
+	if (f_fmf != NULL && fileno (f_fmf) >= 0) {
 		fclose (f_fmf); f_fmf = NULL;
 	}
 	

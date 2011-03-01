@@ -112,6 +112,24 @@ anfis_print_branch (anfis_t net, unsigned int i);
 
 
 
+size_t
+anfis_get_n (anfis_t net);
+
+/* Returns the n-value (ie: input dimension) with which 'net' was created
+* PRE: net != NULL
+*/
+
+
+
+size_t
+anfis_get_t (anfis_t net);
+
+/* Returns the t-value (ie: # of MF's per input) with which 'net' was created
+* PRE: net != NULL
+*/
+
+
+
 int
 anfis_get_MF (anfis_t net, unsigned int i, unsigned int j, MF_t *mf);
 

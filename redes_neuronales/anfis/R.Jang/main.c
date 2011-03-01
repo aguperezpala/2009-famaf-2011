@@ -76,7 +76,7 @@ get_sample_values (int argc, char **argv, size_t *nlines)
 	nomfile = argv[3];
 	*nlines = (size_t) strtol (argv[4], &error, 10);
 	if (error[0] != '\0') {
-		fprintf (stderr, "\aEl segundo argumento debe ser el # de líneas"
+		fprintf (stderr, "\aEl cuarto argumento debe ser el # de líneas"
 				 " que tiene el archivo con la muestra\n");
 		exit (EXIT_FAILURE);
 	}
@@ -428,7 +428,7 @@ exercise_network (const anfis_t net, const t_sample *sample,
 	/* Primero insertamos en la red los valores de los consequent parameters
 	 * que setearon en "consequent_parameters.c"
 	 */
-	if (cp != NULL) {
+	if (cp[0] != -DBL_MAX) {
 		size_t	n = anfis_get_n (net),
 			t = anfis_get_t (net);
 		long  i = 0, M = lpow (t, n);

@@ -8,6 +8,10 @@
  *	j == # de entradas de la red + 1 (ie: N+1)
  *
  * Por los valores de 'N' y 'T' ver el archivo "trabajo_final.sh"
+ *
+ * Para que no se lea este archivo de manera que los consequent parameters
+ * de la red no sean modificados definir:
+ * double cp[]  =  {-DBL_MAX};
  */
 
 double cp[]  =  { -0.2167,   0.7233,  -0.0365,   0.5433,   0.0276,
