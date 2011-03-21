@@ -1,0 +1,5 @@
+const N = 2
+range T = 0..N
+VAR = WRITE[0],
+WRITE[i:T] = ( read[i] -> WRITE[i]
+			 | write[j:T] -> WRITE[j]).

@@ -1,0 +1,4 @@
+const N = 1
+range T = 0..N
+BIESTABLE = ESTADO[0],
+ESTADO[i:T] = (trigger -> [i] -> ESTADO[(i+1)%(N+1)]).
