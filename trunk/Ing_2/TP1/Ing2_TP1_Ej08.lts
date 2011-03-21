@@ -1,0 +1,31 @@
+const FMAX = 109
+const FMIN = 88
+
+/* Estaciones de radio existentes */
+const S1 = 102
+const S2 = 100
+const S3 = 89
+const S4 = 96
+const S5 = 98
+const S6 = 93
+
+STAND_BY = (on -> ON[FMAX]),
+
+ON[f:FMIN..FMAX] =  ( off -> STAND_BY
+					| reset-> ON[FMAX]
+					| scan -> SCAN[f]
+					),
+
+SCAN[f:FMIN..FMAX] = ( tune ->	if (f-1==S1 || f-1==S2 || f-1==S3 ||
+									f-1==S4 || f-1==S5 || f-1==S6 )
+								then
+									(tuned.[f-1] -> ON[f-1])
+								
+								else if (f-1==FMIN)
+								then
+									SCAN[FMAX]
+								
+								else
+									SCAN[f-1]
+					)
+\{tune}.

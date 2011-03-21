@@ -1,0 +1,31 @@
+/* Precio de una bebida */
+const P = 15
+/* Denominaciones de moneda aceptadas *
+ * (ordenadas de menor a mayor)       */
+const D1 = 5
+const D2 = 10
+const D3 = 20
+/* Maxima cantidad de dinero aceptado por la maquina */
+const MAX_SUM = 2*(P+D3)
+
+set S = {[D1],[D2],[D3]}
+
+MACHINE = RECV_COIN[0],
+
+/* el estado   's' es el dinero almacenado  */
+/* la variable 'c' es la moneda introducida */
+RECV_COIN[s:0..MAX_SUM] =
+	( [c:1..D3] ->  ( when (c!=D1 && c!=D2 && c!=D3) invalid_coin -> RETURN[c]
+					| when (c==D1 || c==D2 || c==D3) loading -> SUM[s+c]
+					)
+	),
+
+
+SUM[s:0..MAX_SUM] = ( load[s] -> if (s > MAX_SUM)   then ERROR		else
+								 if (s >= P)		then PEND[s-P]	else RECV_COIN[s] ),
+
+PEND[x:0..MAX_SUM] = (pend_drink -> RETURN[x]),
+
+RETURN[x:0..D3] = ([x].give_change -> MACHINE)
+
+\{loading,load[s:0..MAX_SUM]}.

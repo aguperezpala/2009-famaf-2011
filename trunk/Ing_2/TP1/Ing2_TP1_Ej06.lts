@@ -1,0 +1,11 @@
+const MAX_LEVEL  = 9
+const LOW_LEVEL  = 2
+const HIGH_LEVEL = 8
+range RANGE = 0..MAX_LEVEL
+TANK = LEVEL[5],
+LEVEL[i:RANGE] = ( when (i < LOW_LEVEL)  bajo -> LEVEL[i]
+                 | when (i > HIGH_LEVEL) alto -> LEVEL[i]
+                 | when (LOW_LEVEL <= i && i <= HIGH_LEVEL) normal -> LEVEL[i] 
+                 | when (i < MAX_LEVEL)  subir -> LEVEL[i+1]
+                 | when (i > 0)          bajar -> LEVEL[i-1]
+                 ) \{subir,bajar}.

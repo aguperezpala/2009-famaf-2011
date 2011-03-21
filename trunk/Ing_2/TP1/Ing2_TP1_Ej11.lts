@@ -1,0 +1,25 @@
+/* Museum's maximum capacity */
+const MAX_VIS = 9
+range MV = 0..MAX_VIS
+
+/* Current # of visitors */
+VIS = VIS[0],
+VIS[i:0..MV] =  ( count[i]     -> VIS[i]
+				| update[j:MV] -> VIS[j]
+				).
+
+/* Mutex for VIS correct update */
+LOCK = (acquire -> release -> LOCK).
+||LVIS = (LOCK || VIS).
+
+/* Museum's generig entry/exit point */
+TURNSTILE = ( enable -> TE),
+TE = ( arrival   -> INC
+	 | departure -> DEC
+	 | disable   -> TURNSTILE
+	 ),
+INC = (acquire -> count[i:MV] -> if (i < MAX_VIS) then INCREMENT[i] else REJECT),
+DEC = (acquire -> count[i:MV] -> if (i > 0)       then DECREMENT[i] else REJECT),
+INCREMENT[i:MV] = (update[i+1] -> release -> TE),
+DECREMENT[i:MV] = (update[i-1] -> release -> TE),
+REJECT = (rejected_action -> release -> TE).

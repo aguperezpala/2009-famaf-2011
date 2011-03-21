@@ -1,0 +1,21 @@
+MEETING = (hello->converse->goodbye->STOP).
+
+JOB = (arrive->wok->leave->JOB).
+
+const N = 4
+range T = 2..N-1
+UNTIC = (tic -> NTIC[2]),
+NTIC[i:T] = (tic-> NTIC[i+1]),
+NTIC[N]= (tic->STOP).
+
+GAME = ({one, two}-> WIN | three-> LOSE),
+WIN = (win->GAME),
+LOSE = (lose->GAME).
+
+const M= 3
+range Z=1..M
+DOUBLE = (in[j:Z]->out[j]->DOUBLE).
+
+PERSON = (weekend->WE1 | weekend->WE2),
+WE1 = (sleep->work->PERSON),
+WE2= (sleep->{play,shop}->PERSON).

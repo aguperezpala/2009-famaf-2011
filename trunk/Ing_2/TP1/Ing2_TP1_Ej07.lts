@@ -1,0 +1,17 @@
+/* Precio de una bebida */
+const P = 15
+/* Denominaciones de moneda aceptadas *
+ * (ordenadas de menor a mayor)       */
+const D1 = 5
+const D2 = 10
+const D3 = 20
+/* Maxima cantidad de dinero aceptado por la maquina */
+const MAX_SUM = D3
+
+MACHINE = SUM[0],
+
+/* la variable 'c' simboliza la moneda introducida */
+SUM[i:0..MAX_SUM] = ( [c:D1..D3] -> if (c+i > MAX_SUM)  then ERROR 		 else
+									if (c+i >= P)		then PEND[c+i-P] else SUM[c+i] ),
+
+PEND[x:0..MAX_SUM] = (pend_drink -> give_change -> [x] -> MACHINE).
