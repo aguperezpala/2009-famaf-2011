@@ -1,5 +1,5 @@
 /* Acciones prohibidas */
-set MolinetesAlfa = {east.salir, west.entrar}
+set MolinetesAlfa = {east.salir, west.entrar, west.deshabilitar}
 
 DIRECTOR =  ( abrir  -> DIRECTOR
 			| cerrar -> DIRECTOR
@@ -12,5 +12,4 @@ M_HAB     = ( entrar       -> M_HAB
 			).
 
 ||MUSEO = ( DIRECTOR || {east,west}:MOLINETE )
-			/{abrir/{east,west}.habilitar, cerrar/east.deshabilitar}
-			\{west.deshabilitar}.
+			/{abrir/{east,west}.habilitar, cerrar/east.deshabilitar}.

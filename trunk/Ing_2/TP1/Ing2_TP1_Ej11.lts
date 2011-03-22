@@ -1,25 +1,48 @@
 /* Museum's maximum capacity */
 const MAX_VIS = 9
 range MV = 0..MAX_VIS
+set VisitorsAlpha = {read[MV], write[MV]}
 
 /* Current # of visitors */
 VIS = VIS[0],
-VIS[i:0..MV] =  ( count[i]     -> VIS[i]
-				| update[j:MV] -> VIS[j]
-				).
+VIS[i:MV] = ( read[i]     -> VIS[i]
+			| write[j:MV] -> VIS[j]
+			).
 
 /* Mutex for VIS correct update */
 LOCK = (acquire -> release -> LOCK).
-||LVIS = (LOCK || VIS).
 
-/* Museum's generig entry/exit point */
+/* Museum's generic entry/exit point */
 TURNSTILE = ( enable -> TE),
-TE = ( arrival   -> INC
-	 | departure -> DEC
-	 | disable   -> TURNSTILE
+TE = ( /*arrival*/   acquire -> read[i:MV] -> if (i < MAX_VIS) then INC else REJECT
+	 | /*departure*/ acquire -> read[i:MV] -> if (i > 0)       then DEC else REJECT
+	 | disable    -> TURNSTILE
 	 ),
-INC = (acquire -> count[i:MV] -> if (i < MAX_VIS) then INCREMENT[i] else REJECT),
-DEC = (acquire -> count[i:MV] -> if (i > 0)       then DECREMENT[i] else REJECT),
-INCREMENT[i:MV] = (update[i+1] -> release -> TE),
-DECREMENT[i:MV] = (update[i-1] -> release -> TE),
-REJECT = (rejected_action -> release -> TE).
+REJECT = (release -> TE),
+INC = (arrival   -> read[i:MV] -> if (i < MAX_VIS) then INCREMENT[i] else REJECT),
+DEC = (departure -> read[i:MV] -> if (i > 0)       then DECREMENT[i] else REJECT),
+INCREMENT[i:MV] = (write[i+1] -> release -> TE),
+DECREMENT[i:MV] = (write[i-1] -> release -> TE)
++ VisitorsAlpha.
+
+/* Museum's opening/closing */
+DIRECTOR = DIRECTOR[0],
+DIRECTOR[i:0..1] =  (when (i==0) open  -> CONTROL[0]
+					|when (i==1) close -> CONTROL[1]
+					),
+CONTROL[i:0..1] = (when (i==0) enable -> DIRECTOR[1]
+				  |when (i==1) disable.entrance -> CLOSING
+				  ),
+CLOSING = (read[i:MV] -> if (i==0) then CLOSE else CLOSING),
+CLOSE   = (disable.exit -> DIRECTOR[0]).
+
+/* Fucking museum */
+||MUSEUM = ( VIS || LOCK || {east,west}:TURNSTILE || DIRECTOR )
+		  /{ acquire/{east,west}.acquire,
+			 release/{east,west}.release,
+			 read   /{east,west}.read,
+			 write  /{east,west}.write,
+			 enable /{east,west}.enable,
+			 disable.entrance/east.disable,
+			 disable.exit    /west.disable  }
+		  \{ acquire, release, read, write, enable, disable.entrance, disable.exit  }.
