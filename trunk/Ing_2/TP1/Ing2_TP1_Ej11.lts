@@ -26,15 +26,11 @@ DECREMENT[i:MV] = (write[i-1] -> release -> TE)
 + VisitorsAlpha.
 
 /* Museum's opening/closing */
-DIRECTOR = DIRECTOR[0],
-DIRECTOR[i:0..1] =  (when (i==0) open  -> CONTROL[0]
-					|when (i==1) close -> CONTROL[1]
-					),
-CONTROL[i:0..1] = (when (i==0) enable -> DIRECTOR[1]
-				  |when (i==1) disable.entrance -> CLOSING
-				  ),
+DIRECTOR = ( open -> close -> closed -> DIRECTOR ),
+CONTROL = ( open -> CONTROL
+		  | disable.entrance -> CLOSING),
 CLOSING = (read[i:MV] -> if (i==0) then CLOSE else CLOSING),
-CLOSE   = (disable.exit -> DIRECTOR[0]).
+CLOSE   = (disable.exit -> closed -> CONTROL).
 
 /* Fucking museum */
 ||MUSEUM = ( VIS || LOCK || {east,west}:TURNSTILE || DIRECTOR )
