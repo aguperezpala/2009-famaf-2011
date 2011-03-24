@@ -1,0 +1,53 @@
+range T = 0..1
+
+/* Elecciones de diseño:
+ *	a) los brazos toman los objetos de los lugares de arribo apenas llegan,
+ *	   NO esperan a que se liberen los lugares de recepción.
+ *	   Por ende pueden quedarse "sosteniendo objetos en el aire"
+ *  b) la cinta transportadora no espera que se procese un objeto completamente
+ *	   para traer el siguiente. Sólo espera hasta que el brazo apropiado
+ *	   haya quitado el objeto de su posición de extracción
+ *	c) siempre se pueden colocar objetos en la salida de la célula
+ */
+
+
+/* Conveyor belt */
+CONVEYOR =  (/*nothing*/ convey -> CONVEYOR
+			|/*arrival*/ object -> stop -> restart -> CONVEYOR)
+/{conv.arrival/stop,
+  conv.take   /restart}.
+
+
+/* Robotic arm: conveyor -> press */
+CONV_ARM = (signal -> take.object -> CHECK_PRESS),
+CHECK_PRESS = (check[i:T] -> if (i==0) then MOVE else CHECK_PRESS),
+MOVE = (move.object -> CONV_ARM)
+/{conv.arrival/signal,
+  conv.take   /take.object,
+  press.put   /move.object}.
+
+
+/* Robotic arm: press -> out */
+PRESS_ARM = (signal -> take.object -> move.object -> PRESS_ARM)
+/{press.done /signal,
+  press.clear/take.object,
+  out.put    /move.object}.
+
+
+/* Press */
+PRESS = PRESS[0],
+PRESS[i:T] = (when (i==0) /*free*/ receive.object -> PRESS[1]
+			 |when (i==1) /*busy*/ press -> remove.object -> PRESS[0]
+			 |check[i] -> PRESS[i])
+/{press.put  /receive.object,
+  press.done /press,
+  press.clear/remove.object }.
+
+
+/* Whole system */
+||CELL = (	CONVEYOR
+		 ||	CONV_ARM
+		 ||	PRESS_ARM
+		 || PRESS
+		 )
+	@{ convey, object, conv.take, press.put, press.clear, out.put }.
