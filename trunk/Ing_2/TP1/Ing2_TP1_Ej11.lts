@@ -2,6 +2,9 @@
 const MAX_VIS = 9
 range MV = 0..MAX_VIS
 set VisitorsAlpha = {read[MV], write[MV]}
+set ForbiddenActionsTurnstiles = {east.departure, west.arrival}
+set ForbiddenActionsControl = {ctrl.write[MV]}
+
 
 /* Current # of visitors */
 VIS = VIS[0],
@@ -12,33 +15,44 @@ VIS[i:MV] = ( read[i]     -> VIS[i]
 /* Mutex for VIS correct update */
 LOCK = (acquire -> release -> LOCK).
 
-/* Museum's generic entry/exit point */
+
+/* Museum's generic gate */
 TURNSTILE = ( enable -> TE),
-TE = ( /*arrival*/   acquire -> read[i:MV] -> if (i < MAX_VIS) then INC else REJECT
-	 | /*departure*/ acquire -> read[i:MV] -> if (i > 0)       then DEC else REJECT
-	 | disable    -> TURNSTILE
+TE = ( arrival   -> acquire -> read[i:MV] -> if (i < MAX_VIS) then INC[i] else REJECT
+	 | departure -> acquire -> read[i:MV] -> if (i > 0)       then DEC[i] else REJECT
+	 | disable   -> TURNSTILE
 	 ),
 REJECT = (release -> TE),
-INC = (arrival   -> read[i:MV] -> if (i < MAX_VIS) then INCREMENT[i] else REJECT),
-DEC = (departure -> read[i:MV] -> if (i > 0)       then DECREMENT[i] else REJECT),
-INCREMENT[i:MV] = (write[i+1] -> release -> TE),
-DECREMENT[i:MV] = (write[i-1] -> release -> TE)
+INC[i:MV] = (write[i+1] -> release -> TE),
+DEC[i:MV] = (write[i-1] -> release -> TE)
 + VisitorsAlpha.
 
-/* Museum's opening/closing */
-DIRECTOR = ( open -> close -> closed -> DIRECTOR ),
-CONTROL = ( open -> CONTROL
-		  | disable.entrance -> CLOSING),
-CLOSING = (read[i:MV] -> if (i==0) then CLOSE else CLOSING),
-CLOSE   = (disable.exit -> closed -> CONTROL).
+
+/* Museum's access control */
+CONTROL = ( open  -> CONTROL
+		  | close -> CLOSING),
+CLOSING = (ctrl.read[i:MV] -> if (i==0) then CLOSE else CLOSING),
+CLOSE   = (closed -> CONTROL)
++ ForbiddenActionsTurnstiles.
+
+/* Museum's director */
+DIRECTOR = ( open -> close -> closed -> DIRECTOR )
++ ForbiddenActionsControl.
+
 
 /* Fucking museum */
-||MUSEUM = ( VIS || LOCK || {east,west}:TURNSTILE || DIRECTOR )
-		  /{ acquire/{east,west}.acquire,
-			 release/{east,west}.release,
-			 read   /{east,west}.read,
-			 write  /{east,west}.write,
-			 enable /{east,west}.enable,
-			 disable.entrance/east.disable,
-			 disable.exit    /west.disable  }
-		  \{ acquire, release, read, write, enable, disable.entrance, disable.exit  }.
+||MUSEUM =  (  {east,west,ctrl}::VIS
+			|| {east,west}     ::LOCK
+			|| {east,west}      :TURNSTILE 
+			||                   CONTROL
+			||                   DIRECTOR )
+	/{  open     /{east,west}.enable,
+		close	 /east.disable,
+		closed	 /west.disable,
+		arrival  /east.arrival,
+		departure/west.departure }
+	@{  arrival,
+		departure,
+		open,
+		close,
+		closed }.
