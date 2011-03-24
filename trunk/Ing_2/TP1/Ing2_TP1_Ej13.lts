@@ -1,0 +1,66 @@
+/* Elecciones de diseño:
+ *	a) hay un único brazo que toma los objetos de la cinta transportadora
+ *	   y los coloca o bien en la prensa o bien en el taladro.
+ *	b) hay un brazo por maquinaria (uno para la prensa y otro para el taladro)
+ *	   que toma el objeto procesado y lo lleva a la salida de la célula
+ *	c) los brazos toman los objetos de los lugares de arribo apenas llegan,
+ *	   NO esperan a que se liberen los lugares de recepción.
+ *	   Por ende pueden quedarse "sosteniendo objetos en el aire"
+ *  d) la cinta transportadora no espera que se procese un objeto completamente
+ *	   para traer el siguiente. Sólo espera hasta que el brazo apropiado
+ *	   haya quitado el objeto de su posición de extracción
+ *	e) siempre se pueden colocar objetos (de cualquier tipo)
+ *	   en la salida de la célula, no hay que esperar habilitación para ello
+ */
+
+range T = 0..1
+
+/* Cell accepted objet types: */
+set Obj = {a, b}
+
+/* Machines which process those objects (in the correct order) */
+set Machines = {press, drill}
+
+
+/* Conveyor belt */
+CONVEYOR =  (/*nothing*/ convey -> CONVEYOR
+			|/*arrival*/ object[o:Obj] -> stop[o] -> restart -> CONVEYOR)
+/* where: */
+/{forall[o:Obj] {[o].conv.arrival/stop[o]},
+  forall[o:Obj] {[o].conv.take   /restart}}.
+
+
+/* Robotic arm1: conveyor -> (press | drill) */
+CONV_ARM = (signal[o:Obj] -> take.object[o] -> CHECK_MACHINE[o]),
+CHECK_MACHINE[o:Obj] = (check[o][i:T] -> if(i==0) then MOVE[o] else CHECK_MACHINE[o]),
+MOVE[o:Obj] = ([o].move.object -> CONV_ARM)
+/* where: */
+/{forall[o:Obj] { [o].conv.arrival / signal[o] },
+  forall[o:Obj] { [o].conv.take    / take.object[o] },
+  forall[i:T] { [@(Machines,0)].check[i] / check[@(Obj,0)][i] },
+  forall[i:T] { [@(Machines,1)].check[i] / check[@(Obj,1)][i] },
+  [@(Machines,0)].put / [@(Obj,0)].move.object,
+  [@(Machines,1)].put / [@(Obj,1)].move.object }.
+
+
+/* Generic machine (press | drill) */
+MACHINE = MACHINE[0],
+MACHINE[i:T] =  (when (i==0) /*free*/ receive.object -> MACHINE[1]
+				|when (i==1) /*busy*/ process -> remove.object -> MACHINE[0]
+				|check[i] -> MACHINE[i]).
+
+
+/* Generic robotic arm2: (press | drill) -> out */
+MACHINE_ARM = (signal -> take.object -> move.object -> MACHINE_ARM).
+
+
+/* Whole system */
+||CELL = (  CONVEYOR
+		 ||	CONV_ARM
+		 || Machines:MACHINE /{ forall[m:Machines] {[m].put  /[m].receive.object},
+								forall[m:Machines] {[m].done /[m].process},
+								forall[m:Machines] {[m].clear/[m].remove.object}}
+		 ||	Machines:MACHINE_ARM /{ forall[m:Machines] {[m].done/[m].signal},
+									forall[m:Machines] {[m].clear/[m].take.object},
+									forall[m:Machines] {[m].output/[m].move.object}}
+		 ).
