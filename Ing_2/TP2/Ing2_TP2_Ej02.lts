@@ -1,0 +1,46 @@
+/* El recurso común que comparten lectores y lecto-escritores
+ * será un arreglo con 'L' posiciones para datos
+ */
+
+/* # de lectores */
+const N = 2
+
+/* # de escritores */
+const M = 2
+
+/* # de accesos simultáneos permitidos sobre el buffer */
+const K = 2
+
+/* longitud del buffer */
+const LB = 1
+
+/* Alfabetos prohibidos */
+set ForbiddenActionsReaders = {write[0..LB]}
+
+/* Semáforo para acceso correcto a recursos */
+SEMAPHORE(I=0) = SEMA[I],
+SEMA[i:0..I] =  (			up   -> SEMA[i+1]
+				|when (i>0) down -> SEMA[i-1]).
+
+/* Recurso compartido: arreglo con 'L' espacios */
+ARRAY(L=1) = ARRAY[0],
+ARRAY[l:0..L]=  (read[l] -> ARRAY[l]
+				|write[t:0..L] -> ARRAY[t] ).
+
+/* Lector */
+READER(L=1) = (sema.down -> read[l:0..L] -> sema.up -> READER )
++ForbiddenActionsReaders.
+
+/* Escritor */
+WRITER(L=1) = (sema.down -> read [l:0..L] -> sema.up -> WRITER
+			  |sema.down -> write[t:0..L] -> sema.up -> WRITER ).
+
+
+/* Sistema de lectores y escritores */
+||RW_SYSTEM = 	(  rd[0..N]:READER(LB)
+				|| wr[0..M]:WRITER(LB)
+				|| {rd[0..N], wr[0..M]}::ARRAY(LB)
+				|| {rd[0..N], wr[0..M]}::sema:SEMAPHORE(K))
+  @{rd[0..N].read,
+	wr[0..M].read,
+	wr[0..M].write}.
