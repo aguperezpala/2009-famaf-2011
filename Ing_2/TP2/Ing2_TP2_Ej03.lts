@@ -1,0 +1,34 @@
+/* # de asientos del tatro */
+const N = 10
+range T = 0..N
+/* # de terminales conectadas */
+const M = 5
+
+SEAT = SEAT[0],
+SEAT[i:0..1] = (view[i] -> SEAT[i]
+               | when  [][
+/* se puede poner el lock a nivel asiento */
+
+||SEATS = (s[1..M]:SEAT).
+/* ete SEATS reemplaza el de mas abajo */
+
+SEATS = SEATS[0][0],
+SEATS[t:T][j:0..1] = (view[i:T][j] -> SEATS[i][j]
+                     |when(j=0) take[i] -> SEATS[i][1]).
+
+TERMINAL = (view[i:T][j:0..1] -> TERMINAL
+           |request[i] -> (accepted -> TERMINAL
+                          |rejected -> TERMINAL)
+           ).
+
+CETRAL = (request[i:T] -> lock -> view[i][j:0..1] -> if (j==0) then TAKE[i] else REJECT),
+TAKE[i:T] = (take[i] -> accepted -> QUIT),
+REJECT = (rejected -> QUIT),
+QUIT = (unlock -> CENTRAL).
+
+LOCK = (lock -> unlock -> LOCK).
+
+||THEATRE = (  [0..M]:TERMINAL
+            || [0..M]::CENTRAL
+            || [0..M]::SEATS
+            ||)
