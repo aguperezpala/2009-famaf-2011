@@ -8,19 +8,22 @@ const N = 2
 /* # de escritores */
 const M = 2
 
-/* # de accesos simultáneos permitidos sobre el buffer */
+/* # de accesos simultáneos (de lectores)
+ * permitidos sobre el buffer */
 const K = 2
 
 /* longitud del buffer */
-const LB = 1
+const LB = 5
 
 /* Alfabetos prohibidos */
-set ForbiddenActionsReaders = {write[0..LB]}
+set ForbiddenActionsReaders = {write[0..LB], sema.lock, sema.unlock}
+set ForbiddenActionsWriters = {sema.up, sema.down}
 
 /* Semáforo para acceso correcto a recursos */
 SEMAPHORE(I=0) = SEMA[I],
-SEMA[i:0..I] =  (			up   -> SEMA[i+1]
-				|when (i>0) down -> SEMA[i-1]).
+SEMA[i:0..I] =  (			 up   -> SEMA[i+1]
+				|when (i>0)  down -> SEMA[i-1]
+                |when (i==I) lock -> unlock -> SEMA[I]).
 
 /* Recurso compartido: arreglo con 'L' espacios */
 ARRAY(L=1) = ARRAY[0],
@@ -32,8 +35,9 @@ READER(L=1) = (sema.down -> read[l:0..L] -> sema.up -> READER )
 +ForbiddenActionsReaders.
 
 /* Escritor */
-WRITER(L=1) = (sema.down -> read [l:0..L] -> sema.up -> WRITER
-			  |sema.down -> write[t:0..L] -> sema.up -> WRITER ).
+WRITER(L=1) = (sema.lock -> (read [l:0..L] -> sema.unlock -> WRITER
+			                |write[t:0..L] -> sema.unlock -> WRITER ))
++ForbiddenActionsWriters.
 
 
 /* Sistema de lectores y escritores */
