@@ -1,34 +1,59 @@
 /* # de asientos del tatro */
-const N = 10
-range T = 0..N
+const N = 2
+range NoS = 0..N-1
 /* # de terminales conectadas */
-const M = 5
+const M = 2
+range NoT = 0..M-1
 
+
+/* Un asiento */
 SEAT = SEAT[0],
-SEAT[i:0..1] = (view[i] -> SEAT[i]
-               | when  [][
-/* se puede poner el lock a nivel asiento */
+SEAT[j:0..1] = (view[j] -> SEAT[j]
+               |chk[j] -> if (j==0) then TAKE else SEAT[j]),
+TAKE = (take -> SEAT[1]).
+/* Todos los asientos */
+||SEATS = (seat[NoS]:SEAT).
 
-||SEATS = (s[1..M]:SEAT).
-/* ete SEATS reemplaza el de mas abajo */
+/* Usaremos un lock por cada asiento */
+LOCK = (acquire -> release -> LOCK).
+||LOCKS = (lock[NoS]:LOCK).
 
-SEATS = SEATS[0][0],
-SEATS[t:T][j:0..1] = (view[i:T][j] -> SEATS[i][j]
-                     |when(j=0) take[i] -> SEATS[i][1]).
 
-TERMINAL = (view[i:T][j:0..1] -> TERMINAL
-           |request[i] -> (accepted -> TERMINAL
-                          |rejected -> TERMINAL)
+/* Terminal de un empleado del teatro */
+TERMINAL = (seat[i:NoS].view[j:0..1] -> TERMINAL
+           |seat[i:NoS].request -> (accepted[i] -> TERMINAL
+                                   |rejected[i] -> TERMINAL
+                                   )
            ).
 
-CETRAL = (request[i:T] -> lock -> view[i][j:0..1] -> if (j==0) then TAKE[i] else REJECT),
-TAKE[i:T] = (take[i] -> accepted -> QUIT),
-REJECT = (rejected -> QUIT),
-QUIT = (unlock -> CENTRAL).
 
-LOCK = (lock -> unlock -> LOCK).
+/* Administrador de un asiento específico:
+ * acepta o rechaza una reserva para dicho asiento */
+SEAT_CTRL = (seat.request -> lock.acquire -> seat.chk[j:0..1]
+                                          -> if (j==0) then ACCEPT else REJECT),
+ACCEPT = (seat.take -> accepted -> QUIT),
+REJECT = (             rejected -> QUIT),
+QUIT = (lock.release -> SEAT_CTRL).
 
-||THEATRE = (  [0..M]:TERMINAL
-            || [0..M]::CENTRAL
-            || [0..M]::SEATS
-            ||)
+/* Central que habilita el pedido de reservas de todos los asientos del teatro*/
+||CENTRAL = (c[NoS]:SEAT_CTRL)
+  /{forall[i:NoS] {
+        seat[i].request / c[i].seat.request,
+	    lock[i].acquire / c[i].lock.acquire,
+	    seat[i].take    / c[i].seat.take,
+	    accepted[i]     / c[i].accepted,
+	    rejected[i]     / c[i].rejected,
+	    forall[j:0..1] {
+            seat[i].chk[j] / c[i].seat.chk[j]
+        }
+    }
+   }.
+
+
+/* Teatro */
+||THEATRE = (  term[NoT]:TERMINAL
+            /* Las 'M' terminales comparten todos los recursos */
+            || term[NoT]::SEATS
+            || term[NoT]::LOCKS
+            || term[NoT]::CENTRAL
+            ).
