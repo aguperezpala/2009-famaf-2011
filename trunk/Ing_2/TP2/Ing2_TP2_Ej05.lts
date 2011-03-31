@@ -1,0 +1,79 @@
+/* K tipos de mensajes */
+const K = 5
+range M = 0..K-1
+
+/* Hasta 3 mensajes */
+const N = 3
+set   S = {[M],[M][M]}
+
+/* Esto debería funcionar para que 'N' se calcule automáticamente.
+ * Pero según FSP #S = 30
+const N = #S+1
+*/
+
+
+/******************************************************************************/
+/******************   Buffer de almacenamiento de mensajes   ******************/
+
+/* Puerto vacío, sólo puede ser enviado un mensaje */
+PORT = (send[x:M] -> PORT[x]),
+
+/* Puerto con un elemento
+ * ie: "head" es el primer y único elemento */
+PORT[h:M] = (recv[h]   -> PORT         /* alguien recive => se vacía         */
+            |send[x:M] -> PORT[h][x]   /* alguien envía  => encola al último */
+            ),
+
+/* Puerto con 2 ó 3 elementos
+ * ie: "head" es el primer elemento
+ *     "tail" contiene uno o dos elementos*/
+PORT[h:M][t:S] = (recv[h]   -> PORT[t]          /* recv => se fue la cabeza */
+                 |send[x:M] -> PORT[h][t][x]    /* send => encola al último */
+                 ).
+
+
+/******************************************************************************/
+/*************************   Procesos comunicados   ***************************/
+
+PRODUCER = (req.send -> send[m:M] -> ack.send -> PRODUCER
+           |fuck_around_producer -> PRODUCER
+           ).
+CONSUMER = (req.recv -> recv[m:M] -> ack.recv -> CONSUMER
+           |fuck_around_consumer -> CONSUMER
+           ).
+
+
+/******************************************************************************/
+/*************************   Procesos auxiliares   ****************************/
+
+/* Es básicamente un semáforo con techo resguardado */
+BUFFER(CAP=1) = BUFFER[0],
+BUFFER[i:0..CAP] = (when (i<CAP) accept.load -> BUFFER[i]
+                   |when (i<CAP) loaded      -> BUFFER[i+1]
+                   |when (i>0) accept.unload -> BUFFER[i]
+                   |when (i>0) unloaded      -> BUFFER[i-1]
+                   ).
+
+
+/******************************************************************************/
+/*********************   Modelo productor-consumidor   ************************/
+
+||SYSTEM = (  PORT || PRODUCER || CONSUMER || BUFFER(N))
+   /{req.send / accept.load,
+     ack.send / loaded,
+     req.recv / accept.unload,
+     ack.recv / unloaded }.
+
+
+/* Comportamiento del sistema:
+ *
+ *  · En todo momento PRODUCER y CONSUMER pueden hacer acciones internas,
+ *    excepto cuando están enviando/recibiendo mensajes.
+ *
+ *  · Sin embargo mientras PRODUCER envía, CONSUMER puede continuar
+ *    realizando acciones internas, y viceversa.
+ *
+ *  · Si el buffer tiene mensajes pero no está lleno,
+ *    los procesos pueden enviar y recibir en simultáneo,
+ *    siempre manteniendo el orden de los mensajes (comportamiento FIFO)
+ */
