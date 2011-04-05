@@ -1,0 +1,101 @@
+/* K == cantidad de datos a enviar */
+const K = 3
+range M = 0..K-1
+
+/* Hasta N mensajes circulando simultáneamente en la red*/
+const N = 3
+set   Ms = {[M],[M][M]}
+
+/* T == tiempo de espera antes de retransmitir */
+const T = 2
+
+
+/******************************************************************************/
+/*****************  Red (donde se "almacenan" los mensajes)  ******************/
+
+/* No hay mensajes circulando => el transmisor puede enviar uno */
+NET = (send[m:M] -> NET[m]),
+
+/* Un mensaje circulando */
+NET[n:M] = (destroy   -> NET         /* se perdió un mensaje */
+           |recv[n]   -> NET         /* reciven => fin de los mensajes  */
+           |send[m:M] -> NET[n][m]   /* envían  => se agrega un mensaje */
+           ),
+
+/* 2 o 3 mensajes circulando */
+NET[n:M][s:Ms] = (destroy   -> NET[s]          /* se perdió un mensaje */
+                 |recv[n]   -> NET[s]          /* recv => un mensaje menos */
+                 |send[m:M] -> NET[n][s][m]    /* send => un mensaje más   */
+                 ).
+
+
+/******************************************************************************/
+/*****************************   Transmisor   *********************************/
+
+TRANSMITTER = TRANSMITTER[0],
+
+/* El transmisor envía... */
+TRANSMITTER[m:M] = (send[m] -> TWAIT[T]),
+
+/* ...y espera hasta el ack/timeout */
+TWAIT[t:0..T] = (when (t>0)  tictac  -> TWAIT[t-1]
+                |when (t==0) timeout -> twquery[m:M] -> TRANSMITTER[m]
+                |ack[m:M] -> TCHECK[m] ),
+
+/* Vino un ack: revisamos que sea el esperado ('e') */
+TCHECK[m:M] = (tcquery[e:M] -> if (e==m) then TMOVE_ON[e]       /* avanzamos */
+                                         else TRANSMITTER[e]),  /* retransm. */
+TMOVE_ON[e:M] = (tnext -> TRANSMITTER[(e+1)%K])
+
+\{timeout}.
+
+
+/******************************************************************************/
+/******************************   Receptor   **********************************/
+
+/* Cuando viene un mensaje... */
+RECEIVER = (recv[m:M] -> RCHECK[m]),
+/* ...revisamos si era o no el esperado ('e') */
+RCHECK[m:M] = (rquery[e:M] -> if (e==m) then RMOVE_ON[e]  /* avanza */
+                                        else (discard -> RECEIVER) ),  /* sigue esperando */
+RMOVE_ON[e:M] = (ack[e] -> rnext -> RECEIVER)
+
+\{discard}.
+
+
+/******************************************************************************/
+/*************************   Procesos auxiliares   ****************************/
+
+/* Contador que indica el # de orden
+ * del mensaje que está siendo transmitido */
+TMNUM = TMNUM[0],
+TMNUM[i:M] = (tnext      -> TMNUM[(i+1)%K]
+             |twquery[i] -> TMNUM[i]
+             |tcquery[i] -> TMNUM[i] ).
+
+/* Contador que indica el # de orden
+ * del mensaje que está siendo recibido */
+RMNUM = RMNUM[0],
+RMNUM[i:M] = (rnext     -> RMNUM[(i+1)%K]
+             |rquery[i] -> RMNUM[i] ).
+
+/* Semáforo con techo,
+ * para que no haya más de N mensajes en la red */
+SEM = SEM[0],
+SEM[i:0..N] = (when (i<N) up   -> SEM[i+1]
+              |when (i>0) down -> SEM[i-1] ).
+
+
+/******************************************************************************/
+/**********************   Modelo del protocolo PAR   **************************/
+
+||PAR = (  TRANSMITTER
+        || TMNUM
+        || RECEIVER
+        || RMNUM
+        || NET
+        || SEM )
+  /{ destroy / down,
+     forall[m:M] {send[m] / up,
+                  recv[m] / down}
+   }.
