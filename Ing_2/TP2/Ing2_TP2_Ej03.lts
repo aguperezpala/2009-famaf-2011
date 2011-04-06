@@ -11,12 +11,12 @@ SEAT = SEAT[0],
 SEAT[j:0..1] = (view[j]      -> SEAT[j]  /* Para que mire la terminal */
                |ctrl_view[j] -> SEAT[j]  /* Para que mire el controlador */
                |when (j==0) take -> SEAT[1]).
-/* Todos los asientos */
-||SEATS = (seat[NoS]:SEAT).
 
 /* Usaremos un lock por cada asiento */
 LOCK = (acquire -> release -> LOCK).
-||LOCKS = (lock[NoS]:LOCK).
+
+/* Todos los asientos con sus locks asociados*/
+||LOCKED_SEATS = (lock[NoS]:LOCK || seat[NoS]:SEAT).
 
 
 /* Terminal de un empleado del teatro */
@@ -36,12 +36,12 @@ REJECT = (             rejected -> QUIT),
 QUIT = (lock.release -> SEAT_CTRL).
 
 /* Central que habilita el pedido de reservas de todos los asientos del teatro*/
-||CENTRAL = (c[NoS]:SEAT_CTRL)
-  /{forall[i:NoS] {
+||CENTRAL = (c[NoS]:SEAT_CTRL).
+/*  /{forall[i:NoS] {
         seat[i].request / c[i].seat.request,
+	    seat[i].take    / c[i].seat.take,
 	    lock[i].acquire / c[i].lock.acquire,
 	    lock[i].release / c[i].lock.release,
-	    seat[i].take    / c[i].seat.take,
 	    accepted[i]     / c[i].accepted,
 	    rejected[i]     / c[i].rejected,
 	    forall[j:0..1] {
@@ -49,12 +49,27 @@ QUIT = (lock.release -> SEAT_CTRL).
         }
     }
    }.
-
+*/
 
 /* Teatro */
 ||THEATRE = (  term[NoT]:TERMINAL
-            /* Las 'M' terminales comparten todos los recursos */
-            || term[NoT]::SEATS
-            || term[NoT]::LOCKS
+            /* Las 'M' terminales comparten la central */
             || term[NoT]::CENTRAL
-            ).
+            /* La central es la única con acceso a los asientos */
+            || LOCKED_SEATS
+            )
+  /{ forall[t:NoT] {
+         forall[i:NoS] {
+             forall[j:0..1] {
+                 seat[i].ctrl_view[j] / term[t].c[i].seat.view[j]
+             },
+             seat[i].view    / term[t].seat[i].view,
+             seat[i].request / term[t].c[i].seat.request,
+             seat[i].take    / term[t].c[i].seat.take,
+             lock[i].acquire / term[t].c[i].lock.acquire,
+             lock[i].release / term[t].c[i].lock.release,
+             term[t].accepted[i] / term[t].c[i].accepted,
+	         term[t].rejected[i] / term[t].c[i].rejected
+         }
+     }
+   }.
