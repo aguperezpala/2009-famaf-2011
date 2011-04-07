@@ -1,0 +1,35 @@
+/* # de libros distintos que maneja la editorial */
+const NBOOKS = 4
+range Books  = 0..NBOOKS-1
+
+/* Existencia inicial de cada libro         *
+ * (debe haber NBOOKS constantes definidas) */
+const B0 = 3
+const B1 = 2
+const B2 = 2
+const B3 = 1
+
+/* # máximo de clientes simultáneos */
+const CMAX = 3
+
+
+
+/******************************************************************************/
+/******************************   Clientes   **********************************/
+
+/* Un cliente */
+CLIENT = (request.book[b:Books] -> present.plastic -> (accepted[b] -> CLIENT
+                                                      |rejected[b] -> CLIENT).
+
+/* !!! FALTA MODELAR EL DINERO DEL CLIENTE ¡¡¡ */
+
+/* Clientela */
+||CLIENTS = (client[0..CMAX]:CLIENT)
+
+
+
+/******************************************************************************/
+/*****************************   Editorial   **********************************/
+
+ED = (request.book[b:Books])
+

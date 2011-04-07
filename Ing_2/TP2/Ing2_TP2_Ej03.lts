@@ -29,27 +29,17 @@ TERMINAL = (seat[i:NoS].view[j:0..1] -> TERMINAL
 
 /* Administrador de un asiento específico:
  * acepta o rechaza una reserva para dicho asiento */
-SEAT_CTRL = (seat.request -> lock.acquire -> seat.view[j:0..1]
-                                          -> if (j==0) then ACCEPT else REJECT),
+SEAT_CTRL = (terminal.seat.request -> seat.request -> lock.acquire
+                                                   -> seat.view[j:0..1]
+                                                   -> if (j==0) then ACCEPT else REJECT),
 ACCEPT = (seat.take -> accepted -> QUIT),
 REJECT = (             rejected -> QUIT),
 QUIT = (lock.release -> SEAT_CTRL).
 
 /* Central que habilita el pedido de reservas de todos los asientos del teatro*/
 ||CENTRAL = (c[NoS]:SEAT_CTRL).
-/*  /{forall[i:NoS] {
-        seat[i].request / c[i].seat.request,
-	    seat[i].take    / c[i].seat.take,
-	    lock[i].acquire / c[i].lock.acquire,
-	    lock[i].release / c[i].lock.release,
-	    accepted[i]     / c[i].accepted,
-	    rejected[i]     / c[i].rejected,
-	    forall[j:0..1] {
-            seat[i].ctrl_view[j] / c[i].seat.view[j]
-        }
-    }
-   }.
-*/
+
+
 
 /* Teatro */
 ||THEATRE = (  term[NoT]:TERMINAL
@@ -58,18 +48,27 @@ QUIT = (lock.release -> SEAT_CTRL).
             /* La central es la única con acceso a los asientos */
             || LOCKED_SEATS
             )
-  /{ forall[t:NoT] {
+
+  /{ /* Coordinamos las acciones de la central ... */
+     forall[t:NoT] {
          forall[i:NoS] {
-             forall[j:0..1] {
-                 seat[i].ctrl_view[j] / term[t].c[i].seat.view[j]
-             },
-             seat[i].view    / term[t].seat[i].view,
+             /* ... con las acciones de los asientos */
              seat[i].request / term[t].c[i].seat.request,
              seat[i].take    / term[t].c[i].seat.take,
              lock[i].acquire / term[t].c[i].lock.acquire,
              lock[i].release / term[t].c[i].lock.release,
+             forall[j:0..1] {
+                 seat[i].ctrl_view[j] / term[t].c[i].seat.view[j]
+             },
+             /* ... y con las acciones de las terminales */
              term[t].accepted[i] / term[t].c[i].accepted,
-	         term[t].rejected[i] / term[t].c[i].rejected
+	         term[t].rejected[i] / term[t].c[i].rejected,
+	         term[t].seat[i].request  / term[t].c[i].terminal.seat.request
          }
+     },
+     /* Coordinamos la única acción que las terminales  *
+      * pueden efectuar directamente sobre los asientos */
+     forall[i:NoS] {
+          term[t:NoT].seat[i].view / seat[i].view
      }
    }.
