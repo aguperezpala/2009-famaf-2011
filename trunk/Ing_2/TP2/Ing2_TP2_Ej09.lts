@@ -38,24 +38,21 @@ LOCK = (acquire -> release -> LOCK).
 /******************************   Clientes   **********************************/
 
 /* Un cliente */
-CLIENT = (request.book[b:NumBooks] -> (accepted[b] -> CLIENT
-                                      |rejected[b] -> CLIENT)
-         |ask.balance[s:0..SMAX]                   -> CLIENT).
+CLIENT = (request.book[b:NumBooks] -> enter.card.no ->
+                                     (accepted[b] -> CLIENT
+                                     |rejected[b] -> CLIENT)
+         |ask.balance[s:0..SMAX]                  -> CLIENT).
 
 /* Su tarjeta de crédito */
 CARD = CARD[SMAX],
-CARD[i:0..SMAX] = (ask.balance[i]       -> CARD[i]
-                  |owner.ask.balance[i] -> CARD[i]
-                  |extract[j:0..SMAX]
-                   -> if (j <= i) then CARD[i-j]
-                                  else CARD[i]
+CARD[i:0..SMAX] = (owner.ask.balance[i]          -> CARD[i]
+                  |submit.card -> ask.balance[i] -> CARD[i]
+                  |extract[j:0..SMAX] -> if (j <= i) then CARD[i-j]
+                                                     else CARD[i]
                   ).
 
 /* Clientela */
-||CLIENTS = (     client[NumClients]:CLIENT
-            ||      card[NumClients]:CARD
-            || card.lock[NumClients]:LOCK
-            )
+||CLIENTS = (client[NumClients]:CLIENT || card[NumClients]:CARD)
 
   /{ forall[c:NumClients] {
          forall[s:0..SMAX] {
@@ -75,27 +72,22 @@ BOOK_CTRL = (request.book
              -> ask.existence[e:0..BMAX]
              -> if (e>0)
                 then (
-                     card.lock.acquire
-                     /* No hay deadlock pues un cliente puede comprar
-                      * un libro a la vez, y cada libro puede ser comprado
-                      * por un cliente a la vez */
+                     request.card.no
                      -> card.ask.balance[s:0..SMAX]
                      -> if (s >= BPRICE)
                         then
-                             ( accept
-                             -> extract[BPRICE]
+                             (  extract[BPRICE]
                              -> buy
-                             -> card.lock.release
                              -> book.lock.release
+                             -> accepted
                              -> BOOK_CTRL)
                         else
-                            ( reject
-                             -> card.lock.release
-                             -> book.lock.release
+                            (   book.lock.release
+                             -> rejected
                              -> BOOK_CTRL)
                 ) else (
-                        reject
-                     -> book.lock.release
+                        book.lock.release
+                     -> rejected
                      -> BOOK_CTRL
                 )
             ) + {extract[0..SMAX]}.
@@ -110,10 +102,14 @@ BOOK_CTRL = (request.book
 
 
 /* TODO:
- *      Hay problemas de acceso incorrecto (no restringido) a tarjetas
- *      Cuando un cliente está comprando un libro
- *      y en el proceso BOOK_CTRL llega a la instancia "card.lock.acquire"
- *      se le habilitan ambos locks: el suyo y el del otro cliente */
+ *      Hay problemas de deadlock.
+ *      Luego de que BOOK_CTRL hace "cl[c].bs[b].request.card.no"
+ *      (traducido a "card[c].submit.card" para coordinar con la tarjeta)
+ *      se bloquea la ejecución.
+ *      La acción siguiente debería ser "card[c].ask.balance[s]", pero
+ *      aunque ambos BOOK_CTRL y CARD la tienen habilitada el sistema no
+ *      permite continuar la ejecución.
+ */
 
 
 ||SYSTEM = (CLIENTS || cl[NumClients]::BSTORE || BOOKS)
@@ -125,15 +121,15 @@ BOOK_CTRL = (request.book
 
              /* ... del cliente con la tienda */
              client[c].request.book[b]  / cl[c].bs[b].request.book,
-             client[c].accepted[b]      / cl[c].bs[b].accept,
-             client[c].rejected[b]      / cl[c].bs[b].reject,
-
+             client[c].accepted[b]      / cl[c].bs[b].accepted,
+             client[c].rejected[b]      / cl[c].bs[b].rejected,
+             
              /* ... de la tienda con la tarjeta */
+             card[c].submit.card        / client[c].enter.card.no,
+             card[c].submit.card        / cl[c].bs[b].request.card.no,
              forall[s:0..SMAX] {
                  card[c].ask.balance[s] / cl[c].bs[b].card.ask.balance[s],
-                 card[c].extract[s]     / cl[c].bs[b].extract[s],
-                 card.lock[c].acquire   / cl[c].bs[b].card.lock.acquire,
-                 card.lock[c].release   / cl[c].bs[b].card.lock.release
+                 card[c].extract[s]     / cl[c].bs[b].extract[s]
              },
 
              /* ... de la tienda con los libros */
