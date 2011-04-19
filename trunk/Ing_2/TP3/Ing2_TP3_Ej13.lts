@@ -1,0 +1,15 @@
+const MAXP  = 10
+const OVERP = MAXP+1
+
+
+LIFT = LIFT[0],
+LIFT[p:0..OVERP] = (when (p < OVERP) enter -> LIFT[p+1]
+                   |when (p > 0)     exit  -> LIFT[p-1]).
+
+
+property OVERWEIGHT = OWGT[0],
+OWGT[p:0..MAXP] = ( enter -> OWGT[p+1]
+                  | exit  -> OWGT[p-1]).
+
+
+||CHECK = (LIFT || OVERWEIGHT).
