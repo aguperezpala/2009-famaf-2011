@@ -1,0 +1,42 @@
+/* Estados de una bandera */
+set S = {up, down}
+/* Vecinos */
+set N = {n1, n2}
+
+
+/******************************************************************************/
+/******************************   Banderita  **********************************/
+
+FLAG = FLAG['down],
+FLAG[s:S] = (when (s=='down) raise -> FLAG['up]
+            |when (s=='up)   lower -> FLAG['down]
+            |chk[s] -> FLAG[s] ).
+
+
+/******************************************************************************/
+/*******************************   Vecino  ************************************/
+
+NEIG = (flag.raise -> chk.others.flag[s:S]
+                   -> if (s=='up) then (flag.lower  -> NEIG)
+                                  else (enter.field -> PICK)),
+PICK = (pick.berries -> leave.field -> flag.lower -> NEIG).
+
+
+/******************************************************************************/
+/************************   Propiedades deseadas  *****************************/
+
+/* Exclusión mutua en el campito */
+property PEACE = ([n:N].enter.field -> [n].leave.field -> PEACE ).
+
+/* "Que se recojan moras sólo si la bandera está izada" */
+property RESPECT = (flag.raise -> (pick.berries -> flag.lower -> RESPECT
+                                  |                flag.lower -> RESPECT)).
+
+
+/******************************************************************************/
+/*******************************   Sistema  ***********************************/
+
+||NEIGHBOURHOOD = (N:NEIG || N.flag:FLAG || PEACE || N:RESPECT)
+  /{forall[s:S] {n2.flag.chk[s] / n1.chk.others.flag[s] ,
+                 n1.flag.chk[s] / n2.chk.others.flag[s] }
+   }.
