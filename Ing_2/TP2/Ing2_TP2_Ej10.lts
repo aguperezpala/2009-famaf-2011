@@ -1,0 +1,63 @@
+/* # of existing customers */
+const C = 5
+range Cus = 0..C-1
+
+/* # of seats in the barber's */
+const N = 2
+
+/* # of clients the barbery can hold */
+const MAX = 2+N
+
+/* possible states for a barber */
+set S = {asleep, working}
+
+
+/******************************************************************************/
+/******************************   Barbers   ***********************************/
+
+BARBER = BARBER['asleep],
+BARBER[s:S] = (when (s=='asleep)  wakeup   -> BARBER['working]
+              |when (s=='working) cut.hair -> call.next[n:0..MAX]
+                                           -> if (n==0) then BARBER['asleep]
+                                                        else BARBER['working]
+              ).
+
+||BARBERS = (b[0..1]:BARBER).
+
+
+/******************************************************************************/
+/*****************************   Wait queue   *********************************/
+
+WAIT_QUEUE = WQ[0],
+WQ[i:0..MAX] = (arrive -> if (i<2)   then (wakeup.bbr -> WQ[i+1]) else
+                          if (i<MAX) then (take.seat  -> WQ[i+1]) else
+                                          (leave      -> WQ[i]  )
+               |when (i>0) leave -> WQ[i-1]
+               |call[i] -> WQ[i] ).
+
+
+/******************************************************************************/
+/*****************************   Customers   **********************************/
+
+CUSTOMER = (arrive -> (have.hcut -> leave -> CUSTOMER
+                      |take.seat -> WAIT
+                      |leave -> CUSTOMER)
+           ),
+WAIT = (have.hcut -> leave -> CUSTOMER).
+
+||CUSTOMERS = (c[Cus]:CUSTOMER).
+/* /{forall [i:Cus] { c[i].call[n:0..MAX] / c[i].call } }.
+*/
+
+/******************************************************************************/
+/****************************   Barber shop   *********************************/
+
+||BBSHOP = (BARBERS || CUSTOMERS || c[Cus]::WAIT_QUEUE)
+ /{forall [i:Cus] {
+       b[0..1].cut.hair    / c[i].have.hcut,
+       b[0..1].wakeup      / c[i].wakeup.bbr,
+       forall [n:0..MAX] {
+           b[j:0..1].call.next[n] / c[i].call[n]
+       }
+   }
+  }.

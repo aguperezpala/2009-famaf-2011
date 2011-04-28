@@ -1,0 +1,113 @@
+/* # of existing customers */
+const C = 5
+range Cus = 0..C-1
+
+/* # of seats in the barber's */
+const N = 2
+
+/* # of clients the barbery can hold */
+const MAX = 2+N
+
+/* Barbers */
+set B = {fig,mat}
+
+/* possible states for a barber */
+set S = {asleep, ready, working}
+
+
+/******************************************************************************/
+/******************************   Barbers   ***********************************/
+
+BARBER = BARBER['asleep],
+BARBER[s:S] = (when (s=='asleep) wakeup -> BARBER['ready]
+              |when (s=='ready) t -> (sleep    -> BARBER['asleep]
+                                     |cut.hair -> BARBER['working] )
+              |when (s=='working) finish -> BARBER['ready]
+              |ask.state[s] -> BARBER[s]
+              )\{t}.
+
+||BARBERS = (B:BARBER).
+
+
+/******************************************************************************/
+/*****************************   Customers   **********************************/
+
+CUSTOMER = (arrive -> (get.kicked.out -> CUSTOMER
+                      |enter -> RECEIVED) ),
+RECEIVED = (have.hcut -> leave -> CUSTOMER
+           |take.seat -> WAIT ),
+WAIT = (call -> RECEIVED).
+
+||CUSTOMERS = (c[Cus]:CUSTOMER).
+
+
+/******************************************************************************/
+/*****************************   Wait queue   *********************************/
+
+QUEUE = Q[0],
+Q[i:0..MAX+1] = (arrive -> Q[i+1]
+                |when (i>0) t -> (leave    -> Q[i-1]
+                                 |kick.out -> Q[i-1])
+                |count.customers[i] -> Q[i]
+                )\{t}.
+
+
+/******************************************************************************/
+/******************************   Secretary   *********************************/
+
+SECRETARY = (arrival -> count.customers[i:0..MAX]
+             -> if (i==MAX)
+                then (kick.out -> SECRETARY)
+                else (receive ->
+                      fig.ask.state[s:S] ->
+                      if (s=='ready)
+                           then SECRETARY  /* Figaro will cut his hair */
+                      else if (s=='asleep)
+                           then (fig.wakeup -> SECRETARY)
+                      else ( /* Figaro is working, lets see Mateo */
+                            mat.ask.state[s] ->
+                            if (s=='ready)
+                                 then SECRETARY  /* Mateo will cut his hair */
+                            else if (s=='asleep)
+                                 then (mat.wakeup -> SECRETARY)
+                            /* else both are working, customer must wait */
+                            else (wait -> SECRETARY)
+                           )
+                     )
+            |[b:B].finish -> dismiss -> count.customers[n:0..MAX]
+                                    -> if (n>=2)
+                                       then (call.next -> SECRETARY)
+                                       else ([b].sleep -> SECRETARY)
+            ).
+
+
+/******************************************************************************/
+/****************************   Barber shop   *********************************/
+
+||BBSHOP = (BARBERS || CUSTOMERS || c[Cus]::QUEUE || s:SECRETARY)
+ /{forall [i:Cus] {
+       b[0..1].cut.hair / c[i].have.hcut,
+       c[i].kick.out    / c[i].get.kicked.out,
+       c[i].wait        / c[i].take.seat,
+       forall [n:0..MAX] {
+           count.customers[n] / c[i].count.customers[n]
+       }
+   },
+   c[Cus].arrive   / s.arrival,
+   c[Cus].kick.out / s.kick.out,
+   c[Cus].enter    / s.receive,
+   c[Cus].leave    / s.dismiss,
+   c[Cus].wait     / s.wait,
+   c[Cus].call     / s.call.next,
+   forall [b:B] {
+       [b].sleep  / s[b].sleep,
+       [b].wakeup / s[b].wakeup,
+       [b].finish / s[b].finish,
+       forall [s:S] {
+           [b].ask.state[s] / s[b].ask.state[s]
+       }
+   },
+   forall [n:0..MAX] {
+       count.customers[n] / s.count.customers[n]
+   }
+  }.
