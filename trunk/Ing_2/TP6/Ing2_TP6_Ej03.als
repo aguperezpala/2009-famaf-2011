@@ -1,4 +1,9 @@
 
+module svn_Ing2/TP6/cache
+
+open util/ordering [ System ]
+
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* ~~~~~~~~~~~~~~~~~~~~~~~   Dominio de trabajo   ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -9,7 +14,7 @@ sig Mem {
 	addrs : set Addr,
 	map : addrs -> lone Data
 	}{
-	/* addrs lista todas las memorias de map, con o sin datos */
+	/* map tiene todas las memorias listadas en addrs, con o sin datos */
 	addrs in map.Data
 }
 
@@ -91,18 +96,72 @@ assert DirtyInv {
 	no s.cache.mugre => s.cache.map in s.main.map
 }
 
-assert DirtyInv2 [s:System] {
-	no s.cache.mugre => s.cache.map in s.main.map
-}
+/* A continuación una forma alternativa de probar lo mismo que DirtyInv */
 
-assert DirtyInvRead [s,s':System] {
-	all a:Addr | all d:Data |
-	(DirtyInv2[s] and Read[s,s',a,d]) => DirtyInv2[s']
+pred Inv [s:System] { no s.cache.mugre => s.cache.map in s.main.map }
+
+assert DirtyInvAlt {
+	all s,s':System |
+	Inv[s] && (
+		Flush[s,s'] or
+		Load[s,s']  or
+		(some a:Addr,d:Data | (
+			Read [s, s', a, d] or
+			Write[s, s', a, d])))
+	=> Inv[s']
 }
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~   Ejecución de prueba   ~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~   Modelo de ejecución   ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+pred init [s:System] {
+	/* Un sistema inicializado no guarda ningún dato */
+	no s.cache.mugre and
+	no (s.main.addrs  -> Data) & s.main.map and
+	no (s.cache.addrs -> Data) & s.cache.map
+/*	all d:Data, a:st.sys.main.addrs  | a->d !in st.sys.main.map  and
+	all d:Data, a:st.sys.cache.addrs | a->d !in st.sys.cache.map
+*/}
+
+fact traces {
+	init[first[]]
+	all s:System - last[] | let s' = next[s] |
+		Flush[s, s'] or
+		Load [s, s'] or
+		(some a:Addr, d:Data | (
+			Read [s, s', a, d] or
+			Write[s, s', a, d]))
+}
+
+/*
+Modelado con estados: no está funcionando
+					  Encuentra contrajemplos donde s' no se obtiene de s
+					  por las operaciones permitidas.
+
+sig State {	sys: one System }
+
+pred init [st:State] {
+	/* Un sistema inicializado no guarda ningún dato 
+	no st.sys.cache.mugre and
+	no (st.sys.main.addrs  -> Data) & st.sys.main.map and
+	no (st.sys.cache.addrs -> Data) & st.sys.cache.map
+}
+
+fact traces {
+	init[first[]]
+	all st:State - last[] | let st' = next[st] |
+		Flush[st.sys, st'.sys] or
+		Load [st.sys, st'.sys] or
+		(some a:Addr, d:Data | (
+			Read [st.sys, st'.sys, a, d] or
+			Write[st.sys, st'.sys, a, d]))
+}
+*/
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~   Ejecuciones de prueba   ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 pred ReadAUX [s,s':System, a:Addr, d:Data] {
 	/* Forzamos un Read que meta algo en caché */
@@ -134,6 +193,7 @@ pred LoadAUX [s,s':System] {
 }
 
 
-run ReadAUX for 4 but exactly 2 System
+--run ReadAUX for 4 but exactly 2 System
 
-check DirtyInvRead
+--check DirtyInvAlt for 10
+check DirtyInv for 10
