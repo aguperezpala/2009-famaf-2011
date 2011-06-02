@@ -79,10 +79,16 @@ pred StrictOrder [r:Rel] {
 	ASymm[r]
 }
 
-/* Relación con "menor" o "primer" elemento */
-pred FirstElem [r:Rel] {
-	/* TODO TODO TODO */
+/* Relación con "primer" (o "menor") elemento */
+pred FirstElem [r:Rel, fst:elem] {
+	some e:elem | (all e':elem | e'!=e => e->e' in r.rel) && e = fst
 }
+
+/* Relación con "último" (o "mayor") elemento */
+pred LastElem [r:Rel, lst:elem] {
+	some r':Rel | r'.rel = ~(r.rel) && FirstElem[r',lst]
+}
+
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -126,6 +132,17 @@ assert A_StrictOrder {
 	)
 }
 
+/* Si tiene primer elemento entonces hay e:elem | all e':elem | e->e' */
+assert A_FirstElem {
+	all r:Rel | all e:elem |
+		FirstElem[r,e] => (all e':elem | e'!=e => e->e' in r.rel)
+}
+
+/* Si tiene último elemento entonces hay e:elem | all e':elem | e'->e */
+assert A_LastElem {
+	all r:Rel | all e:elem |
+		LastElem[r,e] => (all e':elem | e'!=e => e'->e in r.rel)
+}
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -147,4 +164,43 @@ check A_TotalOrder for 50 but exactly 1 Rel
 run StrictOrder for 10 but exactly 1 Rel
 check A_StrictOrder for 50 but exactly 1 Rel
 
+/* Hay "primer" elemento */
+run FirstElem for 10 but exactly 1 Rel
+check A_FirstElem for 50 but exactly 1 Rel
 
+/* Hay "último" elemento */
+run LastElem for 10 but exactly 1 Rel
+check A_LastElem for 50 but exactly 1 Rel
+
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* ~~~~~~~~~~~~~~~~~~~~~~   Aserciones solicitadas   ~~~~~~~~~~~~~~~~~~~~~~~ */
+
+/* "Todo orden parcial es total" */
+assert PartialIsTotal { all r:Rel | PartialOrder[r] => TotalOrder[r] }
+check PartialIsTotal for 10 but exactly 1 Rel
+
+/* "Todo orden parcial tiene primer element" */
+assert PartialHasFirstElem {
+	all r:Rel | PartialOrder[r] => some e:elem | FirstElem[r,e] }
+check PartialHasFirstElem for 10 but exactly 1 Rel
+
+/* "Todo orden total con primer elemento x y ultimo elemento y satisface x=y" */
+assert FirstNotLast {
+	all r:Rel | some e,e':elem | (FirstElem[r,e] && LastElem[r,e']) => e != e'}
+check FirstNotLast for 10 but exactly 1 Rel
+
+/* "La unión de órdenes estrictos es un orden estricto" */
+assert UnionPreservesStrictness {
+	all r,r':Rel | (StrictOrder[r] && StrictOrder[r']) =>
+    	(some rnew:Rel | rnew.rel = r.rel+r'.rel && StrictOrder[rnew])}
+check UnionPreservesStrictness for 10 but exactly 3 Rel
+
+/* "La composición de órdenes estrictos es un orden estricto" */
+assert CompPreservesStrictness {
+	all r,r':Rel | (StrictOrder[r] && StrictOrder[r']) =>
+    	(some rnew:Rel | StrictOrder[rnew] && (
+			(rnew.rel = (r.rel).(r'.rel))  ||
+			(rnew.rel = (r'.rel).(r.rel))     ) )}
+check CompPreservesStrictness for 10 but exactly 3 Rel
